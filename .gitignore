@@ -1,0 +1,10 @@
+
+.DS_Store
+node_modules
+serverConfig.json
+databaseConfig.json
+ssl.crt
+ssl.key
+serverMessages.txt
+
+
