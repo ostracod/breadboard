@@ -4,7 +4,7 @@
     "scripts": ["javascript/game.js", "javascript/sprite.js"],
     "stylesheets": [],
     "canvasWidth": 1000,
-    "canvasHeight": 800,
+    "canvasHeight": 1000,
     "canvasBackgroundColor": "#FFFFFF",
     "framesPerSecond": 25,
     "maximumPlayerCount": 15

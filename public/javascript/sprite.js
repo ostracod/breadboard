@@ -96,10 +96,57 @@ SpriteSet.prototype.draw = function(context, pos, spriteOffset, paletteIndex, sc
     );
 }
 
-// Example palettes and sprites.
-var colorPalette1 = new ColorPalette([new Color(0, 0, 0), new Color(0, 192, 192)]);
-var colorPalette2 = new ColorPalette([new Color(0, 128, 0), new Color(0, 192, 0)]);
-var spriteSet1 = new SpriteSet(1, 2, [colorPalette1, colorPalette2]);
+var tempColorList = [
+    new Color(96, 96, 96),
+    new Color(192, 192, 192),
+    new Color(128, 32, 32),
+    new Color(224, 32, 32),
+    new Color(128, 80, 32),
+    new Color(224, 128, 32),
+    new Color(128, 128, 32),
+    new Color(224, 224, 32),
+    new Color(32, 128, 32),
+    new Color(32, 224, 32),
+    new Color(32, 128, 160),
+    new Color(32, 224, 255),
+    new Color(64, 64, 160),
+    new Color(128, 128, 255),
+    new Color(128, 32, 160),
+    new Color(224, 32, 255)
+];
+var blockPaletteList = [];
+var index = 0;
+while (index < tempColorList.length) {
+    var tempColor1 = tempColorList[index];
+    var tempColor2 = tempColor1.copy();
+    tempColor2.scale(0.5);
+    blockPaletteList.push(new ColorPalette([tempColor2, tempColor1]));
+    index += 1;
+}
+var blockSpriteSet = new SpriteSet(0, 1, blockPaletteList);
+var resourceSpriteSet = new SpriteSet(2, 2, [
+    blockPaletteList[10],
+    blockPaletteList[7]
+]);
+var playerSpriteSet = new SpriteSet(3, 3, [blockPaletteList[13]]);
+var circuitSpriteSet = new SpriteSet(4, 4, [blockPaletteList[9]]);
+var wireSpriteSet = new SpriteSet(20, 30, [
+    blockPaletteList[4],
+    blockPaletteList[5],
+    blockPaletteList[7]
+]);
+var chipSpriteSet = new SpriteSet(40, 40, [
+    new ColorPalette([new Color(0, 0, 0), null])
+]);
+var portSpriteSet = new SpriteSet(41, 45, [
+    new ColorPalette([new Color(255, 0, 0), null]),
+    new ColorPalette([new Color(0, 224, 0), null]),
+    new ColorPalette([new Color(64, 160, 255), null]),
+    new ColorPalette([new Color(160, 64, 255), null])
+]);
+var characterSpriteSet = new SpriteSet(60, 159, [
+    new ColorPalette([new Color(0, 0, 255), null])
+]);
 
 function initializeSpriteSheet(done) {
     
