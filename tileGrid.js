@@ -14,7 +14,7 @@ function TileGrid(width, height, fillTile, outsideTile) {
 
 TileGrid.prototype.convertPosToIndex = function(pos) {
     if (pos.x < 0 || pos.x >= this.width
-            || pos.y < 0 || pos.x >= this.height) {
+            || pos.y < 0 || pos.y >= this.height) {
         return null;
     }
     return pos.x + pos.y * this.width;

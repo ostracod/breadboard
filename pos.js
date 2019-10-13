@@ -31,8 +31,20 @@ Pos.prototype.toString = function() {
     return "(" + this.x + ", " + this.y + ")";
 }
 
+Pos.prototype.toJson = function() {
+    return {
+        x: this.x,
+        y: this.y
+    }
+}
+
+function createPosFromJson(data) {
+    return new Pos(data.x, data.y);
+}
+
 module.exports = {
-    Pos: Pos
+    Pos: Pos,
+    createPosFromJson: createPosFromJson
 };
 
 
