@@ -1,56 +1,113 @@
 
-var worldSpriteGrid;
-// Map from entity type number to Sprite.
-var entitySpriteMap = {
-    0: null,
-    1: new Sprite(resourceSpriteSet, 0, 0),
-    2: new Sprite(resourceSpriteSet, 0, 1)
-};
+var worldEntityGrid;
+// Map from entity type number to EntityFactory.
+var entityFactoryMap = {};
 
-function SpriteGrid() {
+function Entity() {
+    
+}
+
+// Concrete subclasses of Entity must implement these methods:
+// getSprite
+
+function SimpleEntity(sprite) {
+    Entity.call(this);
+    this.sprite = sprite;
+}
+
+SimpleEntity.prototype = Object.create(Entity.prototype);
+SimpleEntity.prototype.constructor = SimpleEntity;
+
+SimpleEntity.prototype.getSprite = function() {
+    return this.sprite;
+}
+
+// entityType is a number.
+function EntityFactory(entityType) {
+    this.entityType = entityType;
+    entityFactoryMap[this.entityType] = this;
+}
+
+// Concrete subclasses of EntityFactory must implement these methods:
+// convertJsonToEntity
+
+function SimpleEntityFactory(entityType, sprite) {
+    EntityFactory.call(this, entityType);
+    this.simpleEntity = new SimpleEntity(sprite);
+}
+
+SimpleEntityFactory.prototype = Object.create(EntityFactory.prototype);
+SimpleEntityFactory.prototype.constructor = SimpleEntityFactory;
+
+SimpleEntityFactory.prototype.convertJsonToEntity = function() {
+    return this.simpleEntity;
+}
+
+new SimpleEntityFactory(1, new Sprite(resourceSpriteSet, 0, 0));
+new SimpleEntityFactory(2, new Sprite(resourceSpriteSet, 0, 1));
+
+function Grid() {
     this.width = 0;
     this.height = 0;
     this.size = 0;
-    this.spriteList = [];
+    this.valueList = [];
 }
 
-SpriteGrid.prototype.setSprites = function(spriteList, width, height) {
+// Each value must have a getSprite method.
+Grid.prototype.setValues = function(valueList, width, height) {
     this.width = width;
     this.height = height;
     this.length = this.width * this.height;
-    this.spriteList = spriteList;
+    this.valueList = valueList;
 }
 
-SpriteGrid.prototype.draw = function(context) {
+Grid.prototype.drawSprites = function() {
     var index = 0;
     var tempPos = new Pos(0, 0);
     var tempPos2 = new Pos(0, 0);
     while (tempPos.y < this.height) {
-        var tempSprite = this.spriteList[index]
-        if (tempSprite !== null) {
-            tempPos2.set(tempPos);
-            tempPos2.scale(spriteSize);
-            tempSprite.draw(context, tempPos2, 6);
-        }
+        var tempValue = this.valueList[index]
+        tempPos2.set(tempPos);
+        tempPos2.scale(spriteSize);
         index += 1;
         tempPos.x += 1;
         if (tempPos.x >= this.height) {
             tempPos.x = 0;
             tempPos.y += 1;
         }
+        if (tempValue === null) {
+            continue;
+        }
+        var tempSprite = tempValue.getSprite();
+        if (tempSprite === null) {
+            continue;
+        }
+        tempSprite.draw(context, tempPos2, 6);
     }
 }
+
+worldEntityGrid = new Grid();
 
 function drawEverything() {
     clearCanvas();
     if (!spritesHaveLoaded) {
         return;
     }
-    worldSpriteGrid.draw(context);
+    worldEntityGrid.drawSprites();
 }
 
-function convertEntityJsonToSprite(data) {
-    return entitySpriteMap[data];
+function convertJsonToEntity(data) {
+    var tempType;
+    if (typeof data === "number") {
+        tempType = data;
+    } else {
+        tempType = data.type
+    }
+    if (!(tempType in entityFactoryMap)) {
+        return null;
+    }
+    var tempFactory = entityFactoryMap[tempType];
+    return tempFactory.convertJsonToEntity(data);
 }
 
 function addGetStateCommand() {
@@ -60,15 +117,15 @@ function addGetStateCommand() {
 }
 
 addCommandListener("setEntityGrid", function(command) {
-    tempSpriteList = [];
+    tempEntityList = [];
     var index = 0;
     while (index < command.entities.length) {
         var tempData = command.entities[index];
-        var tempSprite = convertEntityJsonToSprite(tempData);
-        tempSpriteList.push(tempSprite);
+        var tempEntity = convertJsonToEntity(tempData);
+        tempEntityList.push(tempEntity);
         index += 1;
     }
-    worldSpriteGrid.setSprites(tempSpriteList, command.width, command.height);
+    worldEntityGrid.setValues(tempEntityList, command.width, command.height);
 });
 
 function ClientDelegate() {
@@ -78,7 +135,6 @@ function ClientDelegate() {
 clientDelegate = new ClientDelegate();
 
 ClientDelegate.prototype.initialize = function() {
-    worldSpriteGrid = new SpriteGrid();
     initializeSpriteSheet(function() {});
 }
 
