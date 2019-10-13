@@ -1,16 +1,14 @@
 
 var gameUtils = require("ostracod-multiplayer").gameUtils;
+var Pos = require("./pos").Pos;
+var world = require("./world").world;
 
-function addSetEntityGridCommand(player, commandList) {
+function addSetWorldTileGridCommand(player, commandList) {
     var tempSize = 17;
-    var tempLength = tempSize * tempSize;
-    var tempEntityJsonList = [];
-    while (tempEntityJsonList.length < tempLength) {
-        tempEntityJsonList.push(Math.floor(Math.random() * 3));
-    }
+    var tempTileJsonList = world.getClientJson(new Pos(-3, -1), tempSize, tempSize);
     commandList.push({
-        commandName: "setEntityGrid",
-        entities: tempEntityJsonList,
+        commandName: "setWorldTileGrid",
+        tiles: tempTileJsonList,
         width: tempSize,
         height: tempSize
     });
@@ -20,7 +18,7 @@ gameUtils.addCommandListener(
     "getState",
     true,
     function(command, player, commandList) {
-        addSetEntityGridCommand(player, commandList);
+        addSetWorldTileGridCommand(player, commandList);
     }
 );
 

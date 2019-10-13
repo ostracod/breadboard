@@ -1,113 +1,118 @@
 
-var worldEntityGrid;
-// Map from entity type number to EntityFactory.
-var entityFactoryMap = {};
+var worldTileGrid;
+// Map from WorldTile type number to WorldTileFactory.
+var worldTileFactoryMap = {};
 
-function Entity() {
+function Tile() {
     
 }
 
-// Concrete subclasses of Entity must implement these methods:
+// Concrete subclasses of Tile must implement these methods:
 // getSprite
 
-function SimpleEntity(sprite) {
-    Entity.call(this);
+function WorldTile() {
+    Tile.call(this);
+}
+
+WorldTile.prototype = Object.create(Tile.prototype);
+WorldTile.prototype.constructor = WorldTile;
+
+function SimpleWorldTile(sprite) {
+    WorldTile.call(this);
     this.sprite = sprite;
 }
 
-SimpleEntity.prototype = Object.create(Entity.prototype);
-SimpleEntity.prototype.constructor = SimpleEntity;
+SimpleWorldTile.prototype = Object.create(WorldTile.prototype);
+SimpleWorldTile.prototype.constructor = SimpleWorldTile;
 
-SimpleEntity.prototype.getSprite = function() {
+SimpleWorldTile.prototype.getSprite = function() {
     return this.sprite;
 }
 
-// entityType is a number.
-function EntityFactory(entityType) {
-    this.entityType = entityType;
-    entityFactoryMap[this.entityType] = this;
+// worldTileType is a number.
+function WorldTileFactory(worldTileType) {
+    this.worldTileType = worldTileType;
+    worldTileFactoryMap[this.worldTileType] = this;
 }
 
-// Concrete subclasses of EntityFactory must implement these methods:
-// convertJsonToEntity
+// Concrete subclasses of WorldTileFactory must implement these methods:
+// convertJsonToTile
 
-function SimpleEntityFactory(entityType, sprite) {
-    EntityFactory.call(this, entityType);
-    this.simpleEntity = new SimpleEntity(sprite);
+function SimpleWorldTileFactory(worldTileType, sprite) {
+    WorldTileFactory.call(this, worldTileType);
+    this.simpleWorldTile = new SimpleWorldTile(sprite);
 }
 
-SimpleEntityFactory.prototype = Object.create(EntityFactory.prototype);
-SimpleEntityFactory.prototype.constructor = SimpleEntityFactory;
+SimpleWorldTileFactory.prototype = Object.create(WorldTileFactory.prototype);
+SimpleWorldTileFactory.prototype.constructor = SimpleWorldTileFactory;
 
-SimpleEntityFactory.prototype.convertJsonToEntity = function() {
-    return this.simpleEntity;
+SimpleWorldTileFactory.prototype.convertJsonToTile = function() {
+    return this.simpleWorldTile;
 }
 
-new SimpleEntityFactory(1, new Sprite(resourceSpriteSet, 0, 0));
-new SimpleEntityFactory(2, new Sprite(resourceSpriteSet, 0, 1));
+new SimpleWorldTileFactory(0, null);
+// TODO: Create barrier tile.
+new SimpleWorldTileFactory(1, new Sprite(barrierSpriteSet, 0, 0));
+new SimpleWorldTileFactory(2, new Sprite(resourceSpriteSet, 0, 0));
+new SimpleWorldTileFactory(3, new Sprite(resourceSpriteSet, 0, 1));
 
-function Grid() {
+function TileGrid() {
     this.width = 0;
     this.height = 0;
-    this.size = 0;
-    this.valueList = [];
+    this.length = 0;
+    this.tileList = [];
 }
 
-// Each value must have a getSprite method.
-Grid.prototype.setValues = function(valueList, width, height) {
+TileGrid.prototype.setTiles = function(tileList, width, height) {
     this.width = width;
     this.height = height;
     this.length = this.width * this.height;
-    this.valueList = valueList;
+    this.tileList = tileList;
 }
 
-Grid.prototype.drawSprites = function() {
+TileGrid.prototype.draw = function() {
     var index = 0;
     var tempPos = new Pos(0, 0);
     var tempPos2 = new Pos(0, 0);
     while (tempPos.y < this.height) {
-        var tempValue = this.valueList[index]
+        var tempTile = this.tileList[index]
         tempPos2.set(tempPos);
         tempPos2.scale(spriteSize);
+        var tempSprite = tempTile.getSprite();
+        if (tempSprite !== null) {
+            tempSprite.draw(context, tempPos2, 6);
+        }
         index += 1;
         tempPos.x += 1;
         if (tempPos.x >= this.height) {
             tempPos.x = 0;
             tempPos.y += 1;
         }
-        if (tempValue === null) {
-            continue;
-        }
-        var tempSprite = tempValue.getSprite();
-        if (tempSprite === null) {
-            continue;
-        }
-        tempSprite.draw(context, tempPos2, 6);
     }
 }
 
-worldEntityGrid = new Grid();
+worldTileGrid = new TileGrid();
 
 function drawEverything() {
     clearCanvas();
     if (!spritesHaveLoaded) {
         return;
     }
-    worldEntityGrid.drawSprites();
+    worldTileGrid.draw();
 }
 
-function convertJsonToEntity(data) {
+function convertJsonToWorldTile(data) {
     var tempType;
     if (typeof data === "number") {
         tempType = data;
     } else {
-        tempType = data.type
+        tempType = data.type;
     }
-    if (!(tempType in entityFactoryMap)) {
+    if (!(tempType in worldTileFactoryMap)) {
         return null;
     }
-    var tempFactory = entityFactoryMap[tempType];
-    return tempFactory.convertJsonToEntity(data);
+    var tempFactory = worldTileFactoryMap[tempType];
+    return tempFactory.convertJsonToTile(data);
 }
 
 function addGetStateCommand() {
@@ -116,16 +121,16 @@ function addGetStateCommand() {
     });
 }
 
-addCommandListener("setEntityGrid", function(command) {
-    tempEntityList = [];
+addCommandListener("setWorldTileGrid", function(command) {
+    tempTileList = [];
     var index = 0;
-    while (index < command.entities.length) {
-        var tempData = command.entities[index];
-        var tempEntity = convertJsonToEntity(tempData);
-        tempEntityList.push(tempEntity);
+    while (index < command.tiles.length) {
+        var tempData = command.tiles[index];
+        var tempTile = convertJsonToWorldTile(tempData);
+        tempTileList.push(tempTile);
         index += 1;
     }
-    worldEntityGrid.setValues(tempEntityList, command.width, command.height);
+    worldTileGrid.setTiles(tempTileList, command.width, command.height);
 });
 
 function ClientDelegate() {

@@ -123,13 +123,16 @@ while (index < tempColorList.length) {
     blockPaletteList.push(new ColorPalette([tempColor2, tempColor1]));
     index += 1;
 }
-var blockSpriteSet = new SpriteSet(0, 1, blockPaletteList);
+var blockSpriteSet = new SpriteSet(0, 0, blockPaletteList);
+var machineSpriteSet = new SpriteSet(1, 1, blockPaletteList);
 var resourceSpriteSet = new SpriteSet(2, 2, [
     blockPaletteList[10],
     blockPaletteList[7]
 ]);
 var playerSpriteSet = new SpriteSet(3, 3, [blockPaletteList[13]]);
 var circuitSpriteSet = new SpriteSet(4, 4, [blockPaletteList[9]]);
+var loadingSpriteSet = new SpriteSet(5, 5, [blockPaletteList[0]]);
+var barrierSpriteSet = new SpriteSet(6, 6, [blockPaletteList[1]]);
 var wireSpriteSet = new SpriteSet(20, 30, [
     blockPaletteList[4],
     blockPaletteList[5],
