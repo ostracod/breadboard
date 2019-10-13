@@ -148,6 +148,16 @@ var characterSpriteSet = new SpriteSet(60, 159, [
     new ColorPalette([new Color(0, 0, 255), null])
 ]);
 
+function Sprite(spriteSet, spriteOffset, paletteIndex) {
+    this.spriteSet = spriteSet;
+    this.spriteOffset = spriteOffset;
+    this.paletteIndex = paletteIndex;
+}
+
+Sprite.prototype.draw = function(context, pos, scale) {
+    this.spriteSet.draw(context, pos, this.spriteOffset, this.paletteIndex, scale);
+}
+
 function initializeSpriteSheet(done) {
     
     spriteSheetCanvas = document.createElement("canvas");

@@ -1,10 +1,10 @@
 {
     "pageModules": [],
     "instructionsViewFile": "instructions.html",
-    "scripts": ["javascript/game.js", "javascript/sprite.js"],
+    "scripts": ["javascript/sprite.js", "javascript/game.js"],
     "stylesheets": [],
-    "canvasWidth": 1000,
-    "canvasHeight": 1000,
+    "canvasWidth": 1122,
+    "canvasHeight": 1122,
     "canvasBackgroundColor": "#FFFFFF",
     "framesPerSecond": 25,
     "maximumPlayerCount": 15

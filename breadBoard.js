@@ -1,24 +1,6 @@
 
 var ostracodMultiplayer = require("ostracod-multiplayer").ostracodMultiplayer;
-
-function GameDelegate() {
-    
-}
-
-var gameDelegate = new GameDelegate();
-
-GameDelegate.prototype.playerEnterEvent = function(player) {
-    
-}
-
-GameDelegate.prototype.playerLeaveEvent = function(player) {
-    
-}
-
-GameDelegate.prototype.persistEvent = function(done) {
-    
-    done();
-}
+var gameDelegate = require("./gameDelegate.js").gameDelegate;
 
 console.log("Starting BreadBoard server...");
 

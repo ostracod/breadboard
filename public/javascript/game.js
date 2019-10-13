@@ -1,4 +1,76 @@
 
+var worldSpriteGrid;
+// Map from entity type number to Sprite.
+var entitySpriteMap = {
+    0: null,
+    1: new Sprite(resourceSpriteSet, 0, 0),
+    2: new Sprite(resourceSpriteSet, 0, 1)
+};
+
+function SpriteGrid() {
+    this.width = 0;
+    this.height = 0;
+    this.size = 0;
+    this.spriteList = [];
+}
+
+SpriteGrid.prototype.setSprites = function(spriteList, width, height) {
+    this.width = width;
+    this.height = height;
+    this.length = this.width * this.height;
+    this.spriteList = spriteList;
+}
+
+SpriteGrid.prototype.draw = function(context) {
+    var index = 0;
+    var tempPos = new Pos(0, 0);
+    var tempPos2 = new Pos(0, 0);
+    while (tempPos.y < this.height) {
+        var tempSprite = this.spriteList[index]
+        if (tempSprite !== null) {
+            tempPos2.set(tempPos);
+            tempPos2.scale(spriteSize);
+            tempSprite.draw(context, tempPos2, 6);
+        }
+        index += 1;
+        tempPos.x += 1;
+        if (tempPos.x >= this.height) {
+            tempPos.x = 0;
+            tempPos.y += 1;
+        }
+    }
+}
+
+function drawEverything() {
+    clearCanvas();
+    if (!spritesHaveLoaded) {
+        return;
+    }
+    worldSpriteGrid.draw(context);
+}
+
+function convertEntityJsonToSprite(data) {
+    return entitySpriteMap[data];
+}
+
+function addGetStateCommand() {
+    gameUpdateCommandList.push({
+        commandName: "getState"
+    });
+}
+
+addCommandListener("setEntityGrid", function(command) {
+    tempSpriteList = [];
+    var index = 0;
+    while (index < command.entities.length) {
+        var tempData = command.entities[index];
+        var tempSprite = convertEntityJsonToSprite(tempData);
+        tempSpriteList.push(tempSprite);
+        index += 1;
+    }
+    worldSpriteGrid.setSprites(tempSpriteList, command.width, command.height);
+});
+
 function ClientDelegate() {
     
 }
@@ -6,6 +78,7 @@ function ClientDelegate() {
 clientDelegate = new ClientDelegate();
 
 ClientDelegate.prototype.initialize = function() {
+    worldSpriteGrid = new SpriteGrid();
     initializeSpriteSheet(function() {});
 }
 
@@ -14,60 +87,11 @@ ClientDelegate.prototype.setLocalPlayerInfo = function(command) {
 }
 
 ClientDelegate.prototype.addCommandsBeforeUpdateRequest = function() {
-    
+    addGetStateCommand();
 }
 
 ClientDelegate.prototype.timerEvent = function() {
-    clearCanvas();
-    // Example sprite drawing.
-    if (spritesHaveLoaded) {
-        var index = 0;
-        while (index < blockPaletteList.length) {
-            var tempPosX = 5 + index * 15;
-            blockSpriteSet.draw(context, new Pos(tempPosX, 10), 0, index, 4);
-            blockSpriteSet.draw(context, new Pos(tempPosX, 25), 1, index, 4);
-            index += 1;
-        }
-        resourceSpriteSet.draw(context, new Pos(5, 40), 0, 0, 4);
-        resourceSpriteSet.draw(context, new Pos(20, 40), 0, 1, 4);
-        playerSpriteSet.draw(context, new Pos(35, 40), 0, 0, 4);
-        circuitSpriteSet.draw(context, new Pos(50, 40), 0, 0, 4);
-        var index = 0;
-        while (index < 11) {
-            var tempPosX = 5 + index * 15;
-            wireSpriteSet.draw(context, new Pos(tempPosX, 55), index, 0, 4);
-            wireSpriteSet.draw(context, new Pos(tempPosX, 70), index, 1, 4);
-            wireSpriteSet.draw(context, new Pos(tempPosX, 85), index, 2, 4);
-            index += 1;
-        }
-        var index = 0;
-        while (index < 4) {
-            var tempPosX = 5 + index * 15;
-            chipSpriteSet.draw(context, new Pos(tempPosX, 100), 0, 0, 4);
-            var tempIndex = 0;
-            while (tempIndex < 4) {
-                portSpriteSet.draw(
-                    context,
-                    new Pos(tempPosX, 100),
-                    (tempIndex + index) % 4,
-                    tempIndex, 4
-                );
-                tempIndex += 1;
-            }
-            index += 1;
-        }
-        var tempPos = new Pos(5, 115);
-        var index = 0;
-        while (index < 100) {
-            characterSpriteSet.draw(context, tempPos, index, 0, 4);
-            tempPos.x += 15;
-            if (tempPos.x > 240) {
-                tempPos.x = 5;
-                tempPos.y += 15;
-            }
-            index += 1;
-        }
-    }
+    drawEverything();
 }
 
 ClientDelegate.prototype.keyDownEvent = function(keyCode) {
