@@ -4,7 +4,6 @@ var spritePixelSize = spriteSize * pixelSize;
 var canvasTileWidth;
 var canvasTileHeight;
 var worldTileGrid;
-var worldTileGridPos = new Pos(0, 0);
 // Map from WorldTile type number to WorldTileFactory.
 var worldTileFactoryMap = {};
 var loadingWorldTile;
@@ -15,7 +14,14 @@ function Tile() {
 }
 
 // Concrete subclasses of Tile must implement these methods:
-// getSprite
+// draw
+
+function drawTileSprite(pos, sprite) {
+    if (sprite === null) {
+        return;
+    }
+    sprite.draw(context, pos, pixelSize);
+}
 
 function WorldTile() {
     Tile.call(this);
@@ -32,29 +38,45 @@ function SimpleWorldTile(sprite) {
 SimpleWorldTile.prototype = Object.create(WorldTile.prototype);
 SimpleWorldTile.prototype.constructor = SimpleWorldTile;
 
-SimpleWorldTile.prototype.getSprite = function() {
-    return this.sprite;
+SimpleWorldTile.prototype.draw = function(pos, layer) {
+    if (layer == 0) {
+        drawTileSprite(pos, this.sprite);
+    }
 }
 
 loadingWorldTile = new SimpleWorldTile(new Sprite(loadingSpriteSet, 0, 0));
 
-function ComplexWorldTile() {
+function ComplexWorldTile(pos) {
     WorldTile.call(this);
+    this.pos = pos.copy();
 }
 
 ComplexWorldTile.prototype = Object.create(WorldTile.prototype);
 ComplexWorldTile.prototype.constructor = ComplexWorldTile;
 
-function PlayerWorldTile(username) {
-    ComplexWorldTile.call(this);
+function PlayerWorldTile(pos, username) {
+    ComplexWorldTile.call(this, pos);
     this.username = username;
 }
 
 PlayerWorldTile.prototype = Object.create(ComplexWorldTile.prototype);
 PlayerWorldTile.prototype.constructor = PlayerWorldTile;
 
-PlayerWorldTile.prototype.getSprite = function() {
-    return playerSprite;
+PlayerWorldTile.prototype.draw = function(pos, layer) {
+    if (layer == 0) {
+        drawTileSprite(pos, playerSprite);
+    }
+    if (layer == 1) {
+        var tempPos = pos.copy();
+        tempPos.scale(pixelSize);
+        tempPos.x += spritePixelSize / 2;
+        tempPos.y -= spritePixelSize * 1 / 5;
+        context.font = "bold 30px Arial";
+        context.textAlign = "center";
+        context.textBaseline = "bottom";
+        context.fillStyle = "#000000";
+        context.fillText(this.username, Math.floor(tempPos.x), Math.floor(tempPos.y));
+    }
 }
 
 // worldTileType is a number.
@@ -74,7 +96,7 @@ function SimpleWorldTileFactory(worldTileType, sprite) {
 SimpleWorldTileFactory.prototype = Object.create(WorldTileFactory.prototype);
 SimpleWorldTileFactory.prototype.constructor = SimpleWorldTileFactory;
 
-SimpleWorldTileFactory.prototype.convertJsonToTile = function(data) {
+SimpleWorldTileFactory.prototype.convertJsonToTile = function(data, pos) {
     return this.simpleWorldTile;
 }
 
@@ -109,8 +131,8 @@ function PlayerWorldTileFactory() {
 PlayerWorldTileFactory.prototype = Object.create(ComplexWorldTileFactory.prototype);
 PlayerWorldTileFactory.prototype.constructor = PlayerWorldTileFactory;
 
-PlayerWorldTileFactory.prototype.convertJsonToTile = function(data) {
-    return new PlayerWorldTile(data.username);
+PlayerWorldTileFactory.prototype.convertJsonToTile = function(data, pos) {
+    return new PlayerWorldTile(pos, data.username);
 }
 
 new PlayerWorldTileFactory();
@@ -121,6 +143,7 @@ function TileGrid(outsideTile) {
     this.outsideTile = outsideTile;
     this.length = 0;
     this.tileList = [];
+    this.windowOffset = new Pos(0, 0);
 }
 
 TileGrid.prototype.convertPosToIndex = function(pos) {
@@ -146,24 +169,31 @@ TileGrid.prototype.setTiles = function(tileList, width, height) {
     this.tileList = tileList;
 }
 
-TileGrid.prototype.draw = function(pos) {
+// layer is a number.
+TileGrid.prototype.drawLayer = function(pos, layer) {
     var tempOffset = new Pos(0, 0);
     var tempPos = new Pos(0, 0);
     while (tempOffset.y < canvasTileHeight) {
         tempPos.set(pos);
+        tempPos.subtract(this.windowOffset);
         tempPos.add(tempOffset);
         var tempTile = this.getTile(tempPos);
-        var tempSprite = tempTile.getSprite();
-        if (tempSprite !== null) {
-            tempPos.set(tempOffset);
-            tempPos.scale(spriteSize);
-            tempSprite.draw(context, tempPos, pixelSize);
-        }
+        tempPos.set(tempOffset);
+        tempPos.scale(spriteSize);
+        var tempSprite = tempTile.draw(tempPos, layer);
         tempOffset.x += 1;
         if (tempOffset.x >= canvasTileWidth) {
             tempOffset.x = 0;
             tempOffset.y += 1;
         }
+    }
+}
+
+TileGrid.prototype.draw = function(pos) {
+    var tempLayer = 0;
+    while (tempLayer < 2) {
+        this.drawLayer(pos, tempLayer);
+        tempLayer += 1;
     }
 }
 
@@ -174,12 +204,10 @@ function drawEverything() {
     if (!spritesHaveLoaded) {
         return;
     }
-    var tempPos = cameraPos.copy();
-    tempPos.subtract(worldTileGridPos);
-    worldTileGrid.draw(tempPos);
+    worldTileGrid.draw(cameraPos);
 }
 
-function convertJsonToWorldTile(data) {
+function convertJsonToWorldTile(data, pos) {
     var tempType;
     if (typeof data === "number") {
         tempType = data;
@@ -190,24 +218,32 @@ function convertJsonToWorldTile(data) {
         return null;
     }
     var tempFactory = worldTileFactoryMap[tempType];
-    return tempFactory.convertJsonToTile(data);
+    return tempFactory.convertJsonToTile(data, pos);
 }
 
 function addGetStateCommand() {
     gameUpdateCommandList.push({
-        commandName: "getState",
-        cameraPos: this.cameraPos.toJson()
+        commandName: "getState"
     });
 }
 
 addCommandListener("setWorldTileGrid", function(command) {
-    worldTileGridPos = createPosFromJson(command.pos);
+    worldTileGrid.windowOffset = createPosFromJson(command.pos);
     tempTileList = [];
+    var tempOffset = new Pos(0, 0);
+    var tempPos = new Pos(0, 0);
     var index = 0;
     while (index < command.tiles.length) {
+        tempPos.set(worldTileGrid.windowOffset);
+        tempPos.add(tempOffset);
         var tempData = command.tiles[index];
-        var tempTile = convertJsonToWorldTile(tempData);
+        var tempTile = convertJsonToWorldTile(tempData, tempPos);
         tempTileList.push(tempTile);
+        tempOffset.x += 1;
+        if (tempOffset.x >= command.width) {
+            tempOffset.x = 0;
+            tempOffset.y += 1;
+        }
         index += 1;
     }
     worldTileGrid.setTiles(tempTileList, command.width, command.height);
@@ -240,15 +276,19 @@ ClientDelegate.prototype.timerEvent = function() {
 ClientDelegate.prototype.keyDownEvent = function(keyCode) {
     if (keyCode == 37) {
         cameraPos.x -= 1;
+        return false;
     }
     if (keyCode == 39) {
         cameraPos.x += 1;
+        return false;
     }
     if (keyCode == 38) {
         cameraPos.y -= 1;
+        return false;
     }
     if (keyCode == 40) {
         cameraPos.y += 1;
+        return false;
     }
     return true;
 }

@@ -8,15 +8,20 @@ var tempResource = require("./worldTile");
 var EmptyWorldTile = tempResource.EmptyWorldTile;
 var PlayerWorldTile = tempResource.PlayerWorldTile;
 
-function addSetWorldTileGridCommand(cameraPos, commandList) {
-    var tempSize = 17;
-    var tempTileJsonList = world.getClientJson(cameraPos, tempSize, tempSize);
+function addSetWorldTileGridCommand(player, commandList) {
+    var tempWindowSize = 17;
+    var tempTile = world.getPlayerTile(player);
+    var tempPos = tempTile.pos.copy();
+    var tempCenterOffset = Math.floor(tempWindowSize / 2);
+    tempPos.x -= tempCenterOffset;
+    tempPos.y -= tempCenterOffset;
+    var tempTileJsonList = world.getClientJson(tempPos, tempWindowSize, tempWindowSize);
     commandList.push({
         commandName: "setWorldTileGrid",
-        pos: cameraPos.toJson(),
+        pos: tempPos.toJson(),
         tiles: tempTileJsonList,
-        width: tempSize,
-        height: tempSize
+        width: tempWindowSize,
+        height: tempWindowSize
     });
 }
 
@@ -24,8 +29,7 @@ gameUtils.addCommandListener(
     "getState",
     true,
     function(command, player, commandList) {
-        var tempPos = createPosFromJson(command.cameraPos);
-        addSetWorldTileGridCommand(tempPos, commandList);
+        addSetWorldTileGridCommand(player, commandList);
     }
 );
 
