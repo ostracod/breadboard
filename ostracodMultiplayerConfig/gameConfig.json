@@ -1,7 +1,11 @@
 {
     "pageModules": [],
     "instructionsViewFile": "instructions.html",
-    "scripts": ["javascript/sprite.js", "javascript/game.js"],
+    "scripts": [
+        "javascript/gameConstants.js",
+        "javascript/sprite.js",
+        "javascript/game.js"
+    ],
     "stylesheets": [],
     "canvasWidth": 1122,
     "canvasHeight": 1122,

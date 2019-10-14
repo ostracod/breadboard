@@ -38,6 +38,25 @@ SimpleWorldTile.prototype.getSprite = function() {
 
 loadingWorldTile = new SimpleWorldTile(new Sprite(loadingSpriteSet, 0, 0));
 
+function ComplexWorldTile() {
+    WorldTile.call(this);
+}
+
+ComplexWorldTile.prototype = Object.create(WorldTile.prototype);
+ComplexWorldTile.prototype.constructor = ComplexWorldTile;
+
+function PlayerWorldTile(username) {
+    ComplexWorldTile.call(this);
+    this.username = username;
+}
+
+PlayerWorldTile.prototype = Object.create(ComplexWorldTile.prototype);
+PlayerWorldTile.prototype.constructor = PlayerWorldTile;
+
+PlayerWorldTile.prototype.getSprite = function() {
+    return playerSprite;
+}
+
 // worldTileType is a number.
 function WorldTileFactory(worldTileType) {
     this.worldTileType = worldTileType;
@@ -55,14 +74,46 @@ function SimpleWorldTileFactory(worldTileType, sprite) {
 SimpleWorldTileFactory.prototype = Object.create(WorldTileFactory.prototype);
 SimpleWorldTileFactory.prototype.constructor = SimpleWorldTileFactory;
 
-SimpleWorldTileFactory.prototype.convertJsonToTile = function() {
+SimpleWorldTileFactory.prototype.convertJsonToTile = function(data) {
     return this.simpleWorldTile;
 }
 
-new SimpleWorldTileFactory(0, null);
-new SimpleWorldTileFactory(1, new Sprite(barrierSpriteSet, 0, 0));
-new SimpleWorldTileFactory(2, new Sprite(resourceSpriteSet, 0, 0));
-new SimpleWorldTileFactory(3, new Sprite(resourceSpriteSet, 0, 1));
+new SimpleWorldTileFactory(
+    worldTileTypeSet.empty,
+    null
+);
+new SimpleWorldTileFactory(
+    worldTileTypeSet.barrier,
+    new Sprite(barrierSpriteSet, 0, 0)
+);
+new SimpleWorldTileFactory(
+    worldTileTypeSet.matterite,
+    new Sprite(resourceSpriteSet, 0, 0)
+);
+new SimpleWorldTileFactory(
+    worldTileTypeSet.energite,
+    new Sprite(resourceSpriteSet, 0, 1)
+);
+
+function ComplexWorldTileFactory(worldTileType) {
+    WorldTileFactory.call(this, worldTileType);
+}
+
+ComplexWorldTileFactory.prototype = Object.create(WorldTileFactory.prototype);
+ComplexWorldTileFactory.prototype.constructor = ComplexWorldTileFactory;
+
+function PlayerWorldTileFactory() {
+    WorldTileFactory.call(this, worldTileTypeSet.player);
+}
+
+PlayerWorldTileFactory.prototype = Object.create(ComplexWorldTileFactory.prototype);
+PlayerWorldTileFactory.prototype.constructor = PlayerWorldTileFactory;
+
+PlayerWorldTileFactory.prototype.convertJsonToTile = function(data) {
+    return new PlayerWorldTile(data.username);
+}
+
+new PlayerWorldTileFactory();
 
 function TileGrid(outsideTile) {
     this.width = 0;

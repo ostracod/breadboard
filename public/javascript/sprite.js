@@ -161,6 +161,8 @@ Sprite.prototype.draw = function(context, pos, scale) {
     this.spriteSet.draw(context, pos, this.spriteOffset, this.paletteIndex, scale);
 }
 
+var playerSprite = new Sprite(playerSpriteSet, 0, 0);
+
 function initializeSpriteSheet(done) {
     
     spriteSheetCanvas = document.createElement("canvas");
