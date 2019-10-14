@@ -48,6 +48,15 @@ World.prototype.setTile = function(pos, tile) {
     tile.addEvent(this, pos);
 }
 
+World.prototype.swapTiles = function(pos1, pos2) {
+    var tempTile1 = this.tileGrid.getTile(pos1);
+    var tempTile2 = this.tileGrid.getTile(pos2);
+    this.tileGrid.setTile(pos2, tempTile1);
+    this.tileGrid.setTile(pos1, tempTile2);
+    tempTile1.moveEvent(pos2);
+    tempTile2.moveEvent(pos1);
+}
+
 World.prototype.getClientJson = function(pos, width, height) {
     return this.tileGrid.getWindowClientJson(pos, width, height);
 }
@@ -67,11 +76,6 @@ World.prototype.findPlayerTile = function(player) {
 World.prototype.getPlayerTile = function(player) {
     var index = this.findPlayerTile(player);
     return this.playerTileList[index];
-}
-
-World.prototype.removePlayer = function(player) {
-    var tempTile = this.getPlayerTile(player);
-    tempTile.removeFromWorld();
 }
 
 module.exports = {

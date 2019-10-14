@@ -9,7 +9,7 @@ var EmptyWorldTile = tempResource.EmptyWorldTile;
 var PlayerWorldTile = tempResource.PlayerWorldTile;
 
 function addSetWorldTileGridCommand(player, commandList) {
-    var tempWindowSize = 17;
+    var tempWindowSize = 21;
     var tempTile = world.getPlayerTile(player);
     var tempPos = tempTile.pos.copy();
     var tempCenterOffset = Math.floor(tempWindowSize / 2);
@@ -33,6 +33,16 @@ gameUtils.addCommandListener(
     }
 );
 
+gameUtils.addCommandListener(
+    "walk",
+    true,
+    function(command, player, commandList) {
+        var tempTile = world.getPlayerTile(player);
+        var tempOffset = createPosFromJson(command.offset);
+        tempTile.walk(tempOffset);
+    }
+);
+
 function GameDelegate() {
     
 }
@@ -49,7 +59,8 @@ GameDelegate.prototype.playerEnterEvent = function(player) {
 }
 
 GameDelegate.prototype.playerLeaveEvent = function(player) {
-    world.removePlayer(player);
+    var tempTile = world.getPlayerTile(player);
+    tempTile.removeFromWorld();
 }
 
 GameDelegate.prototype.persistEvent = function(done) {

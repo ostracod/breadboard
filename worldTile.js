@@ -25,6 +25,10 @@ WorldTile.prototype.removeEvent = function() {
     // Do nothing.
 }
 
+WorldTile.prototype.moveEvent = function(pos) {
+    // Do nothing.
+}
+
 function SimpleWorldTile(type) {
     WorldTile.call(this, type);
 }
@@ -76,12 +80,28 @@ ComplexWorldTile.prototype.removeEvent = function() {
     this.pos = null;
 }
 
+ComplexWorldTile.prototype.moveEvent = function(pos) {
+    WorldTile.prototype.moveEvent.call(this, pos);
+    this.pos.set(pos);
+}
+
 ComplexWorldTile.prototype.addToWorld = function(world, pos) {
     world.setTile(pos, this);
 }
 
 ComplexWorldTile.prototype.removeFromWorld = function() {
     this.world.setTile(this.pos, emptyWorldTile);
+}
+
+ComplexWorldTile.prototype.move = function(offset) {
+    var tempNextPos = this.pos.copy();
+    tempNextPos.add(offset);
+    var tempTile = this.world.getTile(tempNextPos);
+    if (!(tempTile instanceof EmptyWorldTile)) {
+        return false;
+    }
+    this.world.swapTiles(this.pos, tempNextPos);
+    return true;
 }
 
 function PlayerWorldTile(player) {
@@ -108,6 +128,10 @@ PlayerWorldTile.prototype.removeEvent = function() {
     ComplexWorldTile.prototype.removeEvent.call(this);
     var index = tempWorld.findPlayerTile(this.player);
     tempWorld.playerTileList.splice(index, 1);
+}
+
+PlayerWorldTile.prototype.walk = function(offset) {
+    this.move(offset);
 }
 
 module.exports = {

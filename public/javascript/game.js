@@ -6,8 +6,15 @@ var canvasTileHeight;
 var worldTileGrid;
 // Map from WorldTile type number to WorldTileFactory.
 var worldTileFactoryMap = {};
-var loadingWorldTile;
 var cameraPos = new Pos(0, 0);
+var localPlayerUsername;
+var localPlayerWorldTile = null;
+var playerWalkOffsetSet = [
+    new Pos(-1, 0),
+    new Pos(1, 0),
+    new Pos(0, -1),
+    new Pos(0, 1)
+];
 
 function Tile() {
     
@@ -44,7 +51,19 @@ SimpleWorldTile.prototype.draw = function(pos, layer) {
     }
 }
 
-loadingWorldTile = new SimpleWorldTile(new Sprite(loadingSpriteSet, 0, 0));
+var loadingWorldTile = new SimpleWorldTile(new Sprite(loadingSpriteSet, 0, 0));
+var barrierWorldTile = new SimpleWorldTile(new Sprite(barrierSpriteSet, 0, 0));
+var matteriteWorldTile = new SimpleWorldTile(new Sprite(resourceSpriteSet, 0, 0));
+var energiteWorldTile = new SimpleWorldTile(new Sprite(resourceSpriteSet, 0, 1));
+
+function EmptyWorldTile() {
+    SimpleWorldTile.call(this, null);
+}
+
+EmptyWorldTile.prototype = Object.create(SimpleWorldTile.prototype);
+EmptyWorldTile.prototype.constructor = EmptyWorldTile;
+
+var emptyWorldTile = new EmptyWorldTile();
 
 function ComplexWorldTile(pos) {
     WorldTile.call(this);
@@ -54,9 +73,29 @@ function ComplexWorldTile(pos) {
 ComplexWorldTile.prototype = Object.create(WorldTile.prototype);
 ComplexWorldTile.prototype.constructor = ComplexWorldTile;
 
-function PlayerWorldTile(pos, username) {
+ComplexWorldTile.prototype.move = function(offset) {
+    var tempNextPos = this.pos.copy();
+    tempNextPos.add(offset);
+    var tempTile = worldTileGrid.getTile(tempNextPos);
+    if (!(tempTile instanceof EmptyWorldTile)) {
+        return false;
+    }
+    worldTileGrid.setTile(this.pos, emptyWorldTile);
+    this.pos.set(tempNextPos);
+    worldTileGrid.setTile(this.pos, this);
+    return true;
+}
+
+function PlayerWorldTile(pos, username, walkOffset) {
     ComplexWorldTile.call(this, pos);
     this.username = username;
+    if (this.username === localPlayerUsername) {
+        if (localPlayerWorldTile !== null) {
+            walkOffset = localPlayerWorldTile.walkOffset;
+        }
+        localPlayerWorldTile = this;
+    }
+    this.walkOffset = walkOffset;
 }
 
 PlayerWorldTile.prototype = Object.create(ComplexWorldTile.prototype);
@@ -79,6 +118,36 @@ PlayerWorldTile.prototype.draw = function(pos, layer) {
     }
 }
 
+PlayerWorldTile.prototype.walk = function(offset, shouldAddCommand) {
+    if (typeof shouldAddCommand === "undefined") {
+        shouldAddCommand = true;
+    }
+    var tempResult = this.move(offset);
+    if (this === localPlayerWorldTile && shouldAddCommand && tempResult) {
+        addWalkCommand(offset);
+    }
+}
+
+PlayerWorldTile.prototype.startWalk = function(offset) {
+    if (offset.x != 0) {
+        this.walkOffset.x = offset.x;
+    }
+    if (offset.y != 0) {
+        this.walkOffset.y = offset.y;
+    }
+    // TODO: Walk on delay cycle.
+    this.walk(this.walkOffset);
+}
+
+PlayerWorldTile.prototype.stopWalk = function(offset) {
+    if (this.walkOffset.x == offset.x) {
+        this.walkOffset.x = 0;
+    }
+    if (this.walkOffset.y == offset.y) {
+        this.walkOffset.y = 0;
+    }
+}
+
 // worldTileType is a number.
 function WorldTileFactory(worldTileType) {
     this.worldTileType = worldTileType;
@@ -88,9 +157,9 @@ function WorldTileFactory(worldTileType) {
 // Concrete subclasses of WorldTileFactory must implement these methods:
 // convertJsonToTile
 
-function SimpleWorldTileFactory(worldTileType, sprite) {
+function SimpleWorldTileFactory(worldTileType, simpleWorldTile) {
     WorldTileFactory.call(this, worldTileType);
-    this.simpleWorldTile = new SimpleWorldTile(sprite);
+    this.simpleWorldTile = simpleWorldTile;
 }
 
 SimpleWorldTileFactory.prototype = Object.create(WorldTileFactory.prototype);
@@ -100,22 +169,10 @@ SimpleWorldTileFactory.prototype.convertJsonToTile = function(data, pos) {
     return this.simpleWorldTile;
 }
 
-new SimpleWorldTileFactory(
-    worldTileTypeSet.empty,
-    null
-);
-new SimpleWorldTileFactory(
-    worldTileTypeSet.barrier,
-    new Sprite(barrierSpriteSet, 0, 0)
-);
-new SimpleWorldTileFactory(
-    worldTileTypeSet.matterite,
-    new Sprite(resourceSpriteSet, 0, 0)
-);
-new SimpleWorldTileFactory(
-    worldTileTypeSet.energite,
-    new Sprite(resourceSpriteSet, 0, 1)
-);
+new SimpleWorldTileFactory(worldTileTypeSet.empty, emptyWorldTile);
+new SimpleWorldTileFactory(worldTileTypeSet.barrier, barrierWorldTile);
+new SimpleWorldTileFactory(worldTileTypeSet.matterite, matteriteWorldTile);
+new SimpleWorldTileFactory(worldTileTypeSet.energite, energiteWorldTile);
 
 function ComplexWorldTileFactory(worldTileType) {
     WorldTileFactory.call(this, worldTileType);
@@ -131,8 +188,9 @@ function PlayerWorldTileFactory() {
 PlayerWorldTileFactory.prototype = Object.create(ComplexWorldTileFactory.prototype);
 PlayerWorldTileFactory.prototype.constructor = PlayerWorldTileFactory;
 
+// TODO: Provide walkOffset to PlayerWorldTile constructor.
 PlayerWorldTileFactory.prototype.convertJsonToTile = function(data, pos) {
-    return new PlayerWorldTile(pos, data.username);
+    return new PlayerWorldTile(pos, data.username, new Pos(0, 0));
 }
 
 new PlayerWorldTileFactory();
@@ -147,11 +205,13 @@ function TileGrid(outsideTile) {
 }
 
 TileGrid.prototype.convertPosToIndex = function(pos) {
-    if (pos.x < 0 || pos.x >= this.width
-            || pos.y < 0 || pos.y >= this.height) {
+    var tempPosX = pos.x - this.windowOffset.x;
+    var tempPosY = pos.y - this.windowOffset.y;
+    if (tempPosX < 0 || tempPosX >= this.width
+            || tempPosY < 0 || tempPosY >= this.height) {
         return null;
     }
-    return pos.x + pos.y * this.width;
+    return tempPosX + tempPosY * this.width;
 }
 
 TileGrid.prototype.getTile = function(pos) {
@@ -160,6 +220,14 @@ TileGrid.prototype.getTile = function(pos) {
         return this.outsideTile;
     }
     return this.tileList[index];
+}
+
+TileGrid.prototype.setTile = function(pos, tile) {
+    var index = this.convertPosToIndex(pos);
+    if (index === null) {
+        return;
+    }
+    this.tileList[index] = tile;
 }
 
 TileGrid.prototype.setTiles = function(tileList, width, height) {
@@ -175,7 +243,6 @@ TileGrid.prototype.drawLayer = function(pos, layer) {
     var tempPos = new Pos(0, 0);
     while (tempOffset.y < canvasTileHeight) {
         tempPos.set(pos);
-        tempPos.subtract(this.windowOffset);
         tempPos.add(tempOffset);
         var tempTile = this.getTile(tempPos);
         tempPos.set(tempOffset);
@@ -204,6 +271,12 @@ function drawEverything() {
     if (!spritesHaveLoaded) {
         return;
     }
+    if (localPlayerWorldTile === null) {
+        return;
+    }
+    cameraPos.set(localPlayerWorldTile.pos);
+    cameraPos.x -= Math.floor(canvasTileWidth / 2);
+    cameraPos.y -= Math.floor(canvasTileHeight / 2);
     worldTileGrid.draw(cameraPos);
 }
 
@@ -227,6 +300,32 @@ function addGetStateCommand() {
     });
 }
 
+function addWalkCommand(offset) {
+    gameUpdateCommandList.push({
+        commandName: "walk",
+        offset: offset.toJson()
+    });
+}
+
+function repeatWalkCommand(command) {
+    if (localPlayerWorldTile === null) {
+        return;
+    }
+    var tempOffset = createPosFromJson(command.offset);
+    localPlayerWorldTile.walk(tempOffset, false);
+}
+
+function repeatGameUpdateCommands() {
+    var index = 0;
+    while (index < gameUpdateCommandList.length) {
+        var tempCommand = gameUpdateCommandList[index];
+        if (tempCommand.commandName == "walk") {
+            repeatWalkCommand(tempCommand);
+        }
+        index += 1;
+    }
+}
+
 addCommandListener("setWorldTileGrid", function(command) {
     worldTileGrid.windowOffset = createPosFromJson(command.pos);
     tempTileList = [];
@@ -247,6 +346,7 @@ addCommandListener("setWorldTileGrid", function(command) {
         index += 1;
     }
     worldTileGrid.setTiles(tempTileList, command.width, command.height);
+    repeatGameUpdateCommands();
 });
 
 function ClientDelegate() {
@@ -262,7 +362,7 @@ ClientDelegate.prototype.initialize = function() {
 }
 
 ClientDelegate.prototype.setLocalPlayerInfo = function(command) {
-    
+    localPlayerUsername = command.username;
 }
 
 ClientDelegate.prototype.addCommandsBeforeUpdateRequest = function() {
@@ -273,28 +373,56 @@ ClientDelegate.prototype.timerEvent = function() {
     drawEverything();
 }
 
+function startLocalPlayerWalk(offset) {
+    if (localPlayerWorldTile === null) {
+        return;
+    }
+    localPlayerWorldTile.startWalk(offset);
+}
+
+function stopLocalPlayerWalk(offset) {
+    if (localPlayerWorldTile === null) {
+        return;
+    }
+    localPlayerWorldTile.stopWalk(offset);
+}
+
 ClientDelegate.prototype.keyDownEvent = function(keyCode) {
-    if (keyCode == 37) {
-        cameraPos.x -= 1;
+    if (focusedTextInput !== null) {
+        return true;
+    }
+    if (keyCode == 37 || keyCode == 65) {
+        startLocalPlayerWalk(playerWalkOffsetSet[0]);
         return false;
     }
-    if (keyCode == 39) {
-        cameraPos.x += 1;
+    if (keyCode == 39 || keyCode == 68) {
+        startLocalPlayerWalk(playerWalkOffsetSet[1]);
         return false;
     }
-    if (keyCode == 38) {
-        cameraPos.y -= 1;
+    if (keyCode == 38 || keyCode == 87) {
+        startLocalPlayerWalk(playerWalkOffsetSet[2]);
         return false;
     }
-    if (keyCode == 40) {
-        cameraPos.y += 1;
+    if (keyCode == 40 || keyCode == 83) {
+        startLocalPlayerWalk(playerWalkOffsetSet[3]);
         return false;
     }
     return true;
 }
 
 ClientDelegate.prototype.keyUpEvent = function(keyCode) {
-    
+    if (keyCode == 37 || keyCode == 65) {
+        stopLocalPlayerWalk(playerWalkOffsetSet[0]);
+    }
+    if (keyCode == 39 || keyCode == 68) {
+        stopLocalPlayerWalk(playerWalkOffsetSet[1]);
+    }
+    if (keyCode == 38 || keyCode == 87) {
+        stopLocalPlayerWalk(playerWalkOffsetSet[2]);
+    }
+    if (keyCode == 40 || keyCode == 83) {
+        stopLocalPlayerWalk(playerWalkOffsetSet[3]);
+    }
     return true;
 }
 
