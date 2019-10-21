@@ -107,6 +107,7 @@ ComplexWorldTile.prototype.move = function(offset) {
 function PlayerWorldTile(player) {
     ComplexWorldTile.call(this, worldTileTypeSet.player);
     this.player = player;
+    this.walkControllerData = null;
 }
 
 PlayerWorldTile.prototype = Object.create(ComplexWorldTile.prototype);
@@ -115,6 +116,7 @@ PlayerWorldTile.prototype.constructor = PlayerWorldTile;
 PlayerWorldTile.prototype.getClientJson = function() {
     var output = ComplexWorldTile.prototype.getClientJson.call(this);
     output.username = this.player.username;
+    output.walkController = this.walkControllerData;
     return output;
 }
 

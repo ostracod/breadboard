@@ -15,6 +15,7 @@ var playerWalkOffsetSet = [
     new Pos(0, -1),
     new Pos(0, 1)
 ];
+var playerWorldTileList = [];
 
 function Tile() {
     
@@ -86,16 +87,86 @@ ComplexWorldTile.prototype.move = function(offset) {
     return true;
 }
 
-function PlayerWorldTile(pos, username, walkOffset) {
+function convertJsonToWalkController(data) {
+    console.log(data);
+    if (data === null) {
+        return new WalkController(new Pos(0, 0), 0, 0);
+    }
+    return new WalkController(
+        createPosFromJson(data.offset),
+        data.delay,
+        data.repeatDelay
+    );
+}
+
+function WalkController(offset, delay, repeatDelay) {
+    this.offset = offset;
+    this.delay = delay;
+    this.repeatDelay = repeatDelay;
+    this.player = null;
+}
+
+WalkController.prototype.toJson = function() {
+    return {
+        offset: this.offset.toJson(),
+        delay: this.delay,
+        repeatDelay: this.repeatDelay
+    };
+}
+
+WalkController.prototype.walk = function() {
+    if (this.delay > 0) {
+        return;
+    }
+    var tempResult = this.player.move(this.offset);
+    if (this.player === localPlayerWorldTile && tempResult) {
+        addWalkCommand(this.offset);
+    }
+    this.delay = 2;
+}
+
+WalkController.prototype.startWalk = function(offset) {
+    if (this.offset.equals(offset)) {
+        return;
+    }
+    this.offset = offset.copy();
+    this.walk();
+    this.repeatDelay = 10;
+}
+
+WalkController.prototype.stopWalk = function(offset) {
+    if (!this.offset.equals(offset)) {
+        return;
+    }
+    this.offset.x = 0;
+    this.offset.y = 0;
+}
+
+WalkController.prototype.tick = function() {
+    if (this.delay > 0) {
+        this.delay -= 1;
+    }
+    if (this.offset.x != 0 || this.offset.y != 0) {
+        if (this.repeatDelay > 0) {
+            this.repeatDelay -= 1;
+        } else {
+            this.walk();
+        }
+    }
+}
+
+function PlayerWorldTile(pos, username, walkController) {
     ComplexWorldTile.call(this, pos);
     this.username = username;
     if (this.username === localPlayerUsername) {
         if (localPlayerWorldTile !== null) {
-            walkOffset = localPlayerWorldTile.walkOffset;
+            walkController = localPlayerWorldTile.walkController;
         }
         localPlayerWorldTile = this;
     }
-    this.walkOffset = walkOffset;
+    this.walkController = walkController;
+    this.walkController.player = this;
+    playerWorldTileList.push(this);
 }
 
 PlayerWorldTile.prototype = Object.create(ComplexWorldTile.prototype);
@@ -118,34 +189,8 @@ PlayerWorldTile.prototype.draw = function(pos, layer) {
     }
 }
 
-PlayerWorldTile.prototype.walk = function(offset, shouldAddCommand) {
-    if (typeof shouldAddCommand === "undefined") {
-        shouldAddCommand = true;
-    }
-    var tempResult = this.move(offset);
-    if (this === localPlayerWorldTile && shouldAddCommand && tempResult) {
-        addWalkCommand(offset);
-    }
-}
-
-PlayerWorldTile.prototype.startWalk = function(offset) {
-    if (offset.x != 0) {
-        this.walkOffset.x = offset.x;
-    }
-    if (offset.y != 0) {
-        this.walkOffset.y = offset.y;
-    }
-    // TODO: Walk on delay cycle.
-    this.walk(this.walkOffset);
-}
-
-PlayerWorldTile.prototype.stopWalk = function(offset) {
-    if (this.walkOffset.x == offset.x) {
-        this.walkOffset.x = 0;
-    }
-    if (this.walkOffset.y == offset.y) {
-        this.walkOffset.y = 0;
-    }
+PlayerWorldTile.prototype.tick = function() {
+    this.walkController.tick();
 }
 
 // worldTileType is a number.
@@ -188,9 +233,13 @@ function PlayerWorldTileFactory() {
 PlayerWorldTileFactory.prototype = Object.create(ComplexWorldTileFactory.prototype);
 PlayerWorldTileFactory.prototype.constructor = PlayerWorldTileFactory;
 
-// TODO: Provide walkOffset to PlayerWorldTile constructor.
 PlayerWorldTileFactory.prototype.convertJsonToTile = function(data, pos) {
-    return new PlayerWorldTile(pos, data.username, new Pos(0, 0));
+    return new PlayerWorldTile(
+        pos,
+        data.username,
+        convertJsonToWalkController(data.walkController),
+        new WalkController(new Pos(0, 0), 0, 0)
+    );
 }
 
 new PlayerWorldTileFactory();
@@ -294,6 +343,16 @@ function convertJsonToWorldTile(data, pos) {
     return tempFactory.convertJsonToTile(data, pos);
 }
 
+function addSetWalkControllerCommand(offset) {
+    if (localPlayerWorldTile === null) {
+        return;
+    }
+    gameUpdateCommandList.push({
+        commandName: "setWalkController",
+        walkController: localPlayerWorldTile.walkController.toJson()
+    });
+}
+
 function addGetStateCommand() {
     gameUpdateCommandList.push({
         commandName: "getState"
@@ -312,7 +371,7 @@ function repeatWalkCommand(command) {
         return;
     }
     var tempOffset = createPosFromJson(command.offset);
-    localPlayerWorldTile.walk(tempOffset, false);
+    localPlayerWorldTile.move(tempOffset);
 }
 
 function repeatGameUpdateCommands() {
@@ -328,6 +387,7 @@ function repeatGameUpdateCommands() {
 
 addCommandListener("setWorldTileGrid", function(command) {
     worldTileGrid.windowOffset = createPosFromJson(command.pos);
+    playerWorldTileList = [];
     tempTileList = [];
     var tempOffset = new Pos(0, 0);
     var tempPos = new Pos(0, 0);
@@ -366,10 +426,17 @@ ClientDelegate.prototype.setLocalPlayerInfo = function(command) {
 }
 
 ClientDelegate.prototype.addCommandsBeforeUpdateRequest = function() {
+    addSetWalkControllerCommand();
     addGetStateCommand();
 }
 
 ClientDelegate.prototype.timerEvent = function() {
+    var index = 0;
+    while (index < playerWorldTileList.length) {
+        var tempTile = playerWorldTileList[index];
+        tempTile.tick();
+        index += 1;
+    }
     drawEverything();
 }
 
@@ -377,14 +444,14 @@ function startLocalPlayerWalk(offset) {
     if (localPlayerWorldTile === null) {
         return;
     }
-    localPlayerWorldTile.startWalk(offset);
+    localPlayerWorldTile.walkController.startWalk(offset);
 }
 
 function stopLocalPlayerWalk(offset) {
     if (localPlayerWorldTile === null) {
         return;
     }
-    localPlayerWorldTile.stopWalk(offset);
+    localPlayerWorldTile.walkController.stopWalk(offset);
 }
 
 ClientDelegate.prototype.keyDownEvent = function(keyCode) {

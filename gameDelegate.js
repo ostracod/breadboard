@@ -26,6 +26,15 @@ function addSetWorldTileGridCommand(player, commandList) {
 }
 
 gameUtils.addCommandListener(
+    "setWalkController",
+    true,
+    function(command, player, commandList) {
+        var tempTile = world.getPlayerTile(player);
+        tempTile.walkControllerData = command.walkController;
+    }
+);
+
+gameUtils.addCommandListener(
     "getState",
     true,
     function(command, player, commandList) {
