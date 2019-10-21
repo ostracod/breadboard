@@ -78,6 +78,11 @@ World.prototype.getPlayerTile = function(player) {
     return this.playerTileList[index];
 }
 
+World.prototype.tick = function() {
+    // TODO: Put something here.
+    
+}
+
 module.exports = {
     world: world
 };

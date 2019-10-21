@@ -77,6 +77,15 @@ GameDelegate.prototype.persistEvent = function(done) {
     done();
 }
 
+function timerEvent() {
+    if (gameUtils.isPersistingEverything) {
+        return;
+    }
+    world.tick();
+}
+
+setInterval(timerEvent, 40);
+
 module.exports = {
     gameDelegate: gameDelegate
 };

@@ -104,10 +104,37 @@ ComplexWorldTile.prototype.move = function(offset) {
     return true;
 }
 
+function TimeBudget(maximumTime) {
+    this.maximumTime = maximumTime;
+    this.time = this.maximumTime;
+    this.lastTimestamp = Date.now() / 1000;
+}
+
+TimeBudget.prototype.spendTime = function(amount) {
+    
+    // Update the amount of time we can spend.
+    var tempTimestamp = Date.now() / 1000;
+    this.time += tempTimestamp - this.lastTimestamp;
+    if (this.time > this.maximumTime) {
+        this.time = this.maximumTime;
+    }
+    this.lastTimestamp = tempTimestamp;
+    
+    // Determine if we have enough time to spend.
+    if (this.time <= 0) {
+        return false
+    }
+    
+    // Spend the time.
+    this.time -= amount;
+    return true;
+}
+
 function PlayerWorldTile(player) {
     ComplexWorldTile.call(this, worldTileTypeSet.player);
     this.player = player;
     this.walkControllerData = null;
+    this.walkTimeBudget = new TimeBudget(6);
 }
 
 PlayerWorldTile.prototype = Object.create(ComplexWorldTile.prototype);
@@ -133,6 +160,10 @@ PlayerWorldTile.prototype.removeEvent = function() {
 }
 
 PlayerWorldTile.prototype.walk = function(offset) {
+    var tempResult = this.walkTimeBudget.spendTime(0.08);
+    if (!tempResult) {
+        return;
+    }
     this.move(offset);
 }
 
