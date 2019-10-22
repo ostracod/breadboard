@@ -65,7 +65,8 @@ World.prototype.findPlayerTile = function(player) {
     var index = 0;
     while (index < this.playerTileList.length) {
         var tempTile = this.playerTileList[index];
-        if (tempTile.player.username == player.username) {
+        var tempPlayer = tempTile.spirit.player;
+        if (tempPlayer.username == player.username) {
             return index;
         }
         index += 1;

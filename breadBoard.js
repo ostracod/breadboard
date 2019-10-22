@@ -1,15 +1,21 @@
 
 var express = require("express");
 var ostracodMultiplayer = require("ostracod-multiplayer").ostracodMultiplayer;
-var gameDelegate = require("./gameDelegate.js").gameDelegate;
-var worldTileTypeSet = require("./worldTile").worldTileTypeSet;
+var gameDelegate = require("./gameDelegate").gameDelegate;
+var tempResource = require("./spirit");
+var simpleSpiritSerialIntegerSet = tempResource.simpleSpiritSerialIntegerSet;
+var complexSpiritClassIdSet = tempResource.complexSpiritClassIdSet;
 
 console.log("Starting BreadBoard server...");
 
 var router = express.Router();
 
 router.get("/javascript/gameConstants.js", function(req, res, next) {
-    res.send("var worldTileTypeSet = " + JSON.stringify(worldTileTypeSet));
+    var tempLineList = [
+        "var simpleSpiritSerialIntegerSet = " + JSON.stringify(simpleSpiritSerialIntegerSet) + ";",
+        "var complexSpiritClassIdSet = " + JSON.stringify(complexSpiritClassIdSet) + ";"
+    ];
+    res.send(tempLineList.join("\n"));
 });
 
 var tempResult = ostracodMultiplayer.initializeServer(__dirname, gameDelegate, [router]);

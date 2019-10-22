@@ -1,17 +1,14 @@
 
 var Tile = require("./tile").Tile;
+var tempResource = require("./spirit");
+var EmptySpirit = tempResource.EmptySpirit;
+var emptySpirit = tempResource.emptySpirit;
+var barrierSpirit = tempResource.barrierSpirit;
+var matteriteSpirit = tempResource.matteriteSpirit;
+var energiteSpirit = tempResource.energiteSpirit;
 
-var worldTileTypeSet = {
-    empty: 0,
-    barrier: 1,
-    matterite: 2,
-    energite: 3,
-    player: 4
-}
-
-// type is a number.
-function WorldTile(type) {
-    this.type = type;
+function WorldTile(spirit) {
+    Tile.call(this, spirit);
 }
 
 WorldTile.prototype = Object.create(Tile.prototype);
@@ -29,32 +26,24 @@ WorldTile.prototype.moveEvent = function(pos) {
     // Do nothing.
 }
 
-function SimpleWorldTile(type) {
-    WorldTile.call(this, type);
+function SimpleWorldTile(simpleSpirit) {
+    WorldTile.call(this, simpleSpirit);
 }
 
 SimpleWorldTile.prototype = Object.create(WorldTile.prototype);
 SimpleWorldTile.prototype.constructor = SimpleWorldTile;
 
 SimpleWorldTile.prototype.getClientJson = function() {
-    return this.type;
+    return this.spirit.getClientJson();
 }
 
-var barrierWorldTile = new SimpleWorldTile(worldTileTypeSet.barrier);
-var matteriteWorldTile = new SimpleWorldTile(worldTileTypeSet.matterite);
-var energiteWorldTile = new SimpleWorldTile(worldTileTypeSet.energite);
+var emptyWorldTile = new SimpleWorldTile(emptySpirit);
+var barrierWorldTile = new SimpleWorldTile(barrierSpirit);
+var matteriteWorldTile = new SimpleWorldTile(matteriteSpirit);
+var energiteWorldTile = new SimpleWorldTile(energiteSpirit);
 
-function EmptyWorldTile() {
-    SimpleWorldTile.call(this, worldTileTypeSet.empty);
-}
-
-EmptyWorldTile.prototype = Object.create(SimpleWorldTile.prototype);
-EmptyWorldTile.prototype.constructor = EmptyWorldTile;
-
-var emptyWorldTile = new EmptyWorldTile();
-
-function ComplexWorldTile(type) {
-    WorldTile.call(this, type);
+function ComplexWorldTile(spirit) {
+    WorldTile.call(this, spirit);
     this.world = null;
     this.pos = null;
 }
@@ -64,7 +53,7 @@ ComplexWorldTile.prototype.constructor = ComplexWorldTile;
 
 ComplexWorldTile.prototype.getClientJson = function() {
     return {
-        type: this.type
+        spirit: this.spirit.getClientJson()
     };
 }
 
@@ -97,7 +86,7 @@ ComplexWorldTile.prototype.move = function(offset) {
     var tempNextPos = this.pos.copy();
     tempNextPos.add(offset);
     var tempTile = this.world.getTile(tempNextPos);
-    if (!(tempTile instanceof EmptyWorldTile)) {
+    if (!(tempTile.spirit instanceof EmptySpirit)) {
         return false;
     }
     this.world.swapTiles(this.pos, tempNextPos);
@@ -130,9 +119,8 @@ TimeBudget.prototype.spendTime = function(amount) {
     return true;
 }
 
-function PlayerWorldTile(player) {
-    ComplexWorldTile.call(this, worldTileTypeSet.player);
-    this.player = player;
+function PlayerWorldTile(playerSpirit) {
+    ComplexWorldTile.call(this, playerSpirit);
     this.walkControllerData = null;
     this.walkTimeBudget = new TimeBudget(6);
 }
@@ -142,7 +130,6 @@ PlayerWorldTile.prototype.constructor = PlayerWorldTile;
 
 PlayerWorldTile.prototype.getClientJson = function() {
     var output = ComplexWorldTile.prototype.getClientJson.call(this);
-    output.username = this.player.username;
     output.walkController = this.walkControllerData;
     return output;
 }
@@ -155,7 +142,7 @@ PlayerWorldTile.prototype.addEvent = function(world, pos) {
 PlayerWorldTile.prototype.removeEvent = function() {
     var tempWorld = this.world;
     ComplexWorldTile.prototype.removeEvent.call(this);
-    var index = tempWorld.findPlayerTile(this.player);
+    var index = tempWorld.findPlayerTile(this.spirit.player);
     tempWorld.playerTileList.splice(index, 1);
 }
 
@@ -168,13 +155,12 @@ PlayerWorldTile.prototype.walk = function(offset) {
 }
 
 module.exports = {
-    worldTileTypeSet: worldTileTypeSet,
+    PlayerWorldTile: PlayerWorldTile,
+    
     emptyWorldTile: emptyWorldTile,
     barrierWorldTile: barrierWorldTile,
     matteriteWorldTile: matteriteWorldTile,
-    energiteWorldTile: energiteWorldTile,
-    EmptyWorldTile: EmptyWorldTile,
-    PlayerWorldTile: PlayerWorldTile
+    energiteWorldTile: energiteWorldTile
 };
 
 

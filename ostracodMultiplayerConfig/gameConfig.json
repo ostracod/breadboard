@@ -4,6 +4,11 @@
     "scripts": [
         "javascript/gameConstants.js",
         "javascript/sprite.js",
+        "javascript/spirit.js",
+        "javascript/walkController.js",
+        "javascript/tile.js",
+        "javascript/tileFactory.js",
+        "javascript/tileGrid.js",
         "javascript/game.js"
     ],
     "stylesheets": [],

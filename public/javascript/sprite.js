@@ -161,6 +161,8 @@ Sprite.prototype.draw = function(context, pos, scale) {
     this.spriteSet.draw(context, pos, this.spriteOffset, this.paletteIndex, scale);
 }
 
+var loadingSprite = new Sprite(loadingSpriteSet, 0, 0);
+var barrierSprite = new Sprite(barrierSpriteSet, 0, 0);
 var playerSprite = new Sprite(playerSpriteSet, 0, 0);
 
 function initializeSpriteSheet(done) {

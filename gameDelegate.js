@@ -4,9 +4,10 @@ var tempResource = require("./pos");
 var Pos = tempResource.Pos;
 var createPosFromJson = tempResource.createPosFromJson;
 var world = require("./world").world;
-var tempResource = require("./worldTile");
-var EmptyWorldTile = tempResource.EmptyWorldTile;
-var PlayerWorldTile = tempResource.PlayerWorldTile;
+var tempResource = require("./spirit");
+var PlayerSpirit = tempResource.PlayerSpirit;
+var EmptySpirit = tempResource.EmptySpirit;
+var PlayerWorldTile = require("./worldTile").PlayerWorldTile;
 
 function addSetWorldTileGridCommand(player, commandList) {
     var tempWindowSize = 21;
@@ -59,9 +60,15 @@ function GameDelegate() {
 var gameDelegate = new GameDelegate();
 
 GameDelegate.prototype.playerEnterEvent = function(player) {
-    var tempTile = new PlayerWorldTile(player);
+    var tempSpirit = new PlayerSpirit(player);
+    var tempTile = new PlayerWorldTile(tempSpirit);
+    // TODO: Make player tile placement more robust.
     var tempPos = new Pos(3, 3);
-    while (!(world.getTile(tempPos) instanceof EmptyWorldTile)) {
+    while (true) {
+        var tempOldTile = world.getTile(tempPos);
+        if (tempOldTile.spirit instanceof EmptySpirit) {
+            break;
+        }
         tempPos.x += 1;
     }
     tempTile.addToWorld(world, tempPos);
