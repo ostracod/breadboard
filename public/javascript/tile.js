@@ -31,6 +31,10 @@ WorldTile.prototype.draw = function(pos, layer) {
     }
 }
 
+WorldTile.prototype.canBeMined = function() {
+    return this.spirit.canBeMined();
+}
+
 function LoadingWorldTile() {
     WorldTile.call(this, loadingSpirit);
 }

@@ -26,6 +26,10 @@ WorldTile.prototype.moveEvent = function(pos) {
     // Do nothing.
 }
 
+WorldTile.prototype.canBeMined = function() {
+    return this.spirit.canBeMined();
+}
+
 function SimpleWorldTile(simpleSpirit) {
     WorldTile.call(this, simpleSpirit);
 }
@@ -123,6 +127,7 @@ function PlayerWorldTile(playerSpirit) {
     ComplexWorldTile.call(this, playerSpirit);
     this.walkControllerData = null;
     this.walkTimeBudget = new TimeBudget(6);
+    this.mineTimeBudget = new TimeBudget(6);
 }
 
 PlayerWorldTile.prototype = Object.create(ComplexWorldTile.prototype);
@@ -152,6 +157,20 @@ PlayerWorldTile.prototype.walk = function(offset) {
         return;
     }
     this.move(offset);
+}
+
+PlayerWorldTile.prototype.mine = function(pos) {
+    var tempResult = this.mineTimeBudget.spendTime(1.44);
+    if (!tempResult) {
+        return;
+    }
+    var tempTile = this.world.getTile(pos);
+    if (!tempTile.canBeMined()) {
+        return;
+    }
+    this.world.setTile(pos, emptyWorldTile);
+    // TODO: Add item to inventory.
+    
 }
 
 module.exports = {

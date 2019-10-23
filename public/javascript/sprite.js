@@ -150,6 +150,9 @@ var portSpriteSet = new SpriteSet(41, 45, [
 var characterSpriteSet = new SpriteSet(60, 159, [
     new ColorPalette([new Color(0, 0, 255), null])
 ]);
+var crackSpriteSet = new SpriteSet(160, 163, [
+    new ColorPalette([new Color(0, 0, 0), null])
+]);
 
 function Sprite(spriteSet, spriteOffset, paletteIndex) {
     this.spriteSet = spriteSet;

@@ -18,7 +18,7 @@ function World(width, height) {
         barrierWorldTile
     );
     var tempCount = 0;
-    while (tempCount < 300) {
+    while (tempCount < 1000) {
         var tempTile;
         if (Math.random() < 0.5) {
             tempTile = matteriteWorldTile;

@@ -62,14 +62,6 @@ TileGrid.prototype.drawLayer = function(pos, layer) {
     }
 }
 
-TileGrid.prototype.draw = function(pos) {
-    var tempLayer = 0;
-    while (tempLayer < 2) {
-        this.drawLayer(pos, tempLayer);
-        tempLayer += 1;
-    }
-}
-
 worldTileGrid = new TileGrid(loadingWorldTile);
 
 

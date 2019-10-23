@@ -5,12 +5,33 @@ var canvasTileWidth;
 var canvasTileHeight;
 var cameraPos = new Pos(0, 0);
 var localPlayerUsername;
-var playerWalkOffsetSet = [
+var playerActionOffsetSet = [
     new Pos(-1, 0),
     new Pos(1, 0),
     new Pos(0, -1),
     new Pos(0, 1)
 ];
+var isMining = false;
+var minePlayerPos;
+var mineTargetPos;
+var mineDelay;
+
+function drawMineCrack() {
+    if (!isMining) {
+        return;
+    }
+    var tempPos = mineTargetPos.copy();
+    tempPos.subtract(cameraPos);
+    tempPos.scale(spriteSize);
+    var tempIndex = 3 - Math.floor(mineDelay / 9);
+    if (tempIndex < 0) {
+        tempIndex = 0;
+    }
+    if (tempIndex > 3) {
+        tempIndex = 3;
+    }
+    crackSpriteSet.draw(context, tempPos, tempIndex, 0, pixelSize);
+}
 
 function drawEverything() {
     clearCanvas();
@@ -23,7 +44,46 @@ function drawEverything() {
     cameraPos.set(localPlayerWorldTile.pos);
     cameraPos.x -= Math.floor(canvasTileWidth / 2);
     cameraPos.y -= Math.floor(canvasTileHeight / 2);
-    worldTileGrid.draw(cameraPos);
+    worldTileGrid.drawLayer(cameraPos, 0);
+    drawMineCrack();
+    worldTileGrid.drawLayer(cameraPos, 1);
+}
+
+function startMining(offset) {
+    var tempPos = localPlayerWorldTile.pos.copy();
+    tempPos.add(offset);
+    if (isMining && mineTargetPos.equals(tempPos)) {
+        return;
+    }
+    var tempTile = worldTileGrid.getTile(tempPos);
+    if (!tempTile.canBeMined()) {
+        return;
+    }
+    minePlayerPos = localPlayerWorldTile.pos.copy();
+    mineTargetPos = tempPos;
+    mineDelay = 36;
+    isMining = true;
+}
+
+function processMineTick() {
+    if (!isMining) {
+        return;
+    }
+    if (!localPlayerWorldTile.pos.equals(minePlayerPos)) {
+        isMining = false;
+        return;
+    }
+    var tempTile = worldTileGrid.getTile(mineTargetPos);
+    if (!tempTile.canBeMined()) {
+        return;
+    }
+    mineDelay -= 1;
+    if (mineDelay > 0) {
+        return;
+    }
+    worldTileGrid.setTile(mineTargetPos, emptyWorldTile);
+    addMineCommand(mineTargetPos);
+    isMining = false;
 }
 
 function addSetWalkControllerCommand(offset) {
@@ -49,24 +109,25 @@ function addWalkCommand(offset) {
     });
 }
 
-function repeatWalkCommand(command) {
+function addMineCommand(offset) {
+    gameUpdateCommandList.push({
+        commandName: "mine",
+        pos: mineTargetPos.toJson()
+    });
+}
+
+addCommandRepeater("walk", function(command) {
     if (localPlayerWorldTile === null) {
         return;
     }
     var tempOffset = createPosFromJson(command.offset);
     localPlayerWorldTile.move(tempOffset);
-}
+});
 
-function repeatGameUpdateCommands() {
-    var index = 0;
-    while (index < gameUpdateCommandList.length) {
-        var tempCommand = gameUpdateCommandList[index];
-        if (tempCommand.commandName == "walk") {
-            repeatWalkCommand(tempCommand);
-        }
-        index += 1;
-    }
-}
+addCommandRepeater("mine", function(command) {
+    var tempPos = createPosFromJson(command.pos);
+    worldTileGrid.setTile(tempPos, emptyWorldTile);
+});
 
 addCommandListener("setWorldTileGrid", function(command) {
     worldTileGrid.windowOffset = createPosFromJson(command.pos);
@@ -89,7 +150,6 @@ addCommandListener("setWorldTileGrid", function(command) {
         index += 1;
     }
     worldTileGrid.setTiles(tempTileList, command.width, command.height);
-    repeatGameUpdateCommands();
 });
 
 function ClientDelegate() {
@@ -120,20 +180,27 @@ ClientDelegate.prototype.timerEvent = function() {
         tempTile.tick();
         index += 1;
     }
+    processMineTick();
     drawEverything();
 }
 
-function startLocalPlayerWalk(offset) {
+function startLocalPlayerAction(offsetIndex) {
     if (localPlayerWorldTile === null) {
         return;
     }
-    localPlayerWorldTile.walkController.startWalk(offset);
+    var offset = playerActionOffsetSet[offsetIndex];
+    if (shiftKeyIsHeld) {
+        startMining(offset);
+    } else {
+        localPlayerWorldTile.walkController.startWalk(offset);
+    }
 }
 
-function stopLocalPlayerWalk(offset) {
+function stopLocalPlayerAction(offsetIndex) {
     if (localPlayerWorldTile === null) {
         return;
     }
+    var offset = playerActionOffsetSet[offsetIndex];
     localPlayerWorldTile.walkController.stopWalk(offset);
 }
 
@@ -142,19 +209,19 @@ ClientDelegate.prototype.keyDownEvent = function(keyCode) {
         return true;
     }
     if (keyCode == 37 || keyCode == 65) {
-        startLocalPlayerWalk(playerWalkOffsetSet[0]);
+        startLocalPlayerAction(0);
         return false;
     }
     if (keyCode == 39 || keyCode == 68) {
-        startLocalPlayerWalk(playerWalkOffsetSet[1]);
+        startLocalPlayerAction(1);
         return false;
     }
     if (keyCode == 38 || keyCode == 87) {
-        startLocalPlayerWalk(playerWalkOffsetSet[2]);
+        startLocalPlayerAction(2);
         return false;
     }
     if (keyCode == 40 || keyCode == 83) {
-        startLocalPlayerWalk(playerWalkOffsetSet[3]);
+        startLocalPlayerAction(3);
         return false;
     }
     return true;
@@ -162,16 +229,16 @@ ClientDelegate.prototype.keyDownEvent = function(keyCode) {
 
 ClientDelegate.prototype.keyUpEvent = function(keyCode) {
     if (keyCode == 37 || keyCode == 65) {
-        stopLocalPlayerWalk(playerWalkOffsetSet[0]);
+        stopLocalPlayerAction(0);
     }
     if (keyCode == 39 || keyCode == 68) {
-        stopLocalPlayerWalk(playerWalkOffsetSet[1]);
+        stopLocalPlayerAction(1);
     }
     if (keyCode == 38 || keyCode == 87) {
-        stopLocalPlayerWalk(playerWalkOffsetSet[2]);
+        stopLocalPlayerAction(2);
     }
     if (keyCode == 40 || keyCode == 83) {
-        stopLocalPlayerWalk(playerWalkOffsetSet[3]);
+        stopLocalPlayerAction(3);
     }
     return true;
 }

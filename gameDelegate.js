@@ -26,6 +26,8 @@ function addSetWorldTileGridCommand(player, commandList) {
     });
 }
 
+// TODO: Verify value ranges for all command parameters.
+
 gameUtils.addCommandListener(
     "setWalkController",
     true,
@@ -50,6 +52,16 @@ gameUtils.addCommandListener(
         var tempTile = world.getPlayerTile(player);
         var tempOffset = createPosFromJson(command.offset);
         tempTile.walk(tempOffset);
+    }
+);
+
+gameUtils.addCommandListener(
+    "mine",
+    true,
+    function(command, player, commandList) {
+        var tempTile = world.getPlayerTile(player);
+        var tempPos = createPosFromJson(command.pos);
+        tempTile.mine(tempPos);
     }
 );
 

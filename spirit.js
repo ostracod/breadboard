@@ -24,6 +24,10 @@ function Spirit() {
 // Concrete subclasses of Spirit must implement these methods:
 // getClientJson
 
+Spirit.prototype.canBeMined = function() {
+    return false;
+}
+
 function SimpleSpirit() {
     Spirit.call(this);
 }
@@ -70,6 +74,10 @@ function ResourceSpirit() {
 
 ResourceSpirit.prototype = Object.create(SimpleSpirit.prototype);
 ResourceSpirit.prototype.constructor = ResourceSpirit;
+
+ResourceSpirit.prototype.canBeMined = function() {
+    return true;
+}
 
 function MatteriteSpirit() {
     ResourceSpirit.call(this);
