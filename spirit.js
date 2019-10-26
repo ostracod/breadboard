@@ -1,4 +1,6 @@
 
+var Inventory = require("./inventory").Inventory;
+
 var simpleSpiritSerialIntegerSet = {
     empty: 0,
     barrier: 1,
@@ -9,6 +11,8 @@ var simpleSpiritSerialIntegerSet = {
 var complexSpiritClassIdSet = {
     player: 0
 };
+
+var nextComplexSpiritId = 0;
 
 // The idea is that a Spirit is something which may
 // exist as a Tile or Item.
@@ -22,7 +26,7 @@ function Spirit() {
 }
 
 // Concrete subclasses of Spirit must implement these methods:
-// getClientJson
+// getClientJson, hasSameIdentity
 
 Spirit.prototype.canBeMined = function() {
     return false;
@@ -42,14 +46,19 @@ SimpleSpirit.prototype.getClientJson = function() {
     return this.getSerialInteger();
 }
 
+SimpleSpirit.prototype.hasSameIdentity = function(spirit) {
+    if (!(spirit instanceof SimpleSpirit)) {
+        return false;
+    }
+    return (this.getSerialInteger() == spirit.getSerialInteger());
+}
+
 function EmptySpirit() {
     SimpleSpirit.call(this);
 }
 
 EmptySpirit.prototype = Object.create(SimpleSpirit.prototype);
 EmptySpirit.prototype.constructor = EmptySpirit;
-
-var emptySpirit = new EmptySpirit();
 
 EmptySpirit.prototype.getSerialInteger = function() {
     return simpleSpiritSerialIntegerSet.empty;
@@ -61,8 +70,6 @@ function BarrierSpirit() {
 
 BarrierSpirit.prototype = Object.create(SimpleSpirit.prototype);
 BarrierSpirit.prototype.constructor = BarrierSpirit;
-
-var barrierSpirit = new BarrierSpirit();
 
 BarrierSpirit.prototype.getSerialInteger = function() {
     return simpleSpiritSerialIntegerSet.barrier;
@@ -86,8 +93,6 @@ function MatteriteSpirit() {
 MatteriteSpirit.prototype = Object.create(ResourceSpirit.prototype);
 MatteriteSpirit.prototype.constructor = MatteriteSpirit;
 
-var matteriteSpirit = new MatteriteSpirit();
-
 MatteriteSpirit.prototype.getSerialInteger = function() {
     return simpleSpiritSerialIntegerSet.matterite;
 }
@@ -99,15 +104,20 @@ function EnergiteSpirit() {
 EnergiteSpirit.prototype = Object.create(ResourceSpirit.prototype);
 EnergiteSpirit.prototype.constructor = EnergiteSpirit;
 
-var energiteSpirit = new EnergiteSpirit();
-
 EnergiteSpirit.prototype.getSerialInteger = function() {
     return simpleSpiritSerialIntegerSet.energite;
 }
 
+var emptySpirit = new EmptySpirit();
+var barrierSpirit = new BarrierSpirit();
+var matteriteSpirit = new MatteriteSpirit();
+var energiteSpirit = new EnergiteSpirit();
+
 function ComplexSpirit(classId) {
     Spirit.call(this);
     this.classId = classId;
+    this.id = nextComplexSpiritId;
+    nextComplexSpiritId += 1;
 }
 
 ComplexSpirit.prototype = Object.create(Spirit.prototype);
@@ -115,13 +125,22 @@ ComplexSpirit.prototype.constructor = ComplexSpirit;
 
 ComplexSpirit.prototype.getClientJson = function() {
     return {
-        classId: this.classId
+        classId: this.classId,
+        id: this.id
     };
+}
+
+ComplexSpirit.prototype.hasSameIdentity = function(spirit) {
+    if (!(spirit instanceof ComplexSpirit)) {
+        return false;
+    }
+    return (this.id === spirit.id);
 }
 
 function PlayerSpirit(player) {
     ComplexSpirit.call(this, complexSpiritClassIdSet.player);
     this.player = player;
+    this.inventory = new Inventory();
 }
 
 PlayerSpirit.prototype = Object.create(ComplexSpirit.prototype);

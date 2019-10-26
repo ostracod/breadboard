@@ -26,6 +26,13 @@ function addSetWorldTileGridCommand(player, commandList) {
     });
 }
 
+function addUpdateInventoryItemCommand(inventoryItem, commandList) {
+    commandList.push({
+        commandName: "updateInventoryItem",
+        inventoryItem: inventoryItem.getClientJson()
+    });
+}
+
 // TODO: Verify value ranges for all command parameters.
 
 gameUtils.addCommandListener(
@@ -61,7 +68,10 @@ gameUtils.addCommandListener(
     function(command, player, commandList) {
         var tempTile = world.getPlayerTile(player);
         var tempPos = createPosFromJson(command.pos);
-        tempTile.mine(tempPos);
+        var tempItem = tempTile.mine(tempPos);
+        if (tempItem !== null) {
+            addUpdateInventoryItemCommand(tempItem, commandList);
+        }
     }
 );
 

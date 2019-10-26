@@ -16,12 +16,9 @@ function PlayerWorldTileFactory() {
 PlayerWorldTileFactory.prototype = Object.create(ComplexWorldTileFactory.prototype);
 PlayerWorldTileFactory.prototype.constructor = PlayerWorldTileFactory;
 
-PlayerWorldTileFactory.prototype.convertJsonToTile = function(data, pos) {
-    return new PlayerWorldTile(
-        new PlayerSpirit(data.spirit.username),
-        pos,
-        convertJsonToWalkController(data.walkController)
-    );
+PlayerWorldTileFactory.prototype.convertJsonToTile = function(data, spirit, pos) {
+    var tempController = convertJsonToWalkController(data.walkController);
+    return new PlayerWorldTile(spirit, pos, tempController);
 }
 
 new PlayerWorldTileFactory();
@@ -31,7 +28,8 @@ function convertJsonToWorldTile(data, pos) {
         return simpleWorldTileMap[data];
     } else {
         var tempFactory = complexWorldTileFactoryMap[data.spirit.classId];
-        return tempFactory.convertJsonToTile(data, pos);
+        var tempSpirit = convertJsonToSpirit(data.spirit);
+        return tempFactory.convertJsonToTile(data, tempSpirit, pos);
     }
 }
 

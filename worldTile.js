@@ -162,15 +162,14 @@ PlayerWorldTile.prototype.walk = function(offset) {
 PlayerWorldTile.prototype.mine = function(pos) {
     var tempResult = this.mineTimeBudget.spendTime(1.44);
     if (!tempResult) {
-        return;
+        return null;
     }
     var tempTile = this.world.getTile(pos);
     if (!tempTile.canBeMined()) {
-        return;
+        return null;
     }
     this.world.setTile(pos, emptyWorldTile);
-    // TODO: Add item to inventory.
-    
+    return this.spirit.inventory.addItemBySpirit(tempTile.spirit);
 }
 
 module.exports = {

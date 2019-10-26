@@ -1,14 +1,24 @@
 {
-    "pageModules": [],
+    "pageModules": [
+        {
+            "name": "playerInventory",
+            "buttonLabel": "Inventory",
+            "title": "Player Inventory",
+            "viewFile": "playerInventoryModule.html",
+            "shouldShowOnLoad": true
+        }
+    ],
     "instructionsViewFile": "instructions.html",
     "scripts": [
         "javascript/gameConstants.js",
         "javascript/sprite.js",
         "javascript/spirit.js",
+        "javascript/spiritFactory.js",
         "javascript/walkController.js",
         "javascript/tile.js",
         "javascript/tileFactory.js",
         "javascript/tileGrid.js",
+        "javascript/inventory.js",
         "javascript/game.js"
     ],
     "stylesheets": [],

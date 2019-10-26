@@ -152,6 +152,12 @@ addCommandListener("setWorldTileGrid", function(command) {
     worldTileGrid.setTiles(tempTileList, command.width, command.height);
 });
 
+addCommandListener("updateInventoryItem", function(command) {
+    var tempItemData = command.inventoryItem;
+    var tempSpirit = convertJsonToSpirit(tempItemData.spirit);
+    localPlayerInventory.updateItemBySpirit(tempSpirit, tempItemData.count);
+});
+
 function ClientDelegate() {
     
 }
@@ -162,6 +168,8 @@ ClientDelegate.prototype.initialize = function() {
     canvasTileWidth = Math.floor(canvasWidth / spritePixelSize);
     canvasTileHeight = Math.floor(canvasHeight / spritePixelSize);
     initializeSpriteSheet(function() {});
+    // TODO: Add command to load entire inventory state.
+    
 }
 
 ClientDelegate.prototype.setLocalPlayerInfo = function(command) {
