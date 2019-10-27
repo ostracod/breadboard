@@ -86,6 +86,12 @@ function processMineTick() {
     isMining = false;
 }
 
+function addGetInventoryCommand() {
+    gameUpdateCommandList.push({
+        commandName: "getInventory"
+    });
+}
+
 function addSetWalkControllerCommand(offset) {
     if (localPlayerWorldTile === null) {
         return;
@@ -168,8 +174,7 @@ ClientDelegate.prototype.initialize = function() {
     canvasTileWidth = Math.floor(canvasWidth / spritePixelSize);
     canvasTileHeight = Math.floor(canvasHeight / spritePixelSize);
     initializeSpriteSheet(function() {});
-    // TODO: Add command to load entire inventory state.
-    
+    addGetInventoryCommand();
 }
 
 ClientDelegate.prototype.setLocalPlayerInfo = function(command) {

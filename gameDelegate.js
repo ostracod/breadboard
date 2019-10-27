@@ -36,6 +36,21 @@ function addUpdateInventoryItemCommand(inventoryItem, commandList) {
 // TODO: Verify value ranges for all command parameters.
 
 gameUtils.addCommandListener(
+    "getInventory",
+    true,
+    function(command, player, commandList) {
+        var tempSpirit = world.getPlayerSpirit(player);
+        var tempInventory = tempSpirit.inventory;
+        var index = 0;
+        while (index < tempInventory.items.length) {
+            var tempItem = tempInventory.items[index];
+            addUpdateInventoryItemCommand(tempItem, commandList);
+            index += 1;
+        }
+    }
+);
+
+gameUtils.addCommandListener(
     "setWalkController",
     true,
     function(command, player, commandList) {

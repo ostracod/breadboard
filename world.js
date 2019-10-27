@@ -79,6 +79,11 @@ World.prototype.getPlayerTile = function(player) {
     return this.playerTileList[index];
 }
 
+World.prototype.getPlayerSpirit = function(player) {
+    var tempTile = this.getPlayerTile(player);
+    return tempTile.spirit;
+}
+
 World.prototype.tick = function() {
     // TODO: Put something here.
     
