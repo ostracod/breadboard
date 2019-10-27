@@ -15,6 +15,8 @@ var isMining = false;
 var minePlayerPos;
 var mineTargetPos;
 var mineDelay;
+var worldActionNameSet = ["mine", "place", "inspect", "attack"];
+var selectedWorldAction = worldActionNameSet[0];
 
 function drawMineCrack() {
     if (!isMining) {
@@ -84,6 +86,32 @@ function processMineTick() {
     worldTileGrid.setTile(mineTargetPos, emptyWorldTile);
     addMineCommand(mineTargetPos);
     isMining = false;
+}
+
+function selectWorldAction(name) {
+    if (selectedWorldAction == name) {
+        return;
+    }
+    var tempTag = document.getElementById(name + "WorldAction");
+    tempTag.checked = true;
+    selectedWorldAction = name;
+}
+
+function selectWorldActionByIndex(index) {
+    var tempName = worldActionNameSet[index];
+    selectWorldAction(tempName);
+}
+
+function setUpWorldActionTags(name) {
+    var tempTag = document.getElementById(name + "WorldActionContainer")
+    tempTag.style.cursor = "pointer";
+    tempTag.onclick = function() {
+        selectWorldAction(name);
+    }
+    var tempTag = document.getElementById(name + "WorldAction");
+    tempTag.onchange = function() {
+        selectWorldAction(name);
+    }
 }
 
 function addGetInventoryCommand() {
@@ -175,6 +203,14 @@ ClientDelegate.prototype.initialize = function() {
     canvasTileHeight = Math.floor(canvasHeight / spritePixelSize);
     initializeSpriteSheet(function() {});
     addGetInventoryCommand();
+    var index = 0;
+    while (index < worldActionNameSet.length) {
+        var tempName = worldActionNameSet[index];
+        setUpWorldActionTags(tempName);
+        index += 1;
+    }
+    var tempTag = document.getElementById("playerInventoryItems");
+    localPlayerInventory = new Inventory(tempTag);
 }
 
 ClientDelegate.prototype.setLocalPlayerInfo = function(command) {
@@ -236,6 +272,24 @@ ClientDelegate.prototype.keyDownEvent = function(keyCode) {
     if (keyCode == 40 || keyCode == 83) {
         startLocalPlayerAction(3);
         return false;
+    }
+    if (keyCode == 49) {
+        selectWorldActionByIndex(0);
+    }
+    if (keyCode == 50) {
+        selectWorldActionByIndex(1);
+    }
+    if (keyCode == 51) {
+        selectWorldActionByIndex(2);
+    }
+    if (keyCode == 52) {
+        selectWorldActionByIndex(3);
+    }
+    if (keyCode == 82) {
+        localPlayerInventory.selectPreviousItem();
+    }
+    if (keyCode == 70) {
+        localPlayerInventory.selectNextItem();
     }
     return true;
 }

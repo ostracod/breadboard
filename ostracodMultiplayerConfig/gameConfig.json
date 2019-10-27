@@ -1,6 +1,13 @@
 {
     "pageModules": [
         {
+            "name": "worldActions",
+            "buttonLabel": "Actions",
+            "title": "World Actions",
+            "viewFile": "worldActionsModule.html",
+            "shouldShowOnLoad": true
+        },
+        {
             "name": "playerInventory",
             "buttonLabel": "Inventory",
             "title": "Player Inventory",
@@ -21,7 +28,7 @@
         "javascript/inventory.js",
         "javascript/game.js"
     ],
-    "stylesheets": [],
+    "stylesheets": ["stylesheets/game.css"],
     "canvasWidth": 1122,
     "canvasHeight": 1122,
     "canvasBackgroundColor": "#FFFFFF",
