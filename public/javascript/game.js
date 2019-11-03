@@ -84,8 +84,29 @@ function processMineTick() {
         return;
     }
     worldTileGrid.setTile(mineTargetPos, emptyWorldTile);
+    localPlayerInventory.incrementItemCountBySpirit(tempTile.spirit);
     addMineCommand(mineTargetPos);
     isMining = false;
+}
+
+function placeWorldTile(offset) {
+    var tempPos = localPlayerWorldTile.pos.copy();
+    tempPos.add(offset);
+    var tempTile = worldTileGrid.getTile(tempPos);
+    if (!(tempTile.spirit instanceof EmptySpirit)) {
+        return
+    }
+    var tempItem = localPlayerInventory.selectedItem;
+    if (tempItem === null) {
+        return;
+    }
+    if (tempItem.count < 1) {
+        return;
+    }
+    tempItem.setCount(tempItem.count - 1);
+    var tempTile = getWorldTileWithSpirit(tempItem.spirit);
+    worldTileGrid.setTile(tempPos, tempTile);
+    addPlaceWorldTileCommand(tempPos, tempItem.spirit);
 }
 
 function selectWorldAction(name) {
@@ -143,10 +164,18 @@ function addWalkCommand(offset) {
     });
 }
 
-function addMineCommand(offset) {
+function addMineCommand(pos) {
     gameUpdateCommandList.push({
         commandName: "mine",
-        pos: mineTargetPos.toJson()
+        pos: pos.toJson()
+    });
+}
+
+function addPlaceWorldTileCommand(pos, spirit) {
+    gameUpdateCommandList.push({
+        commandName: "placeWorldTile",
+        pos: pos.toJson(),
+        spirit: spirit.getClientJson()
     });
 }
 
@@ -161,6 +190,13 @@ addCommandRepeater("walk", function(command) {
 addCommandRepeater("mine", function(command) {
     var tempPos = createPosFromJson(command.pos);
     worldTileGrid.setTile(tempPos, emptyWorldTile);
+});
+
+addCommandRepeater("placeWorldTile", function(command) {
+    var tempPos = createPosFromJson(command.pos);
+    var tempSpirit = convertJsonToSpirit(command.spirit);
+    var tempTile = getWorldTileWithSpirit(tempSpirit);
+    worldTileGrid.setTile(tempPos, tempTile);
 });
 
 addCommandListener("setWorldTileGrid", function(command) {
@@ -189,7 +225,7 @@ addCommandListener("setWorldTileGrid", function(command) {
 addCommandListener("updateInventoryItem", function(command) {
     var tempItemData = command.inventoryItem;
     var tempSpirit = convertJsonToSpirit(tempItemData.spirit);
-    localPlayerInventory.updateItemBySpirit(tempSpirit, tempItemData.count);
+    localPlayerInventory.setItemCountBySpirit(tempSpirit, tempItemData.count);
 });
 
 function ClientDelegate() {
@@ -239,7 +275,11 @@ function startLocalPlayerAction(offsetIndex) {
     }
     var offset = playerActionOffsetSet[offsetIndex];
     if (shiftKeyIsHeld) {
-        startMining(offset);
+        if (selectedWorldAction == "mine") {
+            startMining(offset);
+        } else if (selectedWorldAction == "place") {
+            placeWorldTile(offset);
+        }
     } else {
         localPlayerWorldTile.walkController.startWalk(offset);
     }

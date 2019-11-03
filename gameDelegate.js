@@ -4,6 +4,7 @@ var tempResource = require("./pos");
 var Pos = tempResource.Pos;
 var createPosFromJson = tempResource.createPosFromJson;
 var world = require("./world").world;
+var convertJsonToSpiritReference = require("./spiritReference").convertJsonToSpiritReference;
 var tempResource = require("./spirit");
 var PlayerSpirit = tempResource.PlayerSpirit;
 var EmptySpirit = tempResource.EmptySpirit;
@@ -84,6 +85,20 @@ gameUtils.addCommandListener(
         var tempTile = world.getPlayerTile(player);
         var tempPos = createPosFromJson(command.pos);
         var tempItem = tempTile.mine(tempPos);
+        if (tempItem !== null) {
+            addUpdateInventoryItemCommand(tempItem, commandList);
+        }
+    }
+);
+
+gameUtils.addCommandListener(
+    "placeWorldTile",
+    true,
+    function(command, player, commandList) {
+        var tempTile = world.getPlayerTile(player);
+        var tempPos = createPosFromJson(command.pos);
+        var tempReference = convertJsonToSpiritReference(command.spirit);
+        var tempItem = tempTile.placeWorldTile(tempPos, tempReference);
         if (tempItem !== null) {
             addUpdateInventoryItemCommand(tempItem, commandList);
         }

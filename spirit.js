@@ -1,4 +1,7 @@
 
+var tempResource = require("./spiritReference");
+var SimpleSpiritReference = tempResource.SimpleSpiritReference;
+var ComplexSpiritReference = tempResource.ComplexSpiritReference;
 var Inventory = require("./inventory").Inventory;
 
 var simpleSpiritSerialIntegerSet = {
@@ -26,7 +29,11 @@ function Spirit() {
 }
 
 // Concrete subclasses of Spirit must implement these methods:
-// getClientJson, hasSameIdentity
+// getClientJson, getReference
+
+Spirit.prototype.hasSameIdentity = function(spirit) {
+    return this.getReference().equals(spirit.getReference());
+}
 
 Spirit.prototype.canBeMined = function() {
     return false;
@@ -34,6 +41,7 @@ Spirit.prototype.canBeMined = function() {
 
 function SimpleSpirit() {
     Spirit.call(this);
+    this.reference = new SimpleSpiritReference(this.getSerialInteger());
 }
 
 SimpleSpirit.prototype = Object.create(Spirit.prototype);
@@ -46,11 +54,8 @@ SimpleSpirit.prototype.getClientJson = function() {
     return this.getSerialInteger();
 }
 
-SimpleSpirit.prototype.hasSameIdentity = function(spirit) {
-    if (!(spirit instanceof SimpleSpirit)) {
-        return false;
-    }
-    return (this.getSerialInteger() == spirit.getSerialInteger());
+SimpleSpirit.prototype.getReference = function() {
+    return this.reference;
 }
 
 function EmptySpirit() {
@@ -118,6 +123,7 @@ function ComplexSpirit(classId) {
     this.classId = classId;
     this.id = nextComplexSpiritId;
     nextComplexSpiritId += 1;
+    this.reference = new ComplexSpiritReference(this.id);
 }
 
 ComplexSpirit.prototype = Object.create(Spirit.prototype);
@@ -130,11 +136,8 @@ ComplexSpirit.prototype.getClientJson = function() {
     };
 }
 
-ComplexSpirit.prototype.hasSameIdentity = function(spirit) {
-    if (!(spirit instanceof ComplexSpirit)) {
-        return false;
-    }
-    return (this.id === spirit.id);
+ComplexSpirit.prototype.getReference = function() {
+    return this.reference;
 }
 
 function PlayerSpirit(player) {
@@ -156,6 +159,8 @@ module.exports = {
     simpleSpiritSerialIntegerSet: simpleSpiritSerialIntegerSet,
     complexSpiritClassIdSet: complexSpiritClassIdSet,
     
+    SimpleSpirit: SimpleSpirit,
+    ComplexSpirit: ComplexSpirit,
     EmptySpirit: EmptySpirit,
     BarrierSpirit: BarrierSpirit,
     MatteriteSpirit: MatteriteSpirit,

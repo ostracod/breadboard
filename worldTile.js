@@ -7,6 +7,9 @@ var barrierSpirit = tempResource.barrierSpirit;
 var matteriteSpirit = tempResource.matteriteSpirit;
 var energiteSpirit = tempResource.energiteSpirit;
 
+// Map from spirit serial integer to WorldTile.
+var simpleWorldTileMap = {};
+
 function WorldTile(spirit) {
     Tile.call(this, spirit);
 }
@@ -32,6 +35,8 @@ WorldTile.prototype.canBeMined = function() {
 
 function SimpleWorldTile(simpleSpirit) {
     WorldTile.call(this, simpleSpirit);
+    var tempSerialInteger = this.spirit.getSerialInteger();
+    simpleWorldTileMap[tempSerialInteger] = this;
 }
 
 SimpleWorldTile.prototype = Object.create(WorldTile.prototype);
@@ -169,7 +174,25 @@ PlayerWorldTile.prototype.mine = function(pos) {
         return null;
     }
     this.world.setTile(pos, emptyWorldTile);
-    return this.spirit.inventory.addItemBySpirit(tempTile.spirit);
+    return this.spirit.inventory.incrementItemCountBySpirit(tempTile.spirit);
+}
+
+PlayerWorldTile.prototype.placeWorldTile = function(pos, spiritReference) {
+    var tempTile = this.world.getTile(pos);
+    if (!(tempTile.spirit instanceof EmptySpirit)) {
+        return null;
+    }
+    var tempItem = this.spirit.inventory.getItemBySpiritReference(spiritReference);
+    if (tempItem === null) {
+        return null;
+    }
+    if (tempItem.count < 1) {
+        return null;
+    }
+    tempItem.setCount(tempItem.count - 1);
+    var tempTile = getWorldTileWithSpirit(tempItem.spirit);
+    this.world.setTile(pos, tempTile);
+    return tempItem;
 }
 
 module.exports = {
@@ -178,7 +201,11 @@ module.exports = {
     emptyWorldTile: emptyWorldTile,
     barrierWorldTile: barrierWorldTile,
     matteriteWorldTile: matteriteWorldTile,
-    energiteWorldTile: energiteWorldTile
+    energiteWorldTile: energiteWorldTile,
+    
+    simpleWorldTileMap: simpleWorldTileMap
 };
+
+var getWorldTileWithSpirit = require("./worldTileFactory").getWorldTileWithSpirit;
 
 

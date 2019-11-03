@@ -48,6 +48,10 @@ InventoryItem.prototype.updateTag = function() {
     this.countTag.innerHTML = "(x" + this.count + ")";
 }
 
+InventoryItem.prototype.removeTag = function() {
+    this.tag.parentNode.removeChild(this.tag);
+}
+
 InventoryItem.prototype.unselect = function() {
     this.tag.style.border = "2px #FFFFFF solid";
     this.inventory.selectedItem = null;
@@ -61,6 +65,17 @@ InventoryItem.prototype.select = function() {
     // TODO: Scroll inventory container to display item tag.
     
     this.inventory.selectedItem = this;
+}
+
+InventoryItem.prototype.setCount = function(count) {
+    this.count = count;
+    if (this.count > 0) {
+        this.updateTag();
+    } else {
+        this.unselect();
+        this.removeTag();
+        this.inventory.removeItem(this);
+    }
 }
 
 function Inventory(tag) {
@@ -94,14 +109,33 @@ Inventory.prototype.getItemBySpirit = function(spirit) {
     }
 }
 
-Inventory.prototype.updateItemBySpirit = function(spirit, count) {
+Inventory.prototype.incrementItemCountBySpirit = function(spirit) {
     var tempItem = this.getItemBySpirit(spirit);
     if (tempItem === null) {
-        var tempItem = new InventoryItem(this, spirit, count);
+        tempItem = new InventoryItem(this, spirit, 1);
         this.items.push(tempItem);
     } else {
-        tempItem.count = count;
-        tempItem.updateTag();
+        tempItem.setCount(tempItem.count + 1);
+    }
+}
+
+Inventory.prototype.setItemCountBySpirit = function(spirit, count) {
+    var tempItem = this.getItemBySpirit(spirit);
+    if (tempItem === null) {
+        if (count > 0) {
+            var tempItem = new InventoryItem(this, spirit, count);
+            this.items.push(tempItem);
+        }
+    } else {
+        tempItem.setCount(count);
+    }
+}
+
+Inventory.prototype.removeItem = function(item) {
+    var index = this.findItem(item);
+    this.items.splice(index, 1);
+    if (this.items.length > 0) {
+        this.items[0].select();
     }
 }
 

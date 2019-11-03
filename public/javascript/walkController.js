@@ -1,7 +1,11 @@
 
+function createDefaultWalkController() {
+    return new WalkController(new Pos(0, 0), 0, 0);
+}
+
 function convertJsonToWalkController(data) {
     if (data === null) {
-        return new WalkController(new Pos(0, 0), 0, 0);
+        return createDefaultWalkController();
     }
     return new WalkController(
         createPosFromJson(data.offset),

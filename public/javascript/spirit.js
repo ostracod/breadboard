@@ -7,7 +7,7 @@ function Spirit() {
 }
 
 // Concrete subclasses of Spirit must implement these methods:
-// getSprite, getDisplayName, hasSameIdentity
+// getClientJson, getSprite, getDisplayName, hasSameIdentity
 
 Spirit.prototype.canBeMined = function() {
     return false;
@@ -22,8 +22,20 @@ LoadingSpirit.prototype.constructor = LoadingSpirit;
 
 var loadingSpirit = new LoadingSpirit();
 
+LoadingSpirit.prototype.getClientJson = function() {
+    return null;
+}
+
 LoadingSpirit.prototype.getSprite = function() {
     return loadingSprite;
+}
+
+LoadingSpirit.prototype.getDisplayName = function() {
+    return "Loading";
+}
+
+LoadingSpirit.prototype.hasSameIdentity = function(spirit) {
+    return (spirit instanceof LoadingSpirit);
 }
 
 function SimpleSpirit() {
@@ -36,6 +48,10 @@ SimpleSpirit.prototype.constructor = SimpleSpirit;
 
 // Concrete subclasses of SimpleSpirit must implement these methods:
 // getSerialInteger
+
+SimpleSpirit.prototype.getClientJson = function() {
+    return this.getSerialInteger();
+}
 
 SimpleSpirit.prototype.hasSameIdentity = function(spirit) {
     if (!(spirit instanceof SimpleSpirit)) {
@@ -133,13 +149,21 @@ var barrierSpirit = new BarrierSpirit();
 var matteriteSpirit = new MatteriteSpirit();
 var energiteSpirit = new EnergiteSpirit();
 
-function ComplexSpirit(id) {
+function ComplexSpirit(classId, id) {
     Spirit.call(this);
+    this.classId = classId;
     this.id = id;
 }
 
 ComplexSpirit.prototype = Object.create(Spirit.prototype);
 ComplexSpirit.prototype.constructor = ComplexSpirit;
+
+ComplexSpirit.prototype.getClientJson = function() {
+    return {
+        classId: this.classId,
+        id: this.id
+    };
+}
 
 ComplexSpirit.prototype.hasSameIdentity = function(spirit) {
     if (!(spirit instanceof ComplexSpirit)) {
@@ -149,12 +173,18 @@ ComplexSpirit.prototype.hasSameIdentity = function(spirit) {
 }
 
 function PlayerSpirit(id, username) {
-    ComplexSpirit.call(this, id);
+    ComplexSpirit.call(this, complexSpiritClassIdSet.player, id);
     this.username = username;
 }
 
 PlayerSpirit.prototype = Object.create(ComplexSpirit.prototype);
 PlayerSpirit.prototype.constructor = PlayerSpirit;
+
+PlayerSpirit.prototype.getClientJson = function() {
+    var output = ComplexSpirit.prototype.getClientJson.call(this);
+    output.username = this.player.username;
+    return output;
+}
 
 PlayerSpirit.prototype.getSprite = function() {
     return playerSprite;
