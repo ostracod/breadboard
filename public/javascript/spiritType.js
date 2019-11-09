@@ -8,6 +8,10 @@ function SpiritType() {
     
 }
 
+SpiritType.prototype.craft = function() {
+    return null;
+}
+
 // Concrete subclasses of SpiritType must implement these methods:
 // convertJsonToSpirit
 
@@ -21,6 +25,10 @@ SimpleSpiritType.prototype = Object.create(SpiritType.prototype);
 SimpleSpiritType.prototype.constructor = SimpleSpiritType;
 
 SimpleSpiritType.prototype.convertJsonToSpirit = function(data) {
+    return this.spirit;
+}
+
+SimpleSpiritType.prototype.craft = function() {
     return this.spirit;
 }
 

@@ -1,59 +1,19 @@
 
-var inventoryPixelSize = 4;
 var localPlayerInventory;
 
 function InventoryItem(inventory, spirit, count) {
-    var self = this;
-    self.inventory = inventory;
-    self.spirit = spirit;
-    self.count = count;
-    self.tag = document.createElement("div");
-    self.tag.style.padding = "3px";
-    self.tag.style.border = "2px #FFFFFF solid";
-    self.tag.style.cursor = "pointer";
-    self.tag.onclick = function() {
-        self.select();
+    this.inventory = inventory;
+    this.spirit = spirit;
+    this.count = count;
+    this.row = new InventoryOptionRow(this);
+    
+    if (this.inventory.selectedItem === null) {
+        this.select();
     }
-    
-    var tempCanvas = document.createElement("canvas");
-    var tempSize = spriteSize * inventoryPixelSize;
-    tempCanvas.width = tempSize;
-    tempCanvas.height = tempSize;
-    tempCanvas.style.width = tempSize / 2;
-    tempCanvas.style.height = tempSize / 2;
-    tempCanvas.style.marginRight = "8px";
-    self.tag.appendChild(tempCanvas);
-    var tempContext = tempCanvas.getContext("2d");
-    var tempSprite = self.spirit.getSprite();
-    tempSprite.draw(tempContext, new Pos(0, 0), inventoryPixelSize);
-    
-    var tempTag = document.createElement("strong");
-    tempTag.innerHTML = self.spirit.getDisplayName();
-    tempTag.style.marginRight = "5px";
-    tempTag.style.verticalAlign = "4px";
-    self.tag.appendChild(tempTag);
-    
-    self.countTag = document.createElement("span");
-    self.countTag.style.verticalAlign = "4px";
-    self.tag.appendChild(self.countTag);
-    
-    self.inventory.tag.appendChild(self.tag);
-    self.updateTag();
-    if (self.inventory.selectedItem === null) {
-        self.select();
-    }
-}
-
-InventoryItem.prototype.updateTag = function() {
-    this.countTag.innerHTML = "(x" + this.count + ")";
-}
-
-InventoryItem.prototype.removeTag = function() {
-    this.tag.parentNode.removeChild(this.tag);
 }
 
 InventoryItem.prototype.unselect = function() {
-    this.tag.style.border = "2px #FFFFFF solid";
+    this.row.unselect();
     this.inventory.selectedItem = null;
 }
 
@@ -61,19 +21,17 @@ InventoryItem.prototype.select = function() {
     if (this.inventory.selectedItem !== null) {
         this.inventory.selectedItem.unselect();
     }
-    this.tag.style.border = "2px #000000 solid";
-    // TODO: Scroll inventory container to display item tag.
-    
+    this.row.select();
     this.inventory.selectedItem = this;
 }
 
 InventoryItem.prototype.setCount = function(count) {
     this.count = count;
     if (this.count > 0) {
-        this.updateTag();
+        this.row.draw();
     } else {
         this.unselect();
-        this.removeTag();
+        this.row.remove();
         this.inventory.removeItem(this);
     }
 }

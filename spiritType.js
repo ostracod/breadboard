@@ -10,8 +10,12 @@ function SpiritType() {
     
 }
 
+SpiritType.prototype.craft = function() {
+    return null;
+}
+
 // Concrete subclasses of SpiritType must implement these methods:
-// getClientJson, craft
+// getClientJson
 
 function SimpleSpiritType(spirit) {
     SpiritType.call(this);

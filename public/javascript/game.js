@@ -237,7 +237,9 @@ clientDelegate = new ClientDelegate();
 ClientDelegate.prototype.initialize = function() {
     canvasTileWidth = Math.floor(canvasWidth / spritePixelSize);
     canvasTileHeight = Math.floor(canvasHeight / spritePixelSize);
-    initializeSpriteSheet(function() {});
+    initializeSpriteSheet(function() {
+        drawAllRecipes();
+    });
     addGetInventoryCommand();
     var index = 0;
     while (index < worldActionNameSet.length) {
