@@ -13,7 +13,7 @@ function SpiritType() {
 
 function SimpleSpiritType(spirit) {
     SpiritType.call(this);
-    this.spirit = this;
+    this.spirit = spirit;
     simpleSpiritTypeMap[this.spirit.getSerialInteger()] = this;
 }
 
@@ -49,11 +49,20 @@ function convertJsonToSpirit(data) {
     var tempType;
     if (typeof data === "number") {
         tempType = simpleSpiritTypeMap[data];
-        return simpleSpiritMap[data];
     } else {
         tempType = complexSpiritTypeMap[data.classId];
     }
     return tempType.convertJsonToSpirit(data);
+}
+
+function convertJsonToSpiritType(data) {
+    if (data.type == "simple") {
+        return simpleSpiritTypeMap[data.serialInteger];
+    }
+    if (data.type == "complex") {
+        return complexSpiritTypeMap[data.classId];
+    }
+    return null;
 }
 
 

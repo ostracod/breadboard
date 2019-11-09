@@ -96,28 +96,37 @@ SpriteSet.prototype.draw = function(context, pos, spriteOffset, paletteIndex, sc
     );
 }
 
-var tempColorList = [
-    new Color(96, 96, 96),
-    new Color(192, 192, 192),
-    new Color(128, 32, 32),
-    new Color(224, 32, 32),
-    new Color(128, 80, 32),
-    new Color(224, 128, 32),
-    new Color(128, 128, 32),
-    new Color(224, 224, 32),
-    new Color(32, 128, 32),
-    new Color(32, 224, 32),
-    new Color(32, 128, 160),
-    new Color(32, 224, 255),
-    new Color(64, 64, 160),
-    new Color(128, 128, 255),
-    new Color(128, 32, 160),
-    new Color(224, 32, 255)
+function NamedColor(r, g, b, name) {
+    Color.call(this, r, g, b);
+    this.name = name;
+}
+
+NamedColor.prototype = Object.create(Color.prototype);
+NamedColor.prototype.constructor = NamedColor;
+
+var spiritColorSet = [
+    new NamedColor(96, 96, 96, "Gray"),
+    new NamedColor(192, 192, 192, "White"),
+    new NamedColor(128, 32, 32, "Dark Red"),
+    new NamedColor(224, 32, 32, "Red"),
+    new NamedColor(128, 80, 32, "Dark Orange"),
+    new NamedColor(224, 128, 32, "Orange"),
+    new NamedColor(128, 128, 32, "Dark Yellow"),
+    new NamedColor(224, 224, 32, "Yellow"),
+    new NamedColor(32, 128, 32, "Dark Green"),
+    new NamedColor(32, 224, 32, "Green"),
+    new NamedColor(32, 128, 160, "Dark Cyan"),
+    new NamedColor(32, 224, 255, "Cyan"),
+    new NamedColor(64, 64, 160, "Dark Blue"),
+    new NamedColor(128, 128, 255, "Blue"),
+    new NamedColor(128, 32, 160, "Dark Magenta"),
+    new NamedColor(224, 32, 255, "Magenta")
 ];
+var spiritColorAmount = spiritColorSet.length;
 var blockPaletteList = [];
 var index = 0;
-while (index < tempColorList.length) {
-    var tempColor1 = tempColorList[index];
+while (index < spiritColorSet.length) {
+    var tempColor1 = spiritColorSet[index];
     var tempColor2 = tempColor1.copy();
     tempColor2.scale(0.5);
     blockPaletteList.push(new ColorPalette([tempColor2, tempColor1]));

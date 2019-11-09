@@ -17,7 +17,7 @@ var complexSpiritClassIdSet = {
     player: 0
 };
 
-var colorAmount = 16;
+var spiritColorAmount = 16;
 
 var nextComplexSpiritId = 0;
 
@@ -118,8 +118,8 @@ EnergiteSpirit.prototype.getSerialInteger = function() {
     return simpleSpiritSerialIntegerSet.energite;
 }
 
-function BlockSpirit(color) {
-    this.color = color;
+function BlockSpirit(colorIndex) {
+    this.colorIndex = colorIndex;
     SimpleSpirit.call(this);
 }
 
@@ -131,7 +131,7 @@ BlockSpirit.prototype.canBeMined = function() {
 }
 
 BlockSpirit.prototype.getSerialInteger = function() {
-    return simpleSpiritSerialIntegerSet.block + this.color;
+    return simpleSpiritSerialIntegerSet.block + this.colorIndex;
 }
 
 var emptySpirit = new EmptySpirit();
@@ -140,11 +140,11 @@ var matteriteSpirit = new MatteriteSpirit();
 var energiteSpirit = new EnergiteSpirit();
 
 var blockSpiritSet = [];
-var tempColor = 0;
-while (tempColor < colorAmount) {
-    var tempSpirit = new BlockSpirit(tempColor);
+var tempColorIndex = 0;
+while (tempColorIndex < spiritColorAmount) {
+    var tempSpirit = new BlockSpirit(tempColorIndex);
     blockSpiritSet.push(tempSpirit);
-    tempColor += 1;
+    tempColorIndex += 1;
 }
 
 function ComplexSpirit(classId) {
@@ -187,7 +187,7 @@ PlayerSpirit.prototype.getClientJson = function() {
 module.exports = {
     simpleSpiritSerialIntegerSet: simpleSpiritSerialIntegerSet,
     complexSpiritClassIdSet: complexSpiritClassIdSet,
-    colorAmount: colorAmount,
+    spiritColorAmount: spiritColorAmount,
     
     SimpleSpirit: SimpleSpirit,
     ComplexSpirit: ComplexSpirit,

@@ -1,7 +1,7 @@
 
 var tempResource = require("./spirit");
 var simpleSpiritSerialIntegerSet = tempResource.simpleSpiritSerialIntegerSet;
-var colorAmount = tempResource.colorAmount;
+var spiritColorAmount = tempResource.spiritColorAmount;
 var simpleSpiritTypeMap = require("./spiritType").simpleSpiritTypeMap;
 
 var recipeList = [];
@@ -49,13 +49,13 @@ function createSimpleRecipeComponent(spiritKey, count, offset) {
     return new RecipeComponent(tempType, count);
 }
 
-var tempColor = 0;
-while (tempColor < colorAmount) {
+var tempColorIndex = 0;
+while (tempColorIndex < spiritColorAmount) {
     new Recipe(
         [createSimpleRecipeComponent("matterite", 2)],
-        createSimpleRecipeComponent("block", 1, tempColor)
+        createSimpleRecipeComponent("block", 1, tempColorIndex)
     );
-    tempColor += 1;
+    tempColorIndex += 1;
 }
 
 module.exports = {

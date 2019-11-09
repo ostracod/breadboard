@@ -1,7 +1,4 @@
 
-// Map from spirit serial integer to Spirit.
-var simpleSpiritMap = {};
-
 function Spirit() {
     
 }
@@ -40,7 +37,7 @@ LoadingSpirit.prototype.hasSameIdentity = function(spirit) {
 
 function SimpleSpirit() {
     Spirit.call(this);
-    simpleSpiritMap[this.getSerialInteger()] = this;
+    new SimpleSpiritType(this);
 }
 
 SimpleSpirit.prototype = Object.create(Spirit.prototype);
@@ -144,10 +141,44 @@ EnergiteSpirit.prototype.getSerialInteger = function() {
     return simpleSpiritSerialIntegerSet.energite;
 }
 
+function BlockSpirit(colorIndex) {
+    this.colorIndex = colorIndex;
+    SimpleSpirit.call(this);
+    this.sprite = new Sprite(blockSpriteSet, 0, this.colorIndex);
+    this.color = spiritColorSet[this.colorIndex];
+}
+
+BlockSpirit.prototype = Object.create(SimpleSpirit.prototype);
+BlockSpirit.prototype.constructor = BlockSpirit;
+
+BlockSpirit.prototype.getSprite = function() {
+    return this.sprite;
+}
+
+BlockSpirit.prototype.getDisplayName = function() {
+    return this.color.name + " Block";
+}
+
+BlockSpirit.prototype.canBeMined = function() {
+    return true;
+}
+
+BlockSpirit.prototype.getSerialInteger = function() {
+    return simpleSpiritSerialIntegerSet.block + this.colorIndex;
+}
+
 var emptySpirit = new EmptySpirit();
 var barrierSpirit = new BarrierSpirit();
 var matteriteSpirit = new MatteriteSpirit();
 var energiteSpirit = new EnergiteSpirit();
+
+var blockSpiritSet = [];
+var tempColorIndex = 0;
+while (tempColorIndex < spiritColorAmount) {
+    var tempSpirit = new BlockSpirit(tempColorIndex);
+    blockSpiritSet.push(tempSpirit);
+    tempColorIndex += 1;
+}
 
 function ComplexSpirit(classId, id) {
     Spirit.call(this);
