@@ -3,17 +3,21 @@ var tempResource = require("./spiritReference");
 var SimpleSpiritReference = tempResource.SimpleSpiritReference;
 var ComplexSpiritReference = tempResource.ComplexSpiritReference;
 var Inventory = require("./inventory").Inventory;
+var SimpleSpiritType = require("./spiritType").SimpleSpiritType;
 
 var simpleSpiritSerialIntegerSet = {
     empty: 0,
     barrier: 1,
     matterite: 2,
-    energite: 3
+    energite: 3,
+    block: 4
 };
 
 var complexSpiritClassIdSet = {
     player: 0
 };
+
+var colorAmount = 16;
 
 var nextComplexSpiritId = 0;
 
@@ -42,6 +46,7 @@ Spirit.prototype.canBeMined = function() {
 function SimpleSpirit() {
     Spirit.call(this);
     this.reference = new SimpleSpiritReference(this.getSerialInteger());
+    new SimpleSpiritType(this);
 }
 
 SimpleSpirit.prototype = Object.create(Spirit.prototype);
@@ -113,10 +118,34 @@ EnergiteSpirit.prototype.getSerialInteger = function() {
     return simpleSpiritSerialIntegerSet.energite;
 }
 
+function BlockSpirit(color) {
+    this.color = color;
+    SimpleSpirit.call(this);
+}
+
+BlockSpirit.prototype = Object.create(SimpleSpirit.prototype);
+BlockSpirit.prototype.constructor = BlockSpirit;
+
+BlockSpirit.prototype.canBeMined = function() {
+    return true;
+}
+
+BlockSpirit.prototype.getSerialInteger = function() {
+    return simpleSpiritSerialIntegerSet.block + this.color;
+}
+
 var emptySpirit = new EmptySpirit();
 var barrierSpirit = new BarrierSpirit();
 var matteriteSpirit = new MatteriteSpirit();
 var energiteSpirit = new EnergiteSpirit();
+
+var blockSpiritSet = [];
+var tempColor = 0;
+while (tempColor < colorAmount) {
+    var tempSpirit = new BlockSpirit(tempColor);
+    blockSpiritSet.push(tempSpirit);
+    tempColor += 1;
+}
 
 function ComplexSpirit(classId) {
     Spirit.call(this);
@@ -158,6 +187,7 @@ PlayerSpirit.prototype.getClientJson = function() {
 module.exports = {
     simpleSpiritSerialIntegerSet: simpleSpiritSerialIntegerSet,
     complexSpiritClassIdSet: complexSpiritClassIdSet,
+    colorAmount: colorAmount,
     
     SimpleSpirit: SimpleSpirit,
     ComplexSpirit: ComplexSpirit,
@@ -165,12 +195,14 @@ module.exports = {
     BarrierSpirit: BarrierSpirit,
     MatteriteSpirit: MatteriteSpirit,
     EnergiteSpirit: EnergiteSpirit,
+    BlockSpirit: BlockSpirit,
     PlayerSpirit: PlayerSpirit,
     
     emptySpirit: emptySpirit,
     barrierSpirit: barrierSpirit,
     matteriteSpirit: matteriteSpirit,
-    energiteSpirit: energiteSpirit
+    energiteSpirit: energiteSpirit,
+    blockSpiritSet: blockSpiritSet
 };
 
 

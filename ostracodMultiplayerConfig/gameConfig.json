@@ -13,14 +13,21 @@
             "title": "Player Inventory",
             "viewFile": "playerInventoryModule.html",
             "shouldShowOnLoad": true
+        },
+        {
+            "name": "recipes",
+            "buttonLabel": "Crafting",
+            "title": "Crafting Recipes",
+            "viewFile": "recipesModule.html",
+            "shouldShowOnLoad": false
         }
     ],
     "instructionsViewFile": "instructions.html",
     "scripts": [
         "javascript/gameConstants.js",
         "javascript/sprite.js",
+        "javascript/spiritType.js",
         "javascript/spirit.js",
-        "javascript/spiritFactory.js",
         "javascript/walkController.js",
         "javascript/tile.js",
         "javascript/tileFactory.js",

@@ -1,4 +1,7 @@
 
+// A SpiritReference is used to identify unique
+// instances of Spirits.
+
 function SpiritReference() {
     
 }
