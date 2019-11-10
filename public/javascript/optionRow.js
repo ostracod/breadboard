@@ -80,4 +80,22 @@ InventoryOptionRow.prototype.draw = function() {
     this.displayCount(this.inventoryItem.count);
 }
 
+function RecipeOptionRow(recipe) {
+    this.recipe = recipe;
+    var tempSpirit = this.recipe.product.spirit;
+    OptionRow.call(
+        this,
+        document.getElementById("recipes"),
+        tempSpirit.getDisplayName(),
+        tempSpirit.getSprite()
+    );
+}
+
+RecipeOptionRow.prototype = Object.create(OptionRow.prototype);
+RecipeOptionRow.prototype.constructor = RecipeOptionRow;
+
+RecipeOptionRow.prototype.clickEvent = function() {
+    this.recipe.select();
+}
+
 

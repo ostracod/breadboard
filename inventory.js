@@ -3,6 +3,7 @@ function InventoryItem(inventory, spirit, count) {
     this.inventory = inventory;
     this.spirit = spirit;
     this.count = count;
+    this.inventory.items.push(this);
 }
 
 InventoryItem.prototype.getClientJson = function() {
@@ -73,8 +74,7 @@ Inventory.prototype.getItemBySpiritReference = function(spiritReference) {
 Inventory.prototype.incrementItemCountBySpirit = function(spirit) {
     var tempItem = this.getItemBySpirit(spirit);
     if (tempItem === null) {
-        tempItem = new InventoryItem(this, spirit, 1);
-        this.items.push(tempItem);
+        new InventoryItem(this, spirit, 1);
     } else {
         tempItem.setCount(tempItem.count + 1);
     }

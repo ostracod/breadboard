@@ -13,7 +13,7 @@ SpiritType.prototype.craft = function() {
 }
 
 // Concrete subclasses of SpiritType must implement these methods:
-// convertJsonToSpirit
+// matchesSpirit, convertJsonToSpirit
 
 function SimpleSpiritType(spirit) {
     SpiritType.call(this);
@@ -23,6 +23,10 @@ function SimpleSpiritType(spirit) {
 
 SimpleSpiritType.prototype = Object.create(SpiritType.prototype);
 SimpleSpiritType.prototype.constructor = SimpleSpiritType;
+
+SimpleSpiritType.prototype.matchesSpirit = function(spirit) {
+    return (this.spirit.getSerialInteger() == spirit.getSerialInteger());
+}
 
 SimpleSpiritType.prototype.convertJsonToSpirit = function(data) {
     return this.spirit;
@@ -34,11 +38,16 @@ SimpleSpiritType.prototype.craft = function() {
 
 function ComplexSpiritType(spiritClassId) {
     SpiritType.call(this);
+    this.spiritClassId = spiritClassId;
     complexSpiritTypeMap[spiritClassId] = this;
 }
 
 ComplexSpiritType.prototype = Object.create(SpiritType.prototype);
 ComplexSpiritType.prototype.constructor = ComplexSpiritType;
+
+ComplexSpiritType.prototype.matchesSpirit = function(spirit) {
+    return (this.spiritClassId == spirit.classId);
+}
 
 function PlayerSpiritType() {
     ComplexSpiritType.call(this, complexSpiritClassIdSet.player);

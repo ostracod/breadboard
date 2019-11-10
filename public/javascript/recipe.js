@@ -1,10 +1,12 @@
 
 var recipeList;
+var selectedRecipe = null;
 
 function RecipeComponent(spiritType, count) {
     this.spiritType = spiritType;
     this.count = count;
     this.spirit = this.spiritType.craft();
+    this.tag = null;
 }
 
 function Recipe(ingredients, product) {
@@ -14,13 +16,67 @@ function Recipe(ingredients, product) {
 }
 
 Recipe.prototype.draw = function() {
-    var tempSpirit = this.product.spirit;
-    this.row = new CountOptionRow(
-        document.getElementById("recipes"),
-        tempSpirit.getDisplayName(),
-        this.product.count,
-        tempSpirit.getSprite()
-    );
+    this.row = new RecipeOptionRow(this);
+}
+
+Recipe.prototype.select = function() {
+    if (selectedRecipe !== null) {
+        selectedRecipe.unselect();
+    }
+    this.row.select();
+    selectedRecipe = this;
+    this.displayIngredients();
+}
+
+Recipe.prototype.unselect = function() {
+    this.row.unselect();
+    selectedRecipe = null;
+}
+
+Recipe.prototype.displayIngredients = function() {
+    document.getElementById("recipeSubtitle").innerHTML = "Ingredients:";
+    document.getElementById("craftButtonContainer").style.display = "block";
+    var tempContainer = document.getElementById("recipeIngredients");
+    tempContainer.innerHTML = "";
+    var index = 0;
+    while (index < this.ingredients.length) {
+        var tempComponent = this.ingredients[index];
+        var tempTag = document.createElement("div");
+        tempTag.innerHTML = tempComponent.spirit.getDisplayName() + " (x" + tempComponent.count + ")";
+        tempContainer.appendChild(tempTag);
+        tempComponent.tag = tempTag;
+        index += 1;
+    }
+    this.updateTagColors();
+}
+
+Recipe.prototype.updateTagColors = function() {
+    var index = 0;
+    while (index < this.ingredients.length) {
+        var tempComponent = this.ingredients[index];
+        var tempColor;
+        if (localPlayerInventory.hasRecipeComponent(tempComponent)) {
+            tempColor = "#000000";
+        } else {
+            tempColor = "#CC0000";
+        }
+        tempComponent.tag.style.color = tempColor;
+        index += 1;
+    }
+    var tempTag = document.getElementById("craftButton");
+    if (localPlayerInventory.canCraftRecipe(this)) {
+        tempTag.className = "";
+    } else {
+        tempTag.className = "redButton";
+    }
+}
+
+Recipe.prototype.craft = function() {
+    if (!localPlayerInventory.canCraftRecipe(this)) {
+        return;
+    }
+    // TODO: Implement.
+    
 }
 
 function convertJsonToRecipeComponent(data) {
@@ -59,6 +115,10 @@ function drawAllRecipes() {
         tempRecipe.draw();
         index += 1;
     }
+}
+
+function craftSelectedRecipe() {
+    selectedRecipe.craft();
 }
 
 

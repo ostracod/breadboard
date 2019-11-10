@@ -105,8 +105,8 @@ NamedColor.prototype = Object.create(Color.prototype);
 NamedColor.prototype.constructor = NamedColor;
 
 var spiritColorSet = [
-    new NamedColor(96, 96, 96, "Gray"),
-    new NamedColor(192, 192, 192, "White"),
+    new NamedColor(96, 96, 96, "Dark gray"),
+    new NamedColor(192, 192, 192, "Gray"),
     new NamedColor(128, 32, 32, "Dark Red"),
     new NamedColor(224, 32, 32, "Red"),
     new NamedColor(128, 80, 32, "Dark Orange"),
