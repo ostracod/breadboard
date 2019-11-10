@@ -15,7 +15,7 @@ SpiritType.prototype.craft = function() {
 }
 
 // Concrete subclasses of SpiritType must implement these methods:
-// getClientJson
+// matchesSpirit, getClientJson
 
 function SimpleSpiritType(spirit) {
     SpiritType.call(this);
@@ -25,6 +25,10 @@ function SimpleSpiritType(spirit) {
 
 SimpleSpiritType.prototype = Object.create(SpiritType.prototype);
 SimpleSpiritType.prototype.constructor = SimpleSpiritType;
+
+SimpleSpiritType.prototype.matchesSpirit = function(spirit) {
+    return (this.spirit.getSerialInteger() == spirit.getSerialInteger());
+}
 
 SimpleSpiritType.prototype.getClientJson = function() {
     return {

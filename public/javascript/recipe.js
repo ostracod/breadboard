@@ -9,7 +9,8 @@ function RecipeComponent(spiritType, count) {
     this.tag = null;
 }
 
-function Recipe(ingredients, product) {
+function Recipe(id, ingredients, product) {
+    this.id = id;
     this.ingredients = ingredients;
     this.product = product;
     this.row = null;
@@ -71,14 +72,6 @@ Recipe.prototype.updateTagColors = function() {
     }
 }
 
-Recipe.prototype.craft = function() {
-    if (!localPlayerInventory.canCraftRecipe(this)) {
-        return;
-    }
-    // TODO: Implement.
-    
-}
-
 function convertJsonToRecipeComponent(data) {
     return new RecipeComponent(
         convertJsonToSpiritType(data.spiritType),
@@ -95,6 +88,7 @@ function convertJsonToRecipe(data) {
         index += 1;
     }
     return new Recipe(
+        data.id,
         tempComponentList,
         convertJsonToRecipeComponent(data.product)
     );
@@ -118,7 +112,7 @@ function drawAllRecipes() {
 }
 
 function craftSelectedRecipe() {
-    selectedRecipe.craft();
+    localPlayerInventory.craftRecipe(selectedRecipe);
 }
 
 

@@ -1,11 +1,9 @@
 
 var Tile = require("./tile").Tile;
 var tempResource = require("./spirit");
+var simpleSpiritSerialIntegerSet = tempResource.simpleSpiritSerialIntegerSet;
+var simpleSpiritSet = tempResource.simpleSpiritSet;
 var EmptySpirit = tempResource.EmptySpirit;
-var emptySpirit = tempResource.emptySpirit;
-var barrierSpirit = tempResource.barrierSpirit;
-var matteriteSpirit = tempResource.matteriteSpirit;
-var energiteSpirit = tempResource.energiteSpirit;
 
 // Map from spirit serial integer to WorldTile.
 var simpleWorldTileMap = {};
@@ -46,10 +44,22 @@ SimpleWorldTile.prototype.getClientJson = function() {
     return this.spirit.getClientJson();
 }
 
-var emptyWorldTile = new SimpleWorldTile(emptySpirit);
-var barrierWorldTile = new SimpleWorldTile(barrierSpirit);
-var matteriteWorldTile = new SimpleWorldTile(matteriteSpirit);
-var energiteWorldTile = new SimpleWorldTile(energiteSpirit);
+var index = 0;
+while (index < simpleSpiritSet.length) {
+    var tempSpirit = simpleSpiritSet[index];
+    new SimpleWorldTile(tempSpirit);
+    index += 1;
+}
+
+function getSimpleWorldTile(spiritKey) {
+    var tempInteger = simpleSpiritSerialIntegerSet[spiritKey];
+    return simpleWorldTileMap[tempInteger];
+}
+
+var emptyWorldTile = getSimpleWorldTile("empty");
+var barrierWorldTile = getSimpleWorldTile("barrier");
+var matteriteWorldTile = getSimpleWorldTile("matterite");
+var energiteWorldTile = getSimpleWorldTile("energite");
 
 function ComplexWorldTile(spirit) {
     WorldTile.call(this, spirit);

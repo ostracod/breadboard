@@ -19,6 +19,7 @@ var complexSpiritClassIdSet = {
 
 var spiritColorAmount = 16;
 
+var simpleSpiritSet = [];
 var nextComplexSpiritId = 0;
 
 // The idea is that a Spirit is something which may
@@ -47,6 +48,7 @@ function SimpleSpirit() {
     Spirit.call(this);
     this.reference = new SimpleSpiritReference(this.getSerialInteger());
     new SimpleSpiritType(this);
+    simpleSpiritSet.push(this);
 }
 
 SimpleSpirit.prototype = Object.create(Spirit.prototype);
@@ -134,16 +136,14 @@ BlockSpirit.prototype.getSerialInteger = function() {
     return simpleSpiritSerialIntegerSet.block + this.colorIndex;
 }
 
-var emptySpirit = new EmptySpirit();
-var barrierSpirit = new BarrierSpirit();
-var matteriteSpirit = new MatteriteSpirit();
-var energiteSpirit = new EnergiteSpirit();
+new EmptySpirit();
+new BarrierSpirit();
+new MatteriteSpirit();
+new EnergiteSpirit();
 
-var blockSpiritSet = [];
 var tempColorIndex = 0;
 while (tempColorIndex < spiritColorAmount) {
-    var tempSpirit = new BlockSpirit(tempColorIndex);
-    blockSpiritSet.push(tempSpirit);
+    new BlockSpirit(tempColorIndex);
     tempColorIndex += 1;
 }
 
@@ -188,6 +188,7 @@ module.exports = {
     simpleSpiritSerialIntegerSet: simpleSpiritSerialIntegerSet,
     complexSpiritClassIdSet: complexSpiritClassIdSet,
     spiritColorAmount: spiritColorAmount,
+    simpleSpiritSet: simpleSpiritSet,
     
     SimpleSpirit: SimpleSpirit,
     ComplexSpirit: ComplexSpirit,
@@ -196,13 +197,7 @@ module.exports = {
     MatteriteSpirit: MatteriteSpirit,
     EnergiteSpirit: EnergiteSpirit,
     BlockSpirit: BlockSpirit,
-    PlayerSpirit: PlayerSpirit,
-    
-    emptySpirit: emptySpirit,
-    barrierSpirit: barrierSpirit,
-    matteriteSpirit: matteriteSpirit,
-    energiteSpirit: energiteSpirit,
-    blockSpiritSet: blockSpiritSet
+    PlayerSpirit: PlayerSpirit
 };
 
 

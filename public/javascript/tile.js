@@ -53,10 +53,19 @@ function SimpleWorldTile(spirit) {
 SimpleWorldTile.prototype = Object.create(WorldTile.prototype);
 SimpleWorldTile.prototype.constructor = SimpleWorldTile;
 
-var emptyWorldTile = new SimpleWorldTile(emptySpirit);
-var barrierWorldTile = new SimpleWorldTile(barrierSpirit);
-var matteriteWorldTile = new SimpleWorldTile(matteriteSpirit);
-var energiteWorldTile = new SimpleWorldTile(energiteSpirit);
+var index = 0;
+while (index < simpleSpiritSet.length) {
+    var tempSpirit = simpleSpiritSet[index];
+    new SimpleWorldTile(tempSpirit);
+    index += 1;
+}
+
+function getSimpleWorldTile(spiritKey) {
+    var tempInteger = simpleSpiritSerialIntegerSet[spiritKey];
+    return simpleWorldTileMap[tempInteger];
+}
+
+var emptyWorldTile = getSimpleWorldTile("empty");
 
 function ComplexWorldTile(spirit, pos) {
     WorldTile.call(this, spirit);

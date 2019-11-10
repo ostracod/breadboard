@@ -179,6 +179,13 @@ function addPlaceWorldTileCommand(pos, spirit) {
     });
 }
 
+function addCraftCommand(recipe) {
+    gameUpdateCommandList.push({
+        commandName: "craft",
+        recipeId: recipe.id
+    });
+}
+
 addCommandRepeater("walk", function(command) {
     if (localPlayerWorldTile === null) {
         return;

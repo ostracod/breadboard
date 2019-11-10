@@ -1,4 +1,6 @@
 
+var niceUtils = require("./niceUtils").niceUtils;
+
 function InventoryItem(inventory, spirit, count) {
     this.inventory = inventory;
     this.spirit = spirit;
@@ -17,6 +19,17 @@ InventoryItem.prototype.setCount = function(count) {
     this.count = count;
     if (this.count <= 0) {
         this.inventory.removeItem(this);
+    }
+}
+
+InventoryItem.prototype.decreaseCount = function(offset) {
+    if (this.count >= offset) {
+        this.setCount(this.count - offset);
+        return offset;
+    } else {
+        var output = this.count;
+        this.setCount(0);
+        return output;
     }
 }
 
@@ -74,7 +87,7 @@ Inventory.prototype.getItemBySpiritReference = function(spiritReference) {
 Inventory.prototype.incrementItemCountBySpirit = function(spirit) {
     var tempItem = this.getItemBySpirit(spirit);
     if (tempItem === null) {
-        new InventoryItem(this, spirit, 1);
+        tempItem = new InventoryItem(this, spirit, 1);
     } else {
         tempItem.setCount(tempItem.count + 1);
     }
@@ -84,6 +97,81 @@ Inventory.prototype.incrementItemCountBySpirit = function(spirit) {
 Inventory.prototype.removeItem = function(item) {
     var index = this.findItem(item);
     this.items.splice(index, 1);
+}
+
+Inventory.prototype.hasRecipeComponent = function(recipeComponent) {
+    var tempCount = 0;
+    var index = 0;
+    while (index < this.items.length) {
+        var tempItem = this.items[index];
+        if (recipeComponent.spiritType.matchesSpirit(tempItem.spirit)) {
+            tempCount += tempItem.count;
+        }
+        index += 1;
+    }
+    return (tempCount >= recipeComponent.count);
+}
+
+Inventory.prototype.canCraftRecipe = function(recipe) {
+    var index = 0;
+    while (index < recipe.ingredients.length) {
+        var tempComponent = recipe.ingredients[index];
+        if (!this.hasRecipeComponent(tempComponent)) {
+            return false;
+        }
+        index += 1;
+    }
+    return true;
+}
+
+Inventory.prototype.removeRecipeComponent = function(recipeComponent) {
+    var output = [];
+    var tempCount = recipeComponent.count;
+    var index = 0;
+    while (index < this.items.length) {
+        var tempItem = this.items[index];
+        if (recipeComponent.spiritType.matchesSpirit(tempItem.spirit)) {
+            var tempResult = tempItem.decreaseCount(tempCount);
+            output.push(tempItem);
+            tempCount -= tempResult;
+            if (tempCount <= 0) {
+                break;
+            }
+        }
+        index += 1;
+    }
+    return output;
+}
+
+Inventory.prototype.addRecipeComponent = function(recipeComponent) {
+    var output = [];
+    var tempCount = 0;
+    while (tempCount < recipeComponent.count) {
+        var tempSpirit = recipeComponent.spiritType.craft();
+        var tempItem = this.incrementItemCountBySpirit(tempSpirit);
+        if (output.indexOf(tempItem) < 0) {
+            output.push(tempItem);
+        }
+        tempCount += 1;
+    }
+    return output;
+}
+
+Inventory.prototype.craftRecipe = function(recipe) {
+    if (!this.canCraftRecipe(recipe)) {
+        return [];
+    }
+    var output = [];
+    var index = 0;
+    while (index < recipe.ingredients.length) {
+        var tempComponent = recipe.ingredients[index];
+        var tempItemList = this.removeRecipeComponent(tempComponent);
+        niceUtils.extendList(output, tempItemList);
+        index += 1;
+    }
+    var tempItemList = this.addRecipeComponent(recipe.product);
+    niceUtils.extendList(output, tempItemList);
+    return output;
 }
 
 module.exports = {

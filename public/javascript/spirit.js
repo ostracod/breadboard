@@ -1,4 +1,6 @@
 
+var simpleSpiritSet = [];
+
 function Spirit() {
     
 }
@@ -38,6 +40,7 @@ LoadingSpirit.prototype.hasSameIdentity = function(spirit) {
 function SimpleSpirit() {
     Spirit.call(this);
     new SimpleSpiritType(this);
+    simpleSpiritSet.push(this);
 }
 
 SimpleSpirit.prototype = Object.create(Spirit.prototype);
@@ -167,16 +170,14 @@ BlockSpirit.prototype.getSerialInteger = function() {
     return simpleSpiritSerialIntegerSet.block + this.colorIndex;
 }
 
-var emptySpirit = new EmptySpirit();
-var barrierSpirit = new BarrierSpirit();
-var matteriteSpirit = new MatteriteSpirit();
-var energiteSpirit = new EnergiteSpirit();
+new EmptySpirit();
+new BarrierSpirit();
+new MatteriteSpirit();
+new EnergiteSpirit();
 
-var blockSpiritSet = [];
 var tempColorIndex = 0;
 while (tempColorIndex < spiritColorAmount) {
-    var tempSpirit = new BlockSpirit(tempColorIndex);
-    blockSpiritSet.push(tempSpirit);
+    new BlockSpirit(tempColorIndex);
     tempColorIndex += 1;
 }
 

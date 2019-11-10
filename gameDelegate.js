@@ -9,6 +9,7 @@ var tempResource = require("./spirit");
 var PlayerSpirit = tempResource.PlayerSpirit;
 var EmptySpirit = tempResource.EmptySpirit;
 var PlayerWorldTile = require("./worldTile").PlayerWorldTile;
+var getRecipeById = require("./recipe").getRecipeById;
 
 function addSetWorldTileGridCommand(player, commandList) {
     var tempWindowSize = 21;
@@ -101,6 +102,23 @@ gameUtils.addCommandListener(
         var tempItem = tempTile.placeWorldTile(tempPos, tempReference);
         if (tempItem !== null) {
             addUpdateInventoryItemCommand(tempItem, commandList);
+        }
+    }
+);
+
+gameUtils.addCommandListener(
+    "craft",
+    true,
+    function(command, player, commandList) {
+        var tempTile = world.getPlayerTile(player);
+        var tempInventory = tempTile.spirit.inventory;
+        var tempRecipe = getRecipeById(command.recipeId);
+        var tempItemList = tempInventory.craftRecipe(tempRecipe);
+        var index = 0;
+        while (index < tempItemList.length) {
+            var tempItem = tempItemList[index];
+            addUpdateInventoryItemCommand(tempItem, commandList);
+            index += 1;
         }
     }
 );

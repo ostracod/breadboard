@@ -6,6 +6,7 @@ var simpleSpiritTypeMap = require("./spiritType").simpleSpiritTypeMap;
 
 var recipeList = [];
 var recipeDataList = [];
+var nextRecipeId = 0;
 
 function RecipeComponent(spiritType, count) {
     this.spiritType = spiritType;
@@ -22,6 +23,8 @@ RecipeComponent.prototype.getClientJson = function() {
 function Recipe(ingredients, product) {
     this.ingredients = ingredients;
     this.product = product;
+    this.id = nextRecipeId;
+    nextRecipeId += 1;
     recipeList.push(this);
     recipeDataList.push(this.getClientJson());
 }
@@ -35,6 +38,7 @@ Recipe.prototype.getClientJson = function() {
         index += 1;
     }
     return {
+        id: this.id,
         ingredients: tempDataList,
         product: this.product.getClientJson()
     };
@@ -58,9 +62,22 @@ while (tempColorIndex < spiritColorAmount) {
     tempColorIndex += 1;
 }
 
+function getRecipeById(id) {
+    var index = 0;
+    while (index < recipeList.length) {
+        var tempRecipe = recipeList[index];
+        if (tempRecipe.id == id) {
+            return tempRecipe;
+        }
+        index += 1;
+    }
+    return null;
+}
+
 module.exports = {
     recipeList: recipeList,
-    recipeDataList: recipeDataList
+    recipeDataList: recipeDataList,
+    getRecipeById: getRecipeById
 };
 
 
