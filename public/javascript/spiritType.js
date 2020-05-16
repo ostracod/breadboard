@@ -1,8 +1,8 @@
 
 // Map from spirit serial integer to SimpleSpiritType.
-var simpleSpiritTypeMap = {};
+let simpleSpiritTypeMap = {};
 // Map from spirit class ID to ComplexSpiritType.
-var complexSpiritTypeMap = {};
+let complexSpiritTypeMap = {};
 
 function SpiritType() {
     
@@ -18,14 +18,14 @@ SpiritType.prototype.craft = function() {
 function SimpleSpiritType(spirit) {
     SpiritType.call(this);
     this.spirit = spirit;
-    simpleSpiritTypeMap[this.spirit.getSerialInteger()] = this;
+    simpleSpiritTypeMap[this.spirit.serialInteger] = this;
 }
 
 SimpleSpiritType.prototype = Object.create(SpiritType.prototype);
 SimpleSpiritType.prototype.constructor = SimpleSpiritType;
 
 SimpleSpiritType.prototype.matchesSpirit = function(spirit) {
-    return (this.spirit.getSerialInteger() == spirit.getSerialInteger());
+    return (this.spirit.serialInteger == spirit.serialInteger);
 }
 
 SimpleSpiritType.prototype.convertJsonToSpirit = function(data) {
@@ -63,7 +63,7 @@ PlayerSpiritType.prototype.convertJsonToSpirit = function(data) {
 new PlayerSpiritType();
 
 function convertJsonToSpirit(data) {
-    var tempType;
+    let tempType;
     if (typeof data === "number") {
         tempType = simpleSpiritTypeMap[data];
     } else {

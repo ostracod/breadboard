@@ -1,20 +1,20 @@
 
-var spriteSize = 11;
-var spriteSheetTileSize = 20;
-var spriteSheetSize = spriteSize * spriteSheetTileSize;
-var spritesHaveLoaded = false;
-var spriteSetList = [];
+const spriteSize = 11;
+const spriteSheetTileSize = 20;
+const spriteSheetSize = spriteSize * spriteSheetTileSize;
+let spritesHaveLoaded = false;
+let spriteSetList = [];
 // Contains all sprites without color.
-var spriteSheetImage;
-var spriteSheetCanvas;
-var spriteSheetContext;
-var spriteSheetImageData;
-var spriteSheetImageDataList;
+let spriteSheetImage;
+let spriteSheetCanvas;
+let spriteSheetContext;
+let spriteSheetImageData;
+let spriteSheetImageDataList;
 // Contains a single sprite with color.
-var spriteCanvas;
-var spriteContext;
-var spriteImageData;
-var spriteImageDataList;
+let spriteCanvas;
+let spriteContext;
+let spriteImageData;
+let spriteImageDataList;
 
 function ColorPalette(colorList) {
     this.colorList = colorList;
@@ -31,16 +31,16 @@ function SpriteSet(startIndex, endIndex, paletteList) {
 }
 
 SpriteSet.prototype.initializeSprite = function(spriteIndex, paletteIndex) {
-    var tempPalette = this.paletteList[paletteIndex];
-    var tempColorList = tempPalette.colorList;
-    var tempPosX = (spriteIndex % spriteSheetTileSize) * spriteSize;
-    var tempPosY = Math.floor(spriteIndex / spriteSheetTileSize) * spriteSize;
-    var tempOffsetX = 0;
-    var tempOffsetY = 0;
+    let tempPalette = this.paletteList[paletteIndex];
+    let tempColorList = tempPalette.colorList;
+    let tempPosX = (spriteIndex % spriteSheetTileSize) * spriteSize;
+    let tempPosY = Math.floor(spriteIndex / spriteSheetTileSize) * spriteSize;
+    let tempOffsetX = 0;
+    let tempOffsetY = 0;
     while (tempOffsetY < spriteSize) {
-        var index = ((tempPosX + tempOffsetX) + (tempPosY + tempOffsetY) * spriteSheetSize) * 4;
-        var tempColorR = spriteSheetImageDataList[index];
-        var tempColor;
+        let index = ((tempPosX + tempOffsetX) + (tempPosY + tempOffsetY) * spriteSheetSize) * 4;
+        let tempColorR = spriteSheetImageDataList[index];
+        let tempColor;
         if (tempColorR > 192) {
             tempColor = null;
         } else if (tempColorR < 64) {
@@ -48,7 +48,7 @@ SpriteSet.prototype.initializeSprite = function(spriteIndex, paletteIndex) {
         } else {
             tempColor = tempColorList[1];
         }
-        var index = (tempOffsetX + tempOffsetY * spriteSize) * 4;
+        index = (tempOffsetX + tempOffsetY * spriteSize) * 4;
         if (tempColor === null) {
             spriteImageDataList[index + 3] = 0;
         } else {
@@ -64,28 +64,24 @@ SpriteSet.prototype.initializeSprite = function(spriteIndex, paletteIndex) {
         }
     }
     spriteContext.putImageData(spriteImageData, 0, 0);
-    var tempImage = new Image();
+    let tempImage = new Image();
     tempImage.src = spriteCanvas.toDataURL();
-    var spriteOffset = spriteIndex - this.startIndex;
-    var tempKey = spriteOffset + "," + paletteIndex;
+    let spriteOffset = spriteIndex - this.startIndex;
+    let tempKey = spriteOffset + "," + paletteIndex;
     this.spriteImageMap[tempKey] = tempImage;
 }
 
 SpriteSet.prototype.initialize = function() {
-    var index = this.startIndex;
-    while (index <= this.endIndex) {
-        var tempIndex = 0;
-        while (tempIndex < this.paletteList.length) {
+    for (let index = this.startIndex; index <= this.endIndex; index++) {
+        for (let tempIndex = 0; tempIndex < this.paletteList.length; tempIndex++) {
             this.initializeSprite(index, tempIndex);
-            tempIndex += 1;
         }
-        index += 1;
     }
 }
 
 SpriteSet.prototype.draw = function(context, pos, spriteOffset, paletteIndex, scale) {
-    var tempKey = spriteOffset + "," + paletteIndex;
-    var tempImage = this.spriteImageMap[tempKey];
+    let tempKey = spriteOffset + "," + paletteIndex;
+    let tempImage = this.spriteImageMap[tempKey];
     context.imageSmoothingEnabled = false;
     context.drawImage(
         tempImage,
@@ -104,7 +100,7 @@ function NamedColor(r, g, b, name) {
 NamedColor.prototype = Object.create(Color.prototype);
 NamedColor.prototype.constructor = NamedColor;
 
-var spiritColorSet = [
+const spiritColorSet = [
     new NamedColor(96, 96, 96, "Dark gray"),
     new NamedColor(192, 192, 192, "Gray"),
     new NamedColor(128, 32, 32, "Dark Red"),
@@ -122,44 +118,41 @@ var spiritColorSet = [
     new NamedColor(128, 32, 160, "Dark Magenta"),
     new NamedColor(224, 32, 255, "Magenta")
 ];
-var spiritColorAmount = spiritColorSet.length;
-var blockPaletteList = [];
-var index = 0;
-while (index < spiritColorSet.length) {
-    var tempColor1 = spiritColorSet[index];
-    var tempColor2 = tempColor1.copy();
-    tempColor2.scale(0.5);
-    blockPaletteList.push(new ColorPalette([tempColor2, tempColor1]));
-    index += 1;
+const spiritColorAmount = spiritColorSet.length;
+let blockPaletteList = [];
+for (let color of spiritColorSet) {
+    let tempColor = color.copy();
+    tempColor.scale(0.5);
+    blockPaletteList.push(new ColorPalette([tempColor, color]));
 }
-var blockSpriteSet = new SpriteSet(0, 0, blockPaletteList);
-var machineSpriteSet = new SpriteSet(1, 1, blockPaletteList);
-var resourceSpriteSet = new SpriteSet(2, 2, [
+const blockSpriteSet = new SpriteSet(0, 0, blockPaletteList);
+const machineSpriteSet = new SpriteSet(1, 1, blockPaletteList);
+const resourceSpriteSet = new SpriteSet(2, 2, [
     blockPaletteList[10],
     blockPaletteList[7]
 ]);
-var playerSpriteSet = new SpriteSet(3, 3, [blockPaletteList[13]]);
-var circuitSpriteSet = new SpriteSet(4, 4, [blockPaletteList[9]]);
-var loadingSpriteSet = new SpriteSet(5, 5, [blockPaletteList[0]]);
-var barrierSpriteSet = new SpriteSet(6, 6, [blockPaletteList[1]]);
-var wireSpriteSet = new SpriteSet(20, 30, [
+const playerSpriteSet = new SpriteSet(3, 3, [blockPaletteList[13]]);
+const circuitSpriteSet = new SpriteSet(4, 4, [blockPaletteList[9]]);
+const loadingSpriteSet = new SpriteSet(5, 5, [blockPaletteList[0]]);
+const barrierSpriteSet = new SpriteSet(6, 6, [blockPaletteList[1]]);
+const wireSpriteSet = new SpriteSet(20, 30, [
     blockPaletteList[4],
     blockPaletteList[5],
     blockPaletteList[7]
 ]);
-var chipSpriteSet = new SpriteSet(40, 40, [
+const chipSpriteSet = new SpriteSet(40, 40, [
     new ColorPalette([new Color(0, 0, 0), null])
 ]);
-var portSpriteSet = new SpriteSet(41, 45, [
+const portSpriteSet = new SpriteSet(41, 45, [
     new ColorPalette([new Color(255, 0, 0), null]),
     new ColorPalette([new Color(0, 224, 0), null]),
     new ColorPalette([new Color(64, 160, 255), null]),
     new ColorPalette([new Color(160, 64, 255), null])
 ]);
-var characterSpriteSet = new SpriteSet(60, 159, [
+const characterSpriteSet = new SpriteSet(60, 159, [
     new ColorPalette([new Color(0, 0, 255), null])
 ]);
-var crackSpriteSet = new SpriteSet(160, 163, [
+const crackSpriteSet = new SpriteSet(160, 163, [
     new ColorPalette([new Color(0, 0, 0), null])
 ]);
 
@@ -174,21 +167,21 @@ Sprite.prototype.draw = function(context, pos, scale) {
 }
 
 Sprite.prototype.createCanvas = function(parentTag, inputPixelSize) {
-    var output = document.createElement("canvas");
-    var tempSize = spriteSize * inputPixelSize;
+    let output = document.createElement("canvas");
+    let tempSize = spriteSize * inputPixelSize;
     output.width = tempSize;
     output.height = tempSize;
     output.style.width = tempSize / 2;
     output.style.height = tempSize / 2;
     parentTag.appendChild(output);
-    var tempContext = output.getContext("2d");
+    let tempContext = output.getContext("2d");
     this.draw(tempContext, new Pos(0, 0), inputPixelSize);
     return output;
 }
 
-var loadingSprite = new Sprite(loadingSpriteSet, 0, 0);
-var barrierSprite = new Sprite(barrierSpriteSet, 0, 0);
-var playerSprite = new Sprite(playerSpriteSet, 0, 0);
+let loadingSprite = new Sprite(loadingSpriteSet, 0, 0);
+let barrierSprite = new Sprite(barrierSpriteSet, 0, 0);
+let playerSprite = new Sprite(playerSpriteSet, 0, 0);
 
 function initializeSpriteSheet(done) {
     
@@ -217,11 +210,8 @@ function initializeSpriteSheet(done) {
         spriteImageData = spriteContext.createImageData(spriteSize, spriteSize);
         spriteImageDataList = spriteImageData.data;
         
-        var index = 0;
-        while (index < spriteSetList.length) {
-            var tempSpriteSet = spriteSetList[index];
-            tempSpriteSet.initialize();
-            index += 1;
+        for (let spriteSet of spriteSetList) {
+            spriteSet.initialize();
         }
         
         spritesHaveLoaded = true;

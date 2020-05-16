@@ -1,39 +1,42 @@
 
 // Map from spirit class ID to ComplexWorldTileFactory.
-var complexWorldTileFactoryMap = {};
+let complexWorldTileFactoryMap = {};
 
-function ComplexWorldTileFactory(spiritClassId) {
-    complexWorldTileFactoryMap[spiritClassId] = this;
+class ComplexWorldTileFactory {
+    
+    // Concrete subclasses of ComplexWorldTileFactory must implement these methods:
+    // convertJsonToTile, createTileWithSpirit
+    
+    constructor(spiritClassId) {
+        complexWorldTileFactoryMap[spiritClassId] = this;
+    }
 }
 
-// Concrete subclasses of ComplexWorldTileFactory must implement these methods:
-// convertJsonToTile, createTileWithSpirit
-
-function PlayerWorldTileFactory() {
-    ComplexWorldTileFactory.call(this, complexSpiritClassIdSet.player);
-}
-
-PlayerWorldTileFactory.prototype = Object.create(ComplexWorldTileFactory.prototype);
-PlayerWorldTileFactory.prototype.constructor = PlayerWorldTileFactory;
-
-PlayerWorldTileFactory.prototype.convertJsonToTile = function(data, spirit, pos) {
-    var tempController = convertJsonToWalkController(data.walkController);
-    return new PlayerWorldTile(spirit, pos, tempController);
-}
-
-PlayerWorldTileFactory.prototype.createTileWithSpirit = function(spirit, pos) {
-    var tempController = createDefaultWalkController();
-    return new PlayerWorldTile(spirit, pos, tempController);
+class PlayerWorldTileFactory extends ComplexWorldTileFactory {
+    
+    constructor() {
+        super(complexSpiritClassIdSet.player);
+    }
+    
+    convertJsonToTile(data, spirit, pos) {
+        let tempController = convertJsonToWalkController(data.walkController);
+        return new PlayerWorldTile(spirit, pos, tempController);
+    }
+    
+    createTileWithSpirit(spirit, pos) {
+        let tempController = createDefaultWalkController();
+        return new PlayerWorldTile(spirit, pos, tempController);
+    }
 }
 
 new PlayerWorldTileFactory();
 
 function getWorldTileWithSpirit(spirit, pos) {
     if (spirit instanceof SimpleSpirit) {
-        return simpleWorldTileMap[spirit.getSerialInteger()];
+        return simpleWorldTileMap[spirit.serialInteger];
     }
     if (spirit instanceof ComplexSpirit) {
-        var tempFactory = complexWorldTileFactoryMap[spirit.classId];
+        let tempFactory = complexWorldTileFactoryMap[spirit.classId];
         return tempFactory.createTileWithSpirit(spirit, pos);
     }
     return null;
@@ -43,8 +46,8 @@ function convertJsonToWorldTile(data, pos) {
     if (typeof data === "number") {
         return simpleWorldTileMap[data];
     } else {
-        var tempSpirit = convertJsonToSpirit(data.spirit);
-        var tempFactory = complexWorldTileFactoryMap[tempSpirit.classId];
+        let tempSpirit = convertJsonToSpirit(data.spirit);
+        let tempFactory = complexWorldTileFactoryMap[tempSpirit.classId];
         return tempFactory.convertJsonToTile(data, tempSpirit, pos);
     }
 }

@@ -1,74 +1,74 @@
 
-var recipeList;
-var selectedRecipe = null;
+let recipeList;
+let selectedRecipe = null;
 
-function RecipeComponent(spiritType, count) {
-    this.spiritType = spiritType;
-    this.count = count;
-    this.spirit = this.spiritType.craft();
-    this.tag = null;
-}
-
-function Recipe(id, ingredients, product) {
-    this.id = id;
-    this.ingredients = ingredients;
-    this.product = product;
-    this.row = null;
-}
-
-Recipe.prototype.draw = function() {
-    this.row = new RecipeOptionRow(this);
-}
-
-Recipe.prototype.select = function() {
-    if (selectedRecipe !== null) {
-        selectedRecipe.unselect();
+class RecipeComponent {
+    
+    constructor(spiritType, count) {
+        this.spiritType = spiritType;
+        this.count = count;
+        this.spirit = this.spiritType.craft();
+        this.tag = null;
     }
-    this.row.select();
-    selectedRecipe = this;
-    this.displayIngredients();
 }
 
-Recipe.prototype.unselect = function() {
-    this.row.unselect();
-    selectedRecipe = null;
-}
-
-Recipe.prototype.displayIngredients = function() {
-    document.getElementById("recipeSubtitle").innerHTML = "Ingredients:";
-    document.getElementById("craftButtonContainer").style.display = "block";
-    var tempContainer = document.getElementById("recipeIngredients");
-    tempContainer.innerHTML = "";
-    var index = 0;
-    while (index < this.ingredients.length) {
-        var tempComponent = this.ingredients[index];
-        var tempTag = document.createElement("div");
-        tempTag.innerHTML = tempComponent.spirit.getDisplayName() + " (x" + tempComponent.count + ")";
-        tempContainer.appendChild(tempTag);
-        tempComponent.tag = tempTag;
-        index += 1;
+class Recipe {
+    
+    constructor(id, ingredients, product) {
+        this.id = id;
+        this.ingredients = ingredients;
+        this.product = product;
+        this.row = null;
     }
-    this.updateTagColors();
-}
-
-Recipe.prototype.updateTagColors = function() {
-    var index = 0;
-    while (index < this.ingredients.length) {
-        var tempComponent = this.ingredients[index];
-        var tempColor;
-        if (localPlayerInventory.hasRecipeComponent(tempComponent)) {
-            tempColor = "#000000";
-        } else {
-            tempColor = "#CC0000";
+    
+    draw() {
+        this.row = new RecipeOptionRow(this);
+    }
+    
+    select() {
+        if (selectedRecipe !== null) {
+            selectedRecipe.unselect();
         }
-        tempComponent.tag.style.color = tempColor;
-        index += 1;
+        this.row.select();
+        selectedRecipe = this;
+        this.displayIngredients();
     }
-    var tempTag = document.getElementById("craftButton");
-    if (localPlayerInventory.canCraftRecipe(this)) {
-        tempTag.className = "";
-    } else {
-        tempTag.className = "redButton";
+    
+    unselect() {
+        this.row.unselect();
+        selectedRecipe = null;
+    }
+    
+    displayIngredients() {
+        document.getElementById("recipeSubtitle").innerHTML = "Ingredients:";
+        document.getElementById("craftButtonContainer").style.display = "block";
+        let tempContainer = document.getElementById("recipeIngredients");
+        tempContainer.innerHTML = "";
+        for (let component of this.ingredients) {
+            let tempTag = document.createElement("div");
+            tempTag.innerHTML = component.spirit.getDisplayName() + " (x" + component.count + ")";
+            tempContainer.appendChild(tempTag);
+            component.tag = tempTag;
+        }
+        this.updateTagColors();
+    }
+    
+    updateTagColors() {
+        for (let component of this.ingredients) {
+            let tempColor;
+            if (localPlayerInventory.hasRecipeComponent(component)) {
+                tempColor = "#000000";
+            } else {
+                tempColor = "#CC0000";
+            }
+            component.tag.style.color = tempColor;
+        }
+        let tempTag = document.getElementById("craftButton");
+        if (localPlayerInventory.canCraftRecipe(this)) {
+            tempTag.className = "";
+        } else {
+            tempTag.className = "redButton";
+        }
     }
 }
 
@@ -80,12 +80,9 @@ function convertJsonToRecipeComponent(data) {
 }
 
 function convertJsonToRecipe(data) {
-    var tempComponentList = [];
-    var index = 0;
-    while (index < data.ingredients.length) {
-        var tempData = data.ingredients[index];
+    let tempComponentList = [];
+    for (let tempData of data.ingredients) {
         tempComponentList.push(convertJsonToRecipeComponent(tempData));
-        index += 1;
     }
     return new Recipe(
         data.id,
@@ -95,19 +92,14 @@ function convertJsonToRecipe(data) {
 }
 
 recipeList = [];
-var index = 0;
-while (index < recipeDataList.length) {
-    var tempRecipe = convertJsonToRecipe(recipeDataList[index]);
+for (let data of recipeDataList) {
+    let tempRecipe = convertJsonToRecipe(data);
     recipeList.push(tempRecipe);
-    index += 1;
 }
 
 function drawAllRecipes() {
-    var index = 0;
-    while (index < recipeList.length) {
-        var tempRecipe = recipeList[index];
-        tempRecipe.draw();
-        index += 1;
+    for (let recipe of recipeList) {
+        recipe.draw();
     }
 }
 

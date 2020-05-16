@@ -1,173 +1,150 @@
 
-var simpleSpiritSet = [];
+let simpleSpiritSet = [];
 
-function Spirit() {
+class Spirit {
     
-}
-
-// Concrete subclasses of Spirit must implement these methods:
-// getClientJson, getSprite, getDisplayName, hasSameIdentity
-
-Spirit.prototype.canBeMined = function() {
-    return false;
-}
-
-function LoadingSpirit() {
-    Spirit.call(this);
-}
-
-LoadingSpirit.prototype = Object.create(Spirit.prototype);
-LoadingSpirit.prototype.constructor = LoadingSpirit;
-
-var loadingSpirit = new LoadingSpirit();
-
-LoadingSpirit.prototype.getClientJson = function() {
-    return null;
-}
-
-LoadingSpirit.prototype.getSprite = function() {
-    return loadingSprite;
-}
-
-LoadingSpirit.prototype.getDisplayName = function() {
-    return "Loading";
-}
-
-LoadingSpirit.prototype.hasSameIdentity = function(spirit) {
-    return (spirit instanceof LoadingSpirit);
-}
-
-function SimpleSpirit() {
-    Spirit.call(this);
-    new SimpleSpiritType(this);
-    simpleSpiritSet.push(this);
-}
-
-SimpleSpirit.prototype = Object.create(Spirit.prototype);
-SimpleSpirit.prototype.constructor = SimpleSpirit;
-
-// Concrete subclasses of SimpleSpirit must implement these methods:
-// getSerialInteger
-
-SimpleSpirit.prototype.getClientJson = function() {
-    return this.getSerialInteger();
-}
-
-SimpleSpirit.prototype.hasSameIdentity = function(spirit) {
-    if (!(spirit instanceof SimpleSpirit)) {
+    // Concrete subclasses of Spirit must implement these methods:
+    // getClientJson, getSprite, getDisplayName, hasSameIdentity
+    
+    constructor() {
+        
+    }
+    
+    canBeMined() {
         return false;
     }
-    return (this.getSerialInteger() == spirit.getSerialInteger());
 }
 
-function EmptySpirit() {
-    SimpleSpirit.call(this);
+class LoadingSpirit extends Spirit {
+    
+    getClientJson() {
+        return null;
+    }
+    
+    getSprite() {
+        return loadingSprite;
+    }
+    
+    getDisplayName() {
+        return "Loading";
+    }
+    
+    hasSameIdentity(spirit) {
+        return (spirit instanceof LoadingSpirit);
+    }
 }
 
-EmptySpirit.prototype = Object.create(SimpleSpirit.prototype);
-EmptySpirit.prototype.constructor = EmptySpirit;
+let loadingSpirit = new LoadingSpirit();
 
-EmptySpirit.prototype.getSprite = function() {
-    return null;
+class SimpleSpirit extends Spirit {
+    
+    constructor(serialInteger) {
+        super();
+        this.serialInteger = serialInteger
+        new SimpleSpiritType(this);
+        simpleSpiritSet.push(this);
+    }
+    
+    getClientJson() {
+        return this.serialInteger;
+    }
+    
+    hasSameIdentity(spirit) {
+        if (!(spirit instanceof SimpleSpirit)) {
+            return false;
+        }
+        return (this.serialInteger == spirit.serialInteger);
+    }
 }
 
-EmptySpirit.prototype.getDisplayName = function() {
-    return "Empty";
+class EmptySpirit extends SimpleSpirit {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.empty);
+    }
+    
+    getSprite() {
+        return null;
+    }
+    
+    getDisplayName() {
+        return "Empty";
+    }
 }
 
-EmptySpirit.prototype.getSerialInteger = function() {
-    return simpleSpiritSerialIntegerSet.empty;
+class BarrierSpirit extends SimpleSpirit {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.barrier);
+    }
+    
+    getSprite() {
+        return barrierSprite;
+    }
+    
+    getDisplayName() {
+        return "Barrier";
+    }
 }
 
-function BarrierSpirit() {
-    SimpleSpirit.call(this);
+class ResourceSpirit extends SimpleSpirit {
+    
+    constructor(serialInteger, paletteIndex) {
+        super(serialInteger);
+        this.sprite = new Sprite(resourceSpriteSet, 0, paletteIndex);
+    }
+    
+    getSprite() {
+        return this.sprite;
+    }
+    
+    canBeMined() {
+        return true;
+    }
 }
 
-BarrierSpirit.prototype = Object.create(SimpleSpirit.prototype);
-BarrierSpirit.prototype.constructor = BarrierSpirit;
-
-BarrierSpirit.prototype.getSprite = function() {
-    return barrierSprite;
+class MatteriteSpirit extends ResourceSpirit {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.matterite, 0);
+    }
+    
+    getDisplayName() {
+        return "Matterite";
+    }
 }
 
-BarrierSpirit.prototype.getDisplayName = function() {
-    return "Barrier";
+class EnergiteSpirit extends ResourceSpirit {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.energite, 1);
+    }
+    
+    getDisplayName() {
+        return "Energite";
+    }
 }
 
-BarrierSpirit.prototype.getSerialInteger = function() {
-    return simpleSpiritSerialIntegerSet.barrier;
-}
-
-function ResourceSpirit(paletteIndex) {
-    SimpleSpirit.call(this);
-    this.sprite = new Sprite(resourceSpriteSet, 0, paletteIndex);
-}
-
-ResourceSpirit.prototype = Object.create(SimpleSpirit.prototype);
-ResourceSpirit.prototype.constructor = ResourceSpirit;
-
-ResourceSpirit.prototype.getSprite = function() {
-    return this.sprite;
-}
-
-ResourceSpirit.prototype.canBeMined = function() {
-    return true;
-}
-
-function MatteriteSpirit() {
-    ResourceSpirit.call(this, 0);
-}
-
-MatteriteSpirit.prototype = Object.create(ResourceSpirit.prototype);
-MatteriteSpirit.prototype.constructor = MatteriteSpirit;
-
-MatteriteSpirit.prototype.getDisplayName = function() {
-    return "Matterite";
-}
-
-MatteriteSpirit.prototype.getSerialInteger = function() {
-    return simpleSpiritSerialIntegerSet.matterite;
-}
-
-function EnergiteSpirit() {
-    ResourceSpirit.call(this, 1);
-}
-
-EnergiteSpirit.prototype = Object.create(ResourceSpirit.prototype);
-EnergiteSpirit.prototype.constructor = EnergiteSpirit;
-
-EnergiteSpirit.prototype.getDisplayName = function() {
-    return "Energite";
-}
-
-EnergiteSpirit.prototype.getSerialInteger = function() {
-    return simpleSpiritSerialIntegerSet.energite;
-}
-
-function BlockSpirit(colorIndex) {
-    this.colorIndex = colorIndex;
-    SimpleSpirit.call(this);
-    this.sprite = new Sprite(blockSpriteSet, 0, this.colorIndex);
-    this.color = spiritColorSet[this.colorIndex];
-}
-
-BlockSpirit.prototype = Object.create(SimpleSpirit.prototype);
-BlockSpirit.prototype.constructor = BlockSpirit;
-
-BlockSpirit.prototype.getSprite = function() {
-    return this.sprite;
-}
-
-BlockSpirit.prototype.getDisplayName = function() {
-    return this.color.name + " Block";
-}
-
-BlockSpirit.prototype.canBeMined = function() {
-    return true;
-}
-
-BlockSpirit.prototype.getSerialInteger = function() {
-    return simpleSpiritSerialIntegerSet.block + this.colorIndex;
+class BlockSpirit extends SimpleSpirit {
+    
+    constructor(colorIndex) {
+        super(simpleSpiritSerialIntegerSet.block + colorIndex);
+        this.colorIndex = colorIndex;
+        this.sprite = new Sprite(blockSpriteSet, 0, this.colorIndex);
+        this.color = spiritColorSet[this.colorIndex];
+    }
+    
+    getSprite() {
+        return this.sprite;
+    }
+    
+    getDisplayName() {
+        return this.color.name + " Block";
+    }
+    
+    canBeMined() {
+        return true;
+    }
 }
 
 new EmptySpirit();
@@ -175,55 +152,53 @@ new BarrierSpirit();
 new MatteriteSpirit();
 new EnergiteSpirit();
 
-var tempColorIndex = 0;
-while (tempColorIndex < spiritColorAmount) {
-    new BlockSpirit(tempColorIndex);
-    tempColorIndex += 1;
+for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
+    new BlockSpirit(colorIndex);
 }
 
-function ComplexSpirit(classId, id) {
-    Spirit.call(this);
-    this.classId = classId;
-    this.id = id;
-}
-
-ComplexSpirit.prototype = Object.create(Spirit.prototype);
-ComplexSpirit.prototype.constructor = ComplexSpirit;
-
-ComplexSpirit.prototype.getClientJson = function() {
-    return {
-        classId: this.classId,
-        id: this.id
-    };
-}
-
-ComplexSpirit.prototype.hasSameIdentity = function(spirit) {
-    if (!(spirit instanceof ComplexSpirit)) {
-        return false;
+class ComplexSpirit extends Spirit {
+    
+    constructor(classId, id) {
+        super();
+        this.classId = classId;
+        this.id = id;
     }
-    return (this.id === spirit.id);
+    
+    getClientJson() {
+        return {
+            classId: this.classId,
+            id: this.id
+        };
+    }
+    
+    hasSameIdentity(spirit) {
+        if (!(spirit instanceof ComplexSpirit)) {
+            return false;
+        }
+        return (this.id === spirit.id);
+    }
 }
 
-function PlayerSpirit(id, username) {
-    ComplexSpirit.call(this, complexSpiritClassIdSet.player, id);
-    this.username = username;
-}
-
-PlayerSpirit.prototype = Object.create(ComplexSpirit.prototype);
-PlayerSpirit.prototype.constructor = PlayerSpirit;
-
-PlayerSpirit.prototype.getClientJson = function() {
-    var output = ComplexSpirit.prototype.getClientJson.call(this);
-    output.username = this.player.username;
-    return output;
-}
-
-PlayerSpirit.prototype.getSprite = function() {
-    return playerSprite;
-}
-
-PlayerSpirit.prototype.getDisplayName = function() {
-    return this.username;
+class PlayerSpirit extends ComplexSpirit {
+    
+    constructor(id, username) {
+        super(complexSpiritClassIdSet.player, id);
+        this.username = username;
+    }
+    
+    getClientJson() {
+        let output = super.getClientJson();
+        output.username = this.player.username;
+        return output;
+    }
+    
+    getSprite() {
+        return playerSprite;
+    }
+    
+    getDisplayName() {
+        return this.username;
+    }
 }
 
 

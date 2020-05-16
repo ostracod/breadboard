@@ -8,10 +8,6 @@ export let simpleWorldTileMap = {};
 
 class WorldTile extends Tile {
     
-    constructor(spirit) {
-        super(spirit);
-    }
-    
     addEvent(world, pos) {
         // Do nothing.
     }

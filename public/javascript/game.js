@@ -1,31 +1,31 @@
 
-var pixelSize = 6;
-var spritePixelSize = spriteSize * pixelSize;
-var canvasTileWidth;
-var canvasTileHeight;
-var cameraPos = new Pos(0, 0);
-var localPlayerUsername;
-var playerActionOffsetSet = [
+const pixelSize = 6;
+const spritePixelSize = spriteSize * pixelSize;
+let canvasTileWidth;
+let canvasTileHeight;
+let cameraPos = new Pos(0, 0);
+let localPlayerUsername;
+const playerActionOffsetSet = [
     new Pos(-1, 0),
     new Pos(1, 0),
     new Pos(0, -1),
     new Pos(0, 1)
 ];
-var isMining = false;
-var minePlayerPos;
-var mineTargetPos;
-var mineDelay;
-var worldActionNameSet = ["mine", "place", "inspect", "attack"];
-var selectedWorldAction = worldActionNameSet[0];
+let isMining = false;
+let minePlayerPos;
+let mineTargetPos;
+let mineDelay;
+const worldActionNameSet = ["mine", "place", "inspect", "attack"];
+let selectedWorldAction = worldActionNameSet[0];
 
 function drawMineCrack() {
     if (!isMining) {
         return;
     }
-    var tempPos = mineTargetPos.copy();
+    let tempPos = mineTargetPos.copy();
     tempPos.subtract(cameraPos);
     tempPos.scale(spriteSize);
-    var tempIndex = 3 - Math.floor(mineDelay / 9);
+    let tempIndex = 3 - Math.floor(mineDelay / 9);
     if (tempIndex < 0) {
         tempIndex = 0;
     }
@@ -52,12 +52,12 @@ function drawEverything() {
 }
 
 function startMining(offset) {
-    var tempPos = localPlayerWorldTile.pos.copy();
+    let tempPos = localPlayerWorldTile.pos.copy();
     tempPos.add(offset);
     if (isMining && mineTargetPos.equals(tempPos)) {
         return;
     }
-    var tempTile = worldTileGrid.getTile(tempPos);
+    let tempTile = worldTileGrid.getTile(tempPos);
     if (!tempTile.canBeMined()) {
         return;
     }
@@ -75,7 +75,7 @@ function processMineTick() {
         isMining = false;
         return;
     }
-    var tempTile = worldTileGrid.getTile(mineTargetPos);
+    let tempTile = worldTileGrid.getTile(mineTargetPos);
     if (!tempTile.canBeMined()) {
         return;
     }
@@ -90,13 +90,13 @@ function processMineTick() {
 }
 
 function placeWorldTile(offset) {
-    var tempPos = localPlayerWorldTile.pos.copy();
+    let tempPos = localPlayerWorldTile.pos.copy();
     tempPos.add(offset);
-    var tempTile = worldTileGrid.getTile(tempPos);
+    let tempTile = worldTileGrid.getTile(tempPos);
     if (!(tempTile.spirit instanceof EmptySpirit)) {
         return
     }
-    var tempItem = localPlayerInventory.selectedItem;
+    let tempItem = localPlayerInventory.selectedItem;
     if (tempItem === null) {
         return;
     }
@@ -104,7 +104,7 @@ function placeWorldTile(offset) {
         return;
     }
     tempItem.setCount(tempItem.count - 1);
-    var tempTile = getWorldTileWithSpirit(tempItem.spirit);
+    tempTile = getWorldTileWithSpirit(tempItem.spirit);
     worldTileGrid.setTile(tempPos, tempTile);
     addPlaceWorldTileCommand(tempPos, tempItem.spirit);
 }
@@ -113,24 +113,24 @@ function selectWorldAction(name) {
     if (selectedWorldAction == name) {
         return;
     }
-    var tempTag = document.getElementById(name + "WorldAction");
+    let tempTag = document.getElementById(name + "WorldAction");
     tempTag.checked = true;
     selectedWorldAction = name;
 }
 
 function selectWorldActionByIndex(index) {
-    var tempName = worldActionNameSet[index];
+    let tempName = worldActionNameSet[index];
     selectWorldAction(tempName);
 }
 
 function setUpWorldActionTags(name) {
-    var tempTag = document.getElementById(name + "WorldActionContainer")
+    let tempTag = document.getElementById(name + "WorldActionContainer")
     tempTag.style.cursor = "pointer";
-    tempTag.onclick = function() {
+    tempTag.onclick = () => {
         selectWorldAction(name);
     }
-    var tempTag = document.getElementById(name + "WorldAction");
-    tempTag.onchange = function() {
+    tempTag = document.getElementById(name + "WorldAction");
+    tempTag.onchange = () => {
         selectWorldAction(name);
     }
 }
@@ -186,103 +186,154 @@ function addCraftCommand(recipe) {
     });
 }
 
-addCommandRepeater("walk", function(command) {
+addCommandRepeater("walk", command => {
     if (localPlayerWorldTile === null) {
         return;
     }
-    var tempOffset = createPosFromJson(command.offset);
+    let tempOffset = createPosFromJson(command.offset);
     localPlayerWorldTile.move(tempOffset);
 });
 
-addCommandRepeater("mine", function(command) {
-    var tempPos = createPosFromJson(command.pos);
+addCommandRepeater("mine", command => {
+    let tempPos = createPosFromJson(command.pos);
     worldTileGrid.setTile(tempPos, emptyWorldTile);
 });
 
-addCommandRepeater("placeWorldTile", function(command) {
-    var tempPos = createPosFromJson(command.pos);
-    var tempSpirit = convertJsonToSpirit(command.spirit);
-    var tempTile = getWorldTileWithSpirit(tempSpirit);
+addCommandRepeater("placeWorldTile", command => {
+    let tempPos = createPosFromJson(command.pos);
+    let tempSpirit = convertJsonToSpirit(command.spirit);
+    let tempTile = getWorldTileWithSpirit(tempSpirit);
     worldTileGrid.setTile(tempPos, tempTile);
 });
 
-addCommandListener("setWorldTileGrid", function(command) {
+addCommandListener("setWorldTileGrid", command => {
     worldTileGrid.windowOffset = createPosFromJson(command.pos);
     playerWorldTileList = [];
     tempTileList = [];
-    var tempOffset = new Pos(0, 0);
-    var tempPos = new Pos(0, 0);
-    var index = 0;
-    while (index < command.tiles.length) {
+    let tempOffset = new Pos(0, 0);
+    let tempPos = new Pos(0, 0);
+    for (let data of command.tiles) {
         tempPos.set(worldTileGrid.windowOffset);
         tempPos.add(tempOffset);
-        var tempData = command.tiles[index];
-        var tempTile = convertJsonToWorldTile(tempData, tempPos);
+        let tempTile = convertJsonToWorldTile(data, tempPos);
         tempTileList.push(tempTile);
         tempOffset.x += 1;
         if (tempOffset.x >= command.width) {
             tempOffset.x = 0;
             tempOffset.y += 1;
         }
-        index += 1;
     }
     worldTileGrid.setTiles(tempTileList, command.width, command.height);
 });
 
-addCommandListener("updateInventoryItem", function(command) {
-    var tempItemData = command.inventoryItem;
-    var tempSpirit = convertJsonToSpirit(tempItemData.spirit);
+addCommandListener("updateInventoryItem", command => {
+    let tempItemData = command.inventoryItem;
+    let tempSpirit = convertJsonToSpirit(tempItemData.spirit);
     localPlayerInventory.setItemCountBySpirit(tempSpirit, tempItemData.count);
 });
 
-function ClientDelegate() {
+class ClientDelegate {
     
+    constructor() {
+        
+    }
+    
+    initialize() {
+        canvasTileWidth = Math.floor(canvasWidth / spritePixelSize);
+        canvasTileHeight = Math.floor(canvasHeight / spritePixelSize);
+        initializeSpriteSheet(() => {
+            drawAllRecipes();
+        });
+        addGetInventoryCommand();
+        for (let name of worldActionNameSet) {
+            setUpWorldActionTags(name);
+        }
+        let tempTag = document.getElementById("playerInventoryItems");
+        localPlayerInventory = new Inventory(tempTag);
+    }
+    
+    setLocalPlayerInfo(command) {
+        localPlayerUsername = command.username;
+    }
+    
+    addCommandsBeforeUpdateRequest() {
+        addSetWalkControllerCommand();
+        addGetStateCommand();
+    }
+    
+    timerEvent() {
+        for (let tile of playerWorldTileList) {
+            tile.tick();
+        }
+        processMineTick();
+        drawEverything();
+    }
+    
+    keyDownEvent(keyCode) {
+        if (focusedTextInput !== null) {
+            return true;
+        }
+        if (keyCode == 37 || keyCode == 65) {
+            startLocalPlayerAction(0);
+            return false;
+        }
+        if (keyCode == 39 || keyCode == 68) {
+            startLocalPlayerAction(1);
+            return false;
+        }
+        if (keyCode == 38 || keyCode == 87) {
+            startLocalPlayerAction(2);
+            return false;
+        }
+        if (keyCode == 40 || keyCode == 83) {
+            startLocalPlayerAction(3);
+            return false;
+        }
+        if (keyCode == 49) {
+            selectWorldActionByIndex(0);
+        }
+        if (keyCode == 50) {
+            selectWorldActionByIndex(1);
+        }
+        if (keyCode == 51) {
+            selectWorldActionByIndex(2);
+        }
+        if (keyCode == 52) {
+            selectWorldActionByIndex(3);
+        }
+        if (keyCode == 82) {
+            localPlayerInventory.selectPreviousItem();
+        }
+        if (keyCode == 70) {
+            localPlayerInventory.selectNextItem();
+        }
+        return true;
+    }
+    
+    keyUpEvent(keyCode) {
+        if (keyCode == 37 || keyCode == 65) {
+            stopLocalPlayerAction(0);
+        }
+        if (keyCode == 39 || keyCode == 68) {
+            stopLocalPlayerAction(1);
+        }
+        if (keyCode == 38 || keyCode == 87) {
+            stopLocalPlayerAction(2);
+        }
+        if (keyCode == 40 || keyCode == 83) {
+            stopLocalPlayerAction(3);
+        }
+        return true;
+    }
 }
 
 clientDelegate = new ClientDelegate();
-
-ClientDelegate.prototype.initialize = function() {
-    canvasTileWidth = Math.floor(canvasWidth / spritePixelSize);
-    canvasTileHeight = Math.floor(canvasHeight / spritePixelSize);
-    initializeSpriteSheet(function() {
-        drawAllRecipes();
-    });
-    addGetInventoryCommand();
-    var index = 0;
-    while (index < worldActionNameSet.length) {
-        var tempName = worldActionNameSet[index];
-        setUpWorldActionTags(tempName);
-        index += 1;
-    }
-    var tempTag = document.getElementById("playerInventoryItems");
-    localPlayerInventory = new Inventory(tempTag);
-}
-
-ClientDelegate.prototype.setLocalPlayerInfo = function(command) {
-    localPlayerUsername = command.username;
-}
-
-ClientDelegate.prototype.addCommandsBeforeUpdateRequest = function() {
-    addSetWalkControllerCommand();
-    addGetStateCommand();
-}
-
-ClientDelegate.prototype.timerEvent = function() {
-    var index = 0;
-    while (index < playerWorldTileList.length) {
-        var tempTile = playerWorldTileList[index];
-        tempTile.tick();
-        index += 1;
-    }
-    processMineTick();
-    drawEverything();
-}
 
 function startLocalPlayerAction(offsetIndex) {
     if (localPlayerWorldTile === null) {
         return;
     }
-    var offset = playerActionOffsetSet[offsetIndex];
+    let offset = playerActionOffsetSet[offsetIndex];
     if (shiftKeyIsHeld) {
         if (selectedWorldAction == "mine") {
             startMining(offset);
@@ -298,65 +349,8 @@ function stopLocalPlayerAction(offsetIndex) {
     if (localPlayerWorldTile === null) {
         return;
     }
-    var offset = playerActionOffsetSet[offsetIndex];
+    let offset = playerActionOffsetSet[offsetIndex];
     localPlayerWorldTile.walkController.stopWalk(offset);
-}
-
-ClientDelegate.prototype.keyDownEvent = function(keyCode) {
-    if (focusedTextInput !== null) {
-        return true;
-    }
-    if (keyCode == 37 || keyCode == 65) {
-        startLocalPlayerAction(0);
-        return false;
-    }
-    if (keyCode == 39 || keyCode == 68) {
-        startLocalPlayerAction(1);
-        return false;
-    }
-    if (keyCode == 38 || keyCode == 87) {
-        startLocalPlayerAction(2);
-        return false;
-    }
-    if (keyCode == 40 || keyCode == 83) {
-        startLocalPlayerAction(3);
-        return false;
-    }
-    if (keyCode == 49) {
-        selectWorldActionByIndex(0);
-    }
-    if (keyCode == 50) {
-        selectWorldActionByIndex(1);
-    }
-    if (keyCode == 51) {
-        selectWorldActionByIndex(2);
-    }
-    if (keyCode == 52) {
-        selectWorldActionByIndex(3);
-    }
-    if (keyCode == 82) {
-        localPlayerInventory.selectPreviousItem();
-    }
-    if (keyCode == 70) {
-        localPlayerInventory.selectNextItem();
-    }
-    return true;
-}
-
-ClientDelegate.prototype.keyUpEvent = function(keyCode) {
-    if (keyCode == 37 || keyCode == 65) {
-        stopLocalPlayerAction(0);
-    }
-    if (keyCode == 39 || keyCode == 68) {
-        stopLocalPlayerAction(1);
-    }
-    if (keyCode == 38 || keyCode == 87) {
-        stopLocalPlayerAction(2);
-    }
-    if (keyCode == 40 || keyCode == 83) {
-        stopLocalPlayerAction(3);
-    }
-    return true;
 }
 
 
