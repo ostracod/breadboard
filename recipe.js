@@ -1,83 +1,73 @@
 
-var tempResource = require("./spirit");
-var simpleSpiritSerialIntegerSet = tempResource.simpleSpiritSerialIntegerSet;
-var spiritColorAmount = tempResource.spiritColorAmount;
-var simpleSpiritTypeMap = require("./spiritType").simpleSpiritTypeMap;
+import {simpleSpiritSerialIntegerSet, spiritColorAmount} from "./spirit.js";
+import {simpleSpiritTypeMap} from "./spiritType.js";
 
-var recipeList = [];
-var recipeDataList = [];
-var nextRecipeId = 0;
+export let recipeList = [];
+export let recipeDataList = [];
+let nextRecipeId = 0;
 
-function RecipeComponent(spiritType, count) {
-    this.spiritType = spiritType;
-    this.count = count;
-}
-
-RecipeComponent.prototype.getClientJson = function() {
-    return {
-        spiritType: this.spiritType.getClientJson(),
-        count: this.count
-    };
-}
-
-function Recipe(ingredients, product) {
-    this.ingredients = ingredients;
-    this.product = product;
-    this.id = nextRecipeId;
-    nextRecipeId += 1;
-    recipeList.push(this);
-    recipeDataList.push(this.getClientJson());
-}
-
-Recipe.prototype.getClientJson = function() {
-    var tempDataList = [];
-    var index = 0;
-    while (index < this.ingredients.length) {
-        var tempIngredient = this.ingredients[index];
-        tempDataList.push(tempIngredient.getClientJson());
-        index += 1;
+class RecipeComponent {
+    
+    constructor(spiritType, count) {
+        this.spiritType = spiritType;
+        this.count = count;
     }
-    return {
-        id: this.id,
-        ingredients: tempDataList,
-        product: this.product.getClientJson()
-    };
+    
+    getClientJson() {
+        return {
+            spiritType: this.spiritType.getClientJson(),
+            count: this.count
+        };
+    }
+}
+
+class Recipe {
+    
+    constructor(ingredients, product) {
+        this.ingredients = ingredients;
+        this.product = product;
+        this.id = nextRecipeId;
+        nextRecipeId += 1;
+        recipeList.push(this);
+        recipeDataList.push(this.getClientJson());
+    }
+    
+    getClientJson() {
+        let tempDataList = [];
+        for (let ingredient of this.ingredients) {
+            tempDataList.push(ingredient.getClientJson());
+        }
+        return {
+            id: this.id,
+            ingredients: tempDataList,
+            product: this.product.getClientJson()
+        };
+    }
 }
 
 function createSimpleRecipeComponent(spiritKey, count, offset) {
-    var tempInteger = simpleSpiritSerialIntegerSet[spiritKey];
+    let tempInteger = simpleSpiritSerialIntegerSet[spiritKey];
     if (typeof offset !== "undefined") {
         tempInteger += offset;
     }
-    var tempType = simpleSpiritTypeMap[tempInteger];
+    let tempType = simpleSpiritTypeMap[tempInteger];
     return new RecipeComponent(tempType, count);
 }
 
-var tempColorIndex = 0;
-while (tempColorIndex < spiritColorAmount) {
+for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new Recipe(
         [createSimpleRecipeComponent("matterite", 2)],
-        createSimpleRecipeComponent("block", 1, tempColorIndex)
+        createSimpleRecipeComponent("block", 1, colorIndex)
     );
-    tempColorIndex += 1;
 }
 
-function getRecipeById(id) {
-    var index = 0;
-    while (index < recipeList.length) {
-        var tempRecipe = recipeList[index];
-        if (tempRecipe.id == id) {
-            return tempRecipe;
+export function getRecipeById(id) {
+    for (let recipe of recipeList) {
+        if (recipe.id == id) {
+            return recipe;
         }
-        index += 1;
     }
     return null;
 }
-
-module.exports = {
-    recipeList: recipeList,
-    recipeDataList: recipeDataList,
-    getRecipeById: getRecipeById
-};
 
 

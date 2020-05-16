@@ -1,6 +1,7 @@
 {
     "name": "breadboard",
     "version": "1.0.0",
+    "type": "module",
     "dependencies": {
         "ostracod-multiplayer": "github:ostracod/ostracod-multiplayer"
     }

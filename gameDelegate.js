@@ -1,24 +1,22 @@
 
-var gameUtils = require("ostracod-multiplayer").gameUtils;
-var tempResource = require("./pos");
-var Pos = tempResource.Pos;
-var createPosFromJson = tempResource.createPosFromJson;
-var world = require("./world").world;
-var convertJsonToSpiritReference = require("./spiritReference").convertJsonToSpiritReference;
-var tempResource = require("./spirit");
-var PlayerSpirit = tempResource.PlayerSpirit;
-var EmptySpirit = tempResource.EmptySpirit;
-var PlayerWorldTile = require("./worldTile").PlayerWorldTile;
-var getRecipeById = require("./recipe").getRecipeById;
+import ostracodMultiplayer from "ostracod-multiplayer";
+import {Pos, createPosFromJson} from "./pos.js";
+import {world} from "./world.js";
+import {convertJsonToSpiritReference} from "./spiritReference.js";
+import {PlayerSpirit, EmptySpirit} from "./spirit.js";
+import {PlayerWorldTile} from "./worldTile.js";
+import {getRecipeById} from "./recipe.js";
+
+let gameUtils = ostracodMultiplayer.gameUtils;
 
 function addSetWorldTileGridCommand(player, commandList) {
-    var tempWindowSize = 21;
-    var tempTile = world.getPlayerTile(player);
-    var tempPos = tempTile.pos.copy();
-    var tempCenterOffset = Math.floor(tempWindowSize / 2);
+    let tempWindowSize = 21;
+    let tempTile = world.getPlayerTile(player);
+    let tempPos = tempTile.pos.copy();
+    let tempCenterOffset = Math.floor(tempWindowSize / 2);
     tempPos.x -= tempCenterOffset;
     tempPos.y -= tempCenterOffset;
-    var tempTileJsonList = world.getClientJson(tempPos, tempWindowSize, tempWindowSize);
+    let tempTileJsonList = world.getClientJson(tempPos, tempWindowSize, tempWindowSize);
     commandList.push({
         commandName: "setWorldTileGrid",
         pos: tempPos.toJson(),
@@ -40,14 +38,11 @@ function addUpdateInventoryItemCommand(inventoryItem, commandList) {
 gameUtils.addCommandListener(
     "getInventory",
     true,
-    function(command, player, commandList) {
-        var tempSpirit = world.getPlayerSpirit(player);
-        var tempInventory = tempSpirit.inventory;
-        var index = 0;
-        while (index < tempInventory.items.length) {
-            var tempItem = tempInventory.items[index];
-            addUpdateInventoryItemCommand(tempItem, commandList);
-            index += 1;
+    (command, player, commandList) => {
+        let tempSpirit = world.getPlayerSpirit(player);
+        let tempInventory = tempSpirit.inventory;
+        for (let item of tempInventory.items) {
+            addUpdateInventoryItemCommand(item, commandList);
         }
     }
 );
@@ -55,8 +50,8 @@ gameUtils.addCommandListener(
 gameUtils.addCommandListener(
     "setWalkController",
     true,
-    function(command, player, commandList) {
-        var tempTile = world.getPlayerTile(player);
+    (command, player, commandList) => {
+        let tempTile = world.getPlayerTile(player);
         tempTile.walkControllerData = command.walkController;
     }
 );
@@ -64,7 +59,7 @@ gameUtils.addCommandListener(
 gameUtils.addCommandListener(
     "getState",
     true,
-    function(command, player, commandList) {
+    (command, player, commandList) => {
         addSetWorldTileGridCommand(player, commandList);
     }
 );
@@ -72,9 +67,9 @@ gameUtils.addCommandListener(
 gameUtils.addCommandListener(
     "walk",
     true,
-    function(command, player, commandList) {
-        var tempTile = world.getPlayerTile(player);
-        var tempOffset = createPosFromJson(command.offset);
+    (command, player, commandList) => {
+        let tempTile = world.getPlayerTile(player);
+        let tempOffset = createPosFromJson(command.offset);
         tempTile.walk(tempOffset);
     }
 );
@@ -82,10 +77,10 @@ gameUtils.addCommandListener(
 gameUtils.addCommandListener(
     "mine",
     true,
-    function(command, player, commandList) {
-        var tempTile = world.getPlayerTile(player);
-        var tempPos = createPosFromJson(command.pos);
-        var tempItem = tempTile.mine(tempPos);
+    (command, player, commandList) => {
+        let tempTile = world.getPlayerTile(player);
+        let tempPos = createPosFromJson(command.pos);
+        let tempItem = tempTile.mine(tempPos);
         if (tempItem !== null) {
             addUpdateInventoryItemCommand(tempItem, commandList);
         }
@@ -95,11 +90,11 @@ gameUtils.addCommandListener(
 gameUtils.addCommandListener(
     "placeWorldTile",
     true,
-    function(command, player, commandList) {
-        var tempTile = world.getPlayerTile(player);
-        var tempPos = createPosFromJson(command.pos);
-        var tempReference = convertJsonToSpiritReference(command.spirit);
-        var tempItem = tempTile.placeWorldTile(tempPos, tempReference);
+    (command, player, commandList) => {
+        let tempTile = world.getPlayerTile(player);
+        let tempPos = createPosFromJson(command.pos);
+        let tempReference = convertJsonToSpiritReference(command.spirit);
+        let tempItem = tempTile.placeWorldTile(tempPos, tempReference);
         if (tempItem !== null) {
             addUpdateInventoryItemCommand(tempItem, commandList);
         }
@@ -109,50 +104,50 @@ gameUtils.addCommandListener(
 gameUtils.addCommandListener(
     "craft",
     true,
-    function(command, player, commandList) {
-        var tempTile = world.getPlayerTile(player);
-        var tempInventory = tempTile.spirit.inventory;
-        var tempRecipe = getRecipeById(command.recipeId);
-        var tempItemList = tempInventory.craftRecipe(tempRecipe);
-        var index = 0;
-        while (index < tempItemList.length) {
-            var tempItem = tempItemList[index];
-            addUpdateInventoryItemCommand(tempItem, commandList);
-            index += 1;
+    (command, player, commandList) => {
+        let tempTile = world.getPlayerTile(player);
+        let tempInventory = tempTile.spirit.inventory;
+        let tempRecipe = getRecipeById(command.recipeId);
+        let tempItemList = tempInventory.craftRecipe(tempRecipe);
+        for (let item of tempItemList) {
+            addUpdateInventoryItemCommand(item, commandList);
         }
     }
 );
 
-function GameDelegate() {
+class GameDelegate {
     
-}
-
-var gameDelegate = new GameDelegate();
-
-GameDelegate.prototype.playerEnterEvent = function(player) {
-    var tempSpirit = new PlayerSpirit(player);
-    var tempTile = new PlayerWorldTile(tempSpirit);
-    // TODO: Make player tile placement more robust.
-    var tempPos = new Pos(3, 3);
-    while (true) {
-        var tempOldTile = world.getTile(tempPos);
-        if (tempOldTile.spirit instanceof EmptySpirit) {
-            break;
-        }
-        tempPos.x += 1;
+    constructor() {
+        
     }
-    tempTile.addToWorld(world, tempPos);
-}
-
-GameDelegate.prototype.playerLeaveEvent = function(player) {
-    var tempTile = world.getPlayerTile(player);
-    tempTile.removeFromWorld();
-}
-
-GameDelegate.prototype.persistEvent = function(done) {
     
-    done();
+    playerEnterEvent(player) {
+        let tempSpirit = new PlayerSpirit(player);
+        let tempTile = new PlayerWorldTile(tempSpirit);
+        // TODO: Make player tile placement more robust.
+        let tempPos = new Pos(3, 3);
+        while (true) {
+            let tempOldTile = world.getTile(tempPos);
+            if (tempOldTile.spirit instanceof EmptySpirit) {
+                break;
+            }
+            tempPos.x += 1;
+        }
+        tempTile.addToWorld(world, tempPos);
+    }
+    
+    playerLeaveEvent(player) {
+        let tempTile = world.getPlayerTile(player);
+        tempTile.removeFromWorld();
+    }
+    
+    persistEvent(done) {
+        
+        done();
+    }
 }
+
+export let gameDelegate = new GameDelegate();
 
 function timerEvent() {
     if (gameUtils.isPersistingEverything) {
@@ -162,9 +157,5 @@ function timerEvent() {
 }
 
 setInterval(timerEvent, 40);
-
-module.exports = {
-    gameDelegate: gameDelegate
-};
 
 

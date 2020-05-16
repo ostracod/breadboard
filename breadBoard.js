@@ -1,26 +1,31 @@
 
-var express = require("express");
-var ostracodMultiplayer = require("ostracod-multiplayer").ostracodMultiplayer;
-var gameDelegate = require("./gameDelegate").gameDelegate;
-var tempResource = require("./spirit");
-var simpleSpiritSerialIntegerSet = tempResource.simpleSpiritSerialIntegerSet;
-var complexSpiritClassIdSet = tempResource.complexSpiritClassIdSet;
-var recipeDataList = require("./recipe").recipeDataList;
+import * as pathUtils from "path"
+import express from "express";
+import ostracodMultiplayer from "ostracod-multiplayer";
+import {gameDelegate} from "./gameDelegate.js";
+import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet} from "./spirit.js";
+import {recipeDataList} from "./recipe.js";
+
+let ostracodMultiplayerInstance = ostracodMultiplayer.ostracodMultiplayer;
 
 console.log("Starting BreadBoard server...");
 
-var router = express.Router();
+let router = express.Router();
 
-router.get("/javascript/gameConstants.js", function(req, res, next) {
-    var tempLineList = [
-        "var simpleSpiritSerialIntegerSet = " + JSON.stringify(simpleSpiritSerialIntegerSet) + ";",
-        "var complexSpiritClassIdSet = " + JSON.stringify(complexSpiritClassIdSet) + ";",
-        "var recipeDataList = " + JSON.stringify(recipeDataList) + ";"
+router.get("/javascript/gameConstants.js", (req, res, next) => {
+    let tempLineList = [
+        `let simpleSpiritSerialIntegerSet = ${JSON.stringify(simpleSpiritSerialIntegerSet)};`,
+        `let complexSpiritClassIdSet = ${JSON.stringify(complexSpiritClassIdSet)};`,
+        `let recipeDataList = ${JSON.stringify(recipeDataList)};`
     ];
     res.send(tempLineList.join("\n"));
 });
 
-var tempResult = ostracodMultiplayer.initializeServer(__dirname, gameDelegate, [router]);
+let tempResult = ostracodMultiplayerInstance.initializeServer(
+    pathUtils.resolve(),
+    gameDelegate,
+    [router]
+);
 
 if (!tempResult) {
     process.exit(1);

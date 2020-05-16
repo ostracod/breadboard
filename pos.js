@@ -1,50 +1,48 @@
 
-function Pos(x, y) {
-    this.x = x;
-    this.y = y;
-}
-
-Pos.prototype.copy = function() {
-    return new Pos(this.x, this.y);
-}
-
-Pos.prototype.set = function(pos) {
-    this.x = pos.x;
-    this.y = pos.y;
-}
-
-Pos.prototype.add = function(pos) {
-    this.x += pos.x;
-    this.y += pos.y;
-}
-
-Pos.prototype.subtract = function(pos) {
-    this.x -= pos.x;
-    this.y -= pos.y;
-}
-
-Pos.prototype.equals = function(pos) {
-    return (this.x == pos.x && this.y == pos.y);
-}
-
-Pos.prototype.toString = function() {
-    return "(" + this.x + ", " + this.y + ")";
-}
-
-Pos.prototype.toJson = function() {
-    return {
-        x: this.x,
-        y: this.y
+export class Pos {
+    
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    
+    copy() {
+        return new Pos(this.x, this.y);
+    }
+    
+    set(pos) {
+        this.x = pos.x;
+        this.y = pos.y;
+    }
+    
+    add(pos) {
+        this.x += pos.x;
+        this.y += pos.y;
+    }
+    
+    subtract(pos) {
+        this.x -= pos.x;
+        this.y -= pos.y;
+    }
+    
+    equals(pos) {
+        return (this.x == pos.x && this.y == pos.y);
+    }
+    
+    toString() {
+        return "(" + this.x + ", " + this.y + ")";
+    }
+    
+    toJson() {
+        return {
+            x: this.x,
+            y: this.y
+        };
     }
 }
 
-function createPosFromJson(data) {
+export function createPosFromJson(data) {
     return new Pos(data.x, data.y);
 }
-
-module.exports = {
-    Pos: Pos,
-    createPosFromJson: createPosFromJson
-};
 
 

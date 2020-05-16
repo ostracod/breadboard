@@ -1,11 +1,9 @@
 
-var tempResource = require("./spiritReference");
-var SimpleSpiritReference = tempResource.SimpleSpiritReference;
-var ComplexSpiritReference = tempResource.ComplexSpiritReference;
-var Inventory = require("./inventory").Inventory;
-var SimpleSpiritType = require("./spiritType").SimpleSpiritType;
+import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
+import {Inventory} from "./inventory.js";
+import {SimpleSpiritType} from "./spiritType.js";
 
-var simpleSpiritSerialIntegerSet = {
+export const simpleSpiritSerialIntegerSet = {
     empty: 0,
     barrier: 1,
     matterite: 2,
@@ -13,14 +11,14 @@ var simpleSpiritSerialIntegerSet = {
     block: 4
 };
 
-var complexSpiritClassIdSet = {
+export const complexSpiritClassIdSet = {
     player: 0
 };
 
-var spiritColorAmount = 16;
+export const spiritColorAmount = 16;
 
-var simpleSpiritSet = [];
-var nextComplexSpiritId = 0;
+export let simpleSpiritSet = [];
+let nextComplexSpiritId = 0;
 
 // The idea is that a Spirit is something which may
 // exist as a Tile or Item.
@@ -29,111 +27,87 @@ var nextComplexSpiritId = 0;
 // A ComplexSpirit holds custom state, and must
 // be serialized as a JSON dictionary.
 
-function Spirit() {
+class Spirit {
     
+    // Concrete subclasses of Spirit must implement these methods:
+    // getClientJson, getReference
+    
+    constructor() {
+        
+    }
+    
+    hasSameIdentity(spirit) {
+        return this.getReference().equals(spirit.getReference());
+    }
+    
+    canBeMined() {
+        return false;
+    }
 }
 
-// Concrete subclasses of Spirit must implement these methods:
-// getClientJson, getReference
-
-Spirit.prototype.hasSameIdentity = function(spirit) {
-    return this.getReference().equals(spirit.getReference());
+export class SimpleSpirit extends Spirit {
+    
+    constructor(serialInteger) {
+        super();
+        this.serialInteger = serialInteger
+        this.reference = new SimpleSpiritReference(this.serialInteger);
+        new SimpleSpiritType(this);
+        simpleSpiritSet.push(this);
+    }
+    
+    getClientJson() {
+        return this.serialInteger;
+    }
+    
+    getReference() {
+        return this.reference;
+    }
 }
 
-Spirit.prototype.canBeMined = function() {
-    return false;
+export class EmptySpirit extends SimpleSpirit {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.empty);
+    }
 }
 
-function SimpleSpirit() {
-    Spirit.call(this);
-    this.reference = new SimpleSpiritReference(this.getSerialInteger());
-    new SimpleSpiritType(this);
-    simpleSpiritSet.push(this);
+export class BarrierSpirit extends SimpleSpirit {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.barrier);
+    }
 }
 
-SimpleSpirit.prototype = Object.create(Spirit.prototype);
-SimpleSpirit.prototype.constructor = SimpleSpirit;
-
-// Concrete subclasses of SimpleSpirit must implement these methods:
-// getSerialInteger
-
-SimpleSpirit.prototype.getClientJson = function() {
-    return this.getSerialInteger();
+class ResourceSpirit extends SimpleSpirit {
+    
+    canBeMined() {
+        return true;
+    }
 }
 
-SimpleSpirit.prototype.getReference = function() {
-    return this.reference;
+export class MatteriteSpirit extends ResourceSpirit {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.matterite);
+    }
 }
 
-function EmptySpirit() {
-    SimpleSpirit.call(this);
+export class EnergiteSpirit extends ResourceSpirit {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.energite);
+    }
 }
 
-EmptySpirit.prototype = Object.create(SimpleSpirit.prototype);
-EmptySpirit.prototype.constructor = EmptySpirit;
-
-EmptySpirit.prototype.getSerialInteger = function() {
-    return simpleSpiritSerialIntegerSet.empty;
-}
-
-function BarrierSpirit() {
-    SimpleSpirit.call(this);
-}
-
-BarrierSpirit.prototype = Object.create(SimpleSpirit.prototype);
-BarrierSpirit.prototype.constructor = BarrierSpirit;
-
-BarrierSpirit.prototype.getSerialInteger = function() {
-    return simpleSpiritSerialIntegerSet.barrier;
-}
-
-function ResourceSpirit() {
-    SimpleSpirit.call(this);
-}
-
-ResourceSpirit.prototype = Object.create(SimpleSpirit.prototype);
-ResourceSpirit.prototype.constructor = ResourceSpirit;
-
-ResourceSpirit.prototype.canBeMined = function() {
-    return true;
-}
-
-function MatteriteSpirit() {
-    ResourceSpirit.call(this);
-}
-
-MatteriteSpirit.prototype = Object.create(ResourceSpirit.prototype);
-MatteriteSpirit.prototype.constructor = MatteriteSpirit;
-
-MatteriteSpirit.prototype.getSerialInteger = function() {
-    return simpleSpiritSerialIntegerSet.matterite;
-}
-
-function EnergiteSpirit() {
-    ResourceSpirit.call(this);
-}
-
-EnergiteSpirit.prototype = Object.create(ResourceSpirit.prototype);
-EnergiteSpirit.prototype.constructor = EnergiteSpirit;
-
-EnergiteSpirit.prototype.getSerialInteger = function() {
-    return simpleSpiritSerialIntegerSet.energite;
-}
-
-function BlockSpirit(colorIndex) {
-    this.colorIndex = colorIndex;
-    SimpleSpirit.call(this);
-}
-
-BlockSpirit.prototype = Object.create(SimpleSpirit.prototype);
-BlockSpirit.prototype.constructor = BlockSpirit;
-
-BlockSpirit.prototype.canBeMined = function() {
-    return true;
-}
-
-BlockSpirit.prototype.getSerialInteger = function() {
-    return simpleSpiritSerialIntegerSet.block + this.colorIndex;
+export class BlockSpirit extends SimpleSpirit {
+    
+    constructor(colorIndex) {
+        super(simpleSpiritSerialIntegerSet.block + colorIndex);
+    }
+    
+    canBeMined() {
+        return true;
+    }
 }
 
 new EmptySpirit();
@@ -141,63 +115,45 @@ new BarrierSpirit();
 new MatteriteSpirit();
 new EnergiteSpirit();
 
-var tempColorIndex = 0;
-while (tempColorIndex < spiritColorAmount) {
-    new BlockSpirit(tempColorIndex);
-    tempColorIndex += 1;
+for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
+    new BlockSpirit(colorIndex);
 }
 
-function ComplexSpirit(classId) {
-    Spirit.call(this);
-    this.classId = classId;
-    this.id = nextComplexSpiritId;
-    nextComplexSpiritId += 1;
-    this.reference = new ComplexSpiritReference(this.id);
-}
-
-ComplexSpirit.prototype = Object.create(Spirit.prototype);
-ComplexSpirit.prototype.constructor = ComplexSpirit;
-
-ComplexSpirit.prototype.getClientJson = function() {
-    return {
-        classId: this.classId,
-        id: this.id
-    };
-}
-
-ComplexSpirit.prototype.getReference = function() {
-    return this.reference;
-}
-
-function PlayerSpirit(player) {
-    ComplexSpirit.call(this, complexSpiritClassIdSet.player);
-    this.player = player;
-    this.inventory = new Inventory();
-}
-
-PlayerSpirit.prototype = Object.create(ComplexSpirit.prototype);
-PlayerSpirit.prototype.constructor = PlayerSpirit;
-
-PlayerSpirit.prototype.getClientJson = function() {
-    var output = ComplexSpirit.prototype.getClientJson.call(this);
-    output.username = this.player.username;
-    return output;
-}
-
-module.exports = {
-    simpleSpiritSerialIntegerSet: simpleSpiritSerialIntegerSet,
-    complexSpiritClassIdSet: complexSpiritClassIdSet,
-    spiritColorAmount: spiritColorAmount,
-    simpleSpiritSet: simpleSpiritSet,
+export class ComplexSpirit extends Spirit {
     
-    SimpleSpirit: SimpleSpirit,
-    ComplexSpirit: ComplexSpirit,
-    EmptySpirit: EmptySpirit,
-    BarrierSpirit: BarrierSpirit,
-    MatteriteSpirit: MatteriteSpirit,
-    EnergiteSpirit: EnergiteSpirit,
-    BlockSpirit: BlockSpirit,
-    PlayerSpirit: PlayerSpirit
-};
+    constructor(classId) {
+        super();
+        this.classId = classId;
+        this.id = nextComplexSpiritId;
+        nextComplexSpiritId += 1;
+        this.reference = new ComplexSpiritReference(this.id);
+    }
+    
+    getClientJson() {
+        return {
+            classId: this.classId,
+            id: this.id
+        };
+    }
+    
+    getReference() {
+        return this.reference;
+    }
+}
+
+export class PlayerSpirit extends ComplexSpirit {
+    
+    constructor(player) {
+        super(complexSpiritClassIdSet.player);
+        this.player = player;
+        this.inventory = new Inventory();
+    }
+    
+    getClientJson() {
+        let output = super.getClientJson();
+        output.username = this.player.username;
+        return output;
+    }
+}
 
 
