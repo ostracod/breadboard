@@ -147,6 +147,19 @@ export class PlayerSpirit extends ComplexSpirit {
         super(complexSpiritClassIdSet.player);
         this.player = player;
         this.inventory = new Inventory();
+        this.inventory.addObserver(this);
+        this.inventoryUpdates = [];
+    }
+    
+    inventoryChangeEvent(inventory, item) {
+        for (let index = 0; index < this.inventoryUpdates.length; index++) {
+            let tempItem = this.inventoryUpdates[index];
+            if (item.spirit === tempItem.spirit) {
+                this.inventoryUpdates[index] = item;
+                return;
+            }
+        }
+        this.inventoryUpdates.push(item);
     }
     
     getClientJson() {

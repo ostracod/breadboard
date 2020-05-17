@@ -8,6 +8,11 @@ export class InventoryItem {
         this.spirit = spirit;
         this.count = count;
         this.inventory.items.push(this);
+        this.notifyInventoryObservers();
+    }
+    
+    notifyInventoryObservers() {
+        this.inventory.notifyObservers(this);
     }
     
     getClientJson() {
@@ -19,6 +24,7 @@ export class InventoryItem {
     
     setCount(count) {
         this.count = count;
+        this.notifyInventoryObservers();
         if (this.count <= 0) {
             this.inventory.removeItem(this);
         }
@@ -40,6 +46,25 @@ export class Inventory {
     
     constructor() {
         this.items = [];
+        this.observers = [];
+    }
+    
+    addObserver(observer) {
+        this.observers.push(observer);
+    }
+    
+    removeObserver(observer) {
+        let index = this.observers.indexOf(observer);
+        if (index < 0) {
+            return;
+        }
+        this.observers.splice(index, 1);
+    }
+    
+    notifyObservers(item) {
+        for (let observer of this.observers) {
+            observer.inventoryChangeEvent(this, item);
+        }
     }
     
     findItemBySpirit(spirit) {
@@ -88,11 +113,10 @@ export class Inventory {
     incrementItemCountBySpirit(spirit) {
         let tempItem = this.getItemBySpirit(spirit);
         if (tempItem === null) {
-            tempItem = new InventoryItem(this, spirit, 1);
+            new InventoryItem(this, spirit, 1);
         } else {
             tempItem.setCount(tempItem.count + 1);
         }
-        return tempItem;
     }
     
     removeItem(item) {
@@ -120,45 +144,33 @@ export class Inventory {
     }
     
     removeRecipeComponent(recipeComponent) {
-        let output = [];
         let tempCount = recipeComponent.count;
         for (let item of this.items) {
             if (recipeComponent.spiritType.matchesSpirit(item.spirit)) {
                 let tempResult = item.decreaseCount(tempCount);
-                output.push(item);
                 tempCount -= tempResult;
                 if (tempCount <= 0) {
                     break;
                 }
             }
         }
-        return output;
     }
     
     addRecipeComponent(recipeComponent) {
-        let output = [];
         for (let count = 0; count < recipeComponent.count; count++) {
             let tempSpirit = recipeComponent.spiritType.craft();
-            let tempItem = this.incrementItemCountBySpirit(tempSpirit);
-            if (output.indexOf(tempItem) < 0) {
-                output.push(tempItem);
-            }
+            this.incrementItemCountBySpirit(tempSpirit);
         }
-        return output;
     }
     
     craftRecipe(recipe) {
         if (!this.canCraftRecipe(recipe)) {
-            return [];
+            return;
         }
-        let output = [];
         for (let component of recipe.ingredients) {
-            let tempItemList = this.removeRecipeComponent(component);
-            niceUtils.extendList(output, tempItemList);
+            this.removeRecipeComponent(component);
         }
-        let tempItemList = this.addRecipeComponent(recipe.product);
-        niceUtils.extendList(output, tempItemList);
-        return output;
+        this.addRecipeComponent(recipe.product);
     }
 }
 

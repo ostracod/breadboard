@@ -32,11 +32,19 @@ class Recipe {
         this.row.select();
         selectedRecipe = this;
         this.displayIngredients();
+        localPlayerInventory.addObserver(this);
     }
     
     unselect() {
         this.row.unselect();
         selectedRecipe = null;
+        localPlayerInventory.removeObserver(this);
+    }
+    
+    inventoryChangeEvent(inventory, item) {
+        if (this === selectedRecipe) {
+            this.updateTagColors();
+        }
     }
     
     displayIngredients() {

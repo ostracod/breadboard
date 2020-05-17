@@ -12,9 +12,11 @@ class InventoryItem {
         if (this.inventory.selectedItem === null) {
             this.select();
         }
-        if (this.count > 0) {
-            this.inventory.changeEvent();
-        }
+        this.notifyInventoryObservers();
+    }
+    
+    notifyInventoryObservers() {
+        this.inventory.notifyObservers(this);
     }
     
     unselect() {
@@ -35,6 +37,7 @@ class InventoryItem {
             return;
         }
         this.count = count;
+        this.notifyInventoryObservers();
         if (this.count > 0) {
             this.row.draw();
         } else {
@@ -42,7 +45,6 @@ class InventoryItem {
             this.row.remove();
             this.inventory.removeItem(this);
         }
-        this.inventory.changeEvent();
     }
     
     decreaseCount(offset) {
@@ -63,6 +65,25 @@ class Inventory {
         this.tag = tag;
         this.items = [];
         this.selectedItem = null;
+        this.observers = [];
+    }
+    
+    addObserver(observer) {
+        this.observers.push(observer);
+    }
+    
+    removeObserver(observer) {
+        let index = this.observers.indexOf(observer);
+        if (index < 0) {
+            return;
+        }
+        this.observers.splice(index, 1);
+    }
+    
+    notifyObservers(item) {
+        for (let observer of this.observers) {
+            observer.inventoryChangeEvent(this, item);
+        }
     }
     
     findItemBySpirit(spirit) {
@@ -140,12 +161,6 @@ class Inventory {
         }
         let tempItem = this.items[index];
         tempItem.select();
-    }
-    
-    changeEvent() {
-        if (this === localPlayerInventory && selectedRecipe !== null) {
-            selectedRecipe.updateTagColors();
-        }
     }
     
     hasRecipeComponent(recipeComponent) {

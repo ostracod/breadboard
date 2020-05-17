@@ -176,7 +176,7 @@ export class PlayerWorldTile extends ComplexWorldTile {
             return null;
         }
         this.world.setTile(pos, emptyWorldTile);
-        return this.spirit.inventory.incrementItemCountBySpirit(tempTile.spirit);
+        this.spirit.inventory.incrementItemCountBySpirit(tempTile.spirit);
     }
     
     placeWorldTile(pos, spiritReference) {
@@ -194,7 +194,6 @@ export class PlayerWorldTile extends ComplexWorldTile {
         tempItem.setCount(tempItem.count - 1);
         tempTile = getWorldTileWithSpirit(tempItem.spirit);
         this.world.setTile(pos, tempTile);
-        return tempItem;
     }
 }
 

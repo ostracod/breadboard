@@ -61,6 +61,11 @@ gameUtils.addCommandListener(
     true,
     (command, player, commandList) => {
         addSetWorldTileGridCommand(player, commandList);
+        let tempSpirit = world.getPlayerTile(player).spirit;
+        for (let item of tempSpirit.inventoryUpdates) {
+            addUpdateInventoryItemCommand(item, commandList);
+        }
+        tempSpirit.inventoryUpdates = [];
     }
 );
 
@@ -80,10 +85,7 @@ gameUtils.addCommandListener(
     (command, player, commandList) => {
         let tempTile = world.getPlayerTile(player);
         let tempPos = createPosFromJson(command.pos);
-        let tempItem = tempTile.mine(tempPos);
-        if (tempItem !== null) {
-            addUpdateInventoryItemCommand(tempItem, commandList);
-        }
+        tempTile.mine(tempPos);
     }
 );
 
@@ -94,10 +96,7 @@ gameUtils.addCommandListener(
         let tempTile = world.getPlayerTile(player);
         let tempPos = createPosFromJson(command.pos);
         let tempReference = convertJsonToSpiritReference(command.spirit);
-        let tempItem = tempTile.placeWorldTile(tempPos, tempReference);
-        if (tempItem !== null) {
-            addUpdateInventoryItemCommand(tempItem, commandList);
-        }
+        tempTile.placeWorldTile(tempPos, tempReference);
     }
 );
 
@@ -108,10 +107,7 @@ gameUtils.addCommandListener(
         let tempTile = world.getPlayerTile(player);
         let tempInventory = tempTile.spirit.inventory;
         let tempRecipe = getRecipeById(command.recipeId);
-        let tempItemList = tempInventory.craftRecipe(tempRecipe);
-        for (let item of tempItemList) {
-            addUpdateInventoryItemCommand(item, commandList);
-        }
+        tempInventory.craftRecipe(tempRecipe);
     }
 );
 
