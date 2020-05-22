@@ -39,9 +39,23 @@ export class SimpleSpiritType extends SpiritType {
         };
     }
     
+    convertJsonToSpirit(data) {
+        return this.spirit;
+    }
+    
     craft() {
         return this.spirit;
     }
+}
+
+export function convertJsonToSpirit(data) {
+    let tempType;
+    if (typeof data === "number") {
+        tempType = simpleSpiritTypeMap[data];
+    } else {
+        throw new Error ("Not yet implemented.");
+    }
+    return tempType.convertJsonToSpirit(data);
 }
 
 

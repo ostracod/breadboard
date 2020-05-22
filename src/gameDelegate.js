@@ -7,11 +7,7 @@ import {PlayerSpirit, EmptySpirit} from "./spirit.js";
 import {PlayerWorldTile} from "./worldTile.js";
 import {getRecipeById} from "./recipe.js";
 
-import * as fs from "fs";
-
 let gameUtils = ostracodMultiplayer.gameUtils;
-
-const worldFilePath = "./world.json";
 
 function addSetWorldTileGridCommand(player, commandList) {
     let tempWindowSize = 21;
@@ -142,7 +138,7 @@ class GameDelegate {
     }
     
     persistEvent(done) {
-        fs.writeFileSync(worldFilePath, JSON.stringify(world.getDbJson()));
+        world.persist();
         done();
     }
 }

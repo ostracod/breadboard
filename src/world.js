@@ -1,19 +1,40 @@
 
 import {Pos} from "./pos.js";
-import {TileGrid} from "./tileGrid.js";
+import {TileGrid, convertJsonToTileGrid} from "./tileGrid.js";
 import {emptyWorldTile, barrierWorldTile, matteriteWorldTile, energiteWorldTile} from "./worldTile.js";
+import {getWorldTileWithSpirit} from "./worldTileFactory.js";
+
+import * as fs from "fs";
+
+const worldFilePath = "./world.json";
+const defaultWorldSize = 100;
+const worldFillTile = emptyWorldTile;
+const worldOutsideTile = barrierWorldTile;
 
 class World {
     
     constructor(width, height) {
-        this.width = width;
-        this.height = height;
-        this.tileGrid = new TileGrid(
-            this.width,
-            this.height,
-            emptyWorldTile,
-            barrierWorldTile
-        );
+        if (fs.existsSync(worldFilePath)) {
+            let tempData = JSON.parse(fs.readFileSync(worldFilePath, "utf8"));
+            this.tileGrid = convertJsonToTileGrid(
+                tempData,
+                worldFillTile,
+                worldOutsideTile,
+                getWorldTileWithSpirit
+            );
+        } else {
+            this.tileGrid = new TileGrid(
+                defaultWorldSize,
+                defaultWorldSize,
+                worldFillTile,
+                worldOutsideTile
+            );
+            this.generateTerrain();
+        }
+        this.playerTileList = [];
+    }
+    
+    generateTerrain() {
         for (let count = 0; count < 1000; count++) {
             let tempTile;
             if (Math.random() < 0.5) {
@@ -22,12 +43,11 @@ class World {
                 tempTile = energiteWorldTile;
             }
             let tempPos = new Pos(
-                Math.floor(Math.random() * this.width),
-                Math.floor(Math.random() * this.height)
+                Math.floor(Math.random() * this.tileGrid.width),
+                Math.floor(Math.random() * this.tileGrid.height)
             );
             this.tileGrid.setTile(tempPos, tempTile);
         }
-        this.playerTileList = [];
     }
     
     getTile(pos) {
@@ -83,8 +103,12 @@ class World {
     getDbJson() {
         return this.tileGrid.getDbJson();
     }
+    
+    persist() {
+        fs.writeFileSync(worldFilePath, JSON.stringify(this.getDbJson()));
+    }
 }
 
-export let world = new World(100, 100);
+export let world = new World();
 
 
