@@ -56,8 +56,20 @@ export class TileGrid {
         return output;
     }
     
+    getJson(getTileJson) {
+        return {
+            width: this.width,
+            height: this.height,
+            tiles: this.tileList.map(tile => getTileJson(tile))
+        };
+    }
+    
     getClientJson() {
-        return this.getWindowClientJson(new Pos(0, 0), this.width, this.height);
+        return this.getJson(tile => tile.getClientJson());
+    }
+    
+    getDbJson() {
+        return this.getJson(tile => tile.getDbJson());
     }
 }
 

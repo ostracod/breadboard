@@ -30,7 +30,7 @@ let nextComplexSpiritId = 0;
 class Spirit {
     
     // Concrete subclasses of Spirit must implement these methods:
-    // getClientJson, getReference
+    // getClientJson, getNestedDbJson, getReference
     
     constructor() {
         
@@ -56,6 +56,10 @@ export class SimpleSpirit extends Spirit {
     }
     
     getClientJson() {
+        return this.serialInteger;
+    }
+    
+    getNestedDbJson() {
         return this.serialInteger;
     }
     
@@ -110,7 +114,7 @@ export class BlockSpirit extends SimpleSpirit {
     }
 }
 
-new EmptySpirit();
+export let emptySpirit = new EmptySpirit();
 new BarrierSpirit();
 new MatteriteSpirit();
 new EnergiteSpirit();
@@ -134,6 +138,10 @@ export class ComplexSpirit extends Spirit {
             classId: this.classId,
             id: this.id
         };
+    }
+    
+    getNestedDbJson() {
+        throw new Error("Not yet implemented.");
     }
     
     getReference() {
@@ -166,6 +174,11 @@ export class PlayerSpirit extends ComplexSpirit {
         let output = super.getClientJson();
         output.username = this.player.username;
         return output;
+    }
+    
+    getNestedDbJson() {
+        // Player spirit should never be persisted in a container.
+        return null;
     }
 }
 

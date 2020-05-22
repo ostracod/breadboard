@@ -79,6 +79,10 @@ class World {
         // TODO: Put something here.
         
     }
+    
+    getDbJson() {
+        return this.tileGrid.getDbJson();
+    }
 }
 
 export let world = new World(100, 100);
