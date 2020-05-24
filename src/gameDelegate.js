@@ -2,7 +2,7 @@
 import ostracodMultiplayer from "ostracod-multiplayer";
 import {Pos, createPosFromJson} from "./pos.js";
 import {world} from "./world.js";
-import {dirtyComplexSpiritSet} from "./spirit.js";
+import {persistAllComplexSpirits} from "./spirit.js";
 import {convertJsonToSpiritReference} from "./spiritReference.js";
 import {PlayerWorldTile} from "./worldTile.js";
 import {getRecipeById} from "./recipe.js";
@@ -132,21 +132,20 @@ class GameDelegate {
     
     persistEvent(done) {
         world.persist();
-        // TODO: Persist all spirits in dirtyComplexSpiritSet.
-        
-        done();
+        persistAllComplexSpirits().then(done);
     }
 }
 
 export let gameDelegate = new GameDelegate();
 
 function timerEvent() {
-    if (gameUtils.isPersistingEverything) {
-        return;
-    }
-    world.tick();
+    gameUtils.performAtomicOperation(callback => {
+        world.tick().then(callback);
+    }, () => {
+        setTimeout(timerEvent, 40);
+    });
 }
 
-setInterval(timerEvent, 40);
+timerEvent();
 
 

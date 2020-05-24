@@ -23,7 +23,8 @@ class SimpleSpiritType extends SpiritType {
     }
     
     matchesSpirit(spirit) {
-        return (this.spirit.serialInteger == spirit.serialInteger);
+        return (spirit instanceof SimpleSpirit
+            && this.spirit.serialInteger === spirit.serialInteger);
     }
     
     convertJsonToSpirit(data) {
@@ -40,11 +41,12 @@ class ComplexSpiritType extends SpiritType {
     constructor(spiritClassId) {
         super();
         this.spiritClassId = spiritClassId;
-        complexSpiritTypeMap[spiritClassId] = this;
+        complexSpiritTypeMap[this.spiritClassId] = this;
     }
     
     matchesSpirit(spirit) {
-        return (this.spiritClassId == spirit.classId);
+        return (spirit instanceof ComplexSpirit
+            && this.spiritClassId === spirit.classId);
     }
 }
 

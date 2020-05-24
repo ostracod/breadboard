@@ -3,7 +3,8 @@ import {Pos} from "./pos.js";
 import {TileGrid, convertJsonToTileGrid} from "./tileGrid.js";
 import {emptyWorldTile, barrierWorldTile, matteriteWorldTile, energiteWorldTile, PlayerWorldTile} from "./worldTile.js";
 import {getWorldTileWithSpirit} from "./worldTileFactory.js";
-import {EmptySpirit, PlayerSpirit, getNextComplexSpiritId, setNextComplexSpiritId, loadComplexSpirit} from "./spirit.js";
+import {EmptySpirit, PlayerSpirit, getNextComplexSpiritId, setNextComplexSpiritId} from "./spirit.js";
+import {loadComplexSpirit} from "./spiritType.js";
 
 import * as fs from "fs";
 
@@ -134,6 +135,7 @@ class World {
     tick() {
         // TODO: Put something here.
         
+        return Promise.resolve();
     }
     
     getDbJson() {

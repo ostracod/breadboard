@@ -1,7 +1,9 @@
 
 import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
 import {Inventory} from "./inventory.js";
-import {SimpleSpiritType} from "./spiritType.js";
+
+import ostracodMultiplayer from "ostracod-multiplayer";
+let dbUtils = ostracodMultiplayer.dbUtils;
 
 export const simpleSpiritSerialIntegerSet = {
     empty: 0,
@@ -53,7 +55,6 @@ export class SimpleSpirit extends Spirit {
         super();
         this.serialInteger = serialInteger
         this.reference = new SimpleSpiritReference(this.serialInteger);
-        new SimpleSpiritType(this);
         simpleSpiritSet.push(this);
     }
     
@@ -138,6 +139,7 @@ export class ComplexSpirit extends Spirit {
             this.id = id;
         }
         this.reference = new ComplexSpiritReference(this.id);
+        this.hasDbRow = false;
     }
     
     getClientJson() {
@@ -147,12 +149,56 @@ export class ComplexSpirit extends Spirit {
         };
     }
     
+    getAttributeDbJson() {
+        return null;
+    }
+    
+    getContainerDbJson() {
+        return null;
+    }
+    
     getNestedDbJson() {
-        throw new Error("Not yet implemented.");
+        return {
+            id: this.id,
+            classId: this.classId,
+            attributeData: this.getAttributeDbJson(),
+            containerData: this.getContainerDbJson()
+        };
     }
     
     getReference() {
         return this.reference;
+    }
+    
+    persist() {
+        return new Promise((resolve, reject) => {
+            // TODO: Handle nested complex spirits.
+            
+            function queryCallback(error, results, fields) {
+                if (error) {
+                    reject(dbUtils.convertSqlErrorToText(error));
+                    return;
+                }
+                resolve();
+            }
+            
+            let attributeData = JSON.stringify(this.getAttributeDbJson());
+            let containerData = JSON.stringify(this.getContainerDbJson());
+            if (this.hasDbRow) {
+                dbUtils.performQuery(
+                    "UPDATE ComplexSpirits SET attributeData = ?, containerData = ? WHERE id = ?",
+                    [attributeData, containerData, this.id],
+                    queryCallback
+                );
+            } else {
+                this.hasDbRow = true;
+                dbUtils.performQuery(
+                    "INSERT INTO ComplexSpirits (id, parentId, classId, attributeData, containerData) VALUES (?, NULL, ?, ?, ?)",
+                    [this.id, this.classId, attributeData, containerData],
+                    queryCallback
+                );
+            }
+        });
     }
 }
 
@@ -187,6 +233,12 @@ export class PlayerSpirit extends ComplexSpirit {
         return output;
     }
     
+    getAttributeDbJson() {
+        return {
+            username: this.player.username
+        };
+    }
+    
     getNestedDbJson() {
         // Player spirit should never be persisted in a container.
         return null;
@@ -201,12 +253,27 @@ export function setNextComplexSpiritId(id) {
     nextComplexSpiritId = id;
 }
 
-export function loadComplexSpirit(id) {
-    if (id in dirtyComplexSpiritSet) {
-        return Promise.resolve(dirtyComplexSpiritSet[id]);
+export function persistAllComplexSpirits() {
+    let operationList = [];
+    for (let id in dirtyComplexSpiritSet) {
+        let tempSpirit = dirtyComplexSpiritSet[id];
+        operationList.push(() => tempSpirit.persist());
     }
-    // TODO: Load spirit from DB.
-    
+    dirtyComplexSpiritSet = {};
+    if (operationList.length <= 0) {
+        return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+        dbUtils.performTransaction(callback => {
+            operationList.reduce((accumulator, operation) => {
+                if (accumulator === null) {
+                    return operation();
+                } else {
+                    return accumulator.then(operation);
+                }
+            }, null).then(callback);
+        }, resolve);
+    });
 }
 
 

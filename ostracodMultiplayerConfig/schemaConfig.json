@@ -45,6 +45,10 @@
                     "indexed": true
                 },
                 {
+                    "name": "classId",
+                    "type": "INT"
+                },
+                {
                     "name": "attributeData",
                     "type": "TEXT"
                 },
