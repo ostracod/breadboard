@@ -134,12 +134,16 @@ export class ComplexSpirit extends Spirit {
         if (id === null) {
             this.id = nextComplexSpiritId;
             nextComplexSpiritId += 1;
-            dirtyComplexSpiritSet[this.id] = this;
+            this.markAsDirty();
         } else {
             this.id = id;
         }
         this.reference = new ComplexSpiritReference(this.id);
         this.hasDbRow = false;
+    }
+    
+    markAsDirty() {
+        dirtyComplexSpiritSet[this.id] = this;
     }
     
     getClientJson() {
@@ -204,14 +208,17 @@ export class ComplexSpirit extends Spirit {
 
 export class PlayerSpirit extends ComplexSpirit {
     
-    constructor(player) {
+    constructor(player, inventory = null) {
         let lastId = player.extraFields.complexSpiritId;
         super(complexSpiritClassIdSet.player, lastId);
         if (lastId === null) {
             player.extraFields.complexSpiritId = this.id;
         }
         this.player = player;
-        this.inventory = new Inventory();
+        if (inventory === null) {
+            inventory = new Inventory();
+        }
+        this.inventory = inventory;
         this.inventory.addObserver(this);
         this.inventoryUpdates = [];
     }
@@ -225,6 +232,7 @@ export class PlayerSpirit extends ComplexSpirit {
             }
         }
         this.inventoryUpdates.push(item);
+        this.markAsDirty();
     }
     
     getClientJson() {
@@ -237,6 +245,10 @@ export class PlayerSpirit extends ComplexSpirit {
         return {
             username: this.player.username
         };
+    }
+    
+    getContainerDbJson() {
+        return this.inventory.getDbJson();
     }
     
     getNestedDbJson() {

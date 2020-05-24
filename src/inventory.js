@@ -1,5 +1,6 @@
 
 import {niceUtils} from "./niceUtils.js";
+import {convertJsonToSpirit} from "./spiritType.js";
 
 export class InventoryItem {
     
@@ -18,6 +19,13 @@ export class InventoryItem {
     getClientJson() {
         return {
             spirit: this.spirit.getClientJson(),
+            count: this.count
+        };
+    }
+    
+    getDbJson() {
+        return {
+            spirit: this.spirit.getNestedDbJson(),
             count: this.count
         };
     }
@@ -65,6 +73,10 @@ export class Inventory {
         for (let observer of this.observers) {
             observer.inventoryChangeEvent(this, item);
         }
+    }
+    
+    getDbJson() {
+        return this.items.map(item => item.getDbJson());
     }
     
     findItemBySpirit(spirit) {
@@ -172,6 +184,15 @@ export class Inventory {
         }
         this.addRecipeComponent(recipe.product);
     }
+}
+
+export function convertJsonToInventory(data) {
+    let output = new Inventory();
+    for (let itemData of data) {
+        let tempSpirit = convertJsonToSpirit(itemData.spirit);
+        new InventoryItem(output, tempSpirit, itemData.count);
+    }
+    return output;
 }
 
 

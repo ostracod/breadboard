@@ -1,5 +1,6 @@
 
 import {simpleSpiritSet, complexSpiritClassIdSet, dirtyComplexSpiritSet, SimpleSpirit, ComplexSpirit, PlayerSpirit} from "./spirit.js";
+import {convertJsonToInventory} from "./inventory.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 let gameUtils = ostracodMultiplayer.gameUtils;
@@ -87,13 +88,14 @@ class PlayerSpiritType extends ComplexSpiritType {
     constructor() {
         super(complexSpiritClassIdSet.player);
     }
-
+    
     convertJsonToSpirit(data) {
         let tempPlayer = gameUtils.getPlayerByUsername(data.attributeData.username);
         if (tempPlayer === null) {
             return null;
         } else {
-            return new PlayerSpirit(tempPlayer);
+            let tempInventory = convertJsonToInventory(data.containerData);
+            return new PlayerSpirit(tempPlayer, tempInventory);
         }
     }
     
