@@ -135,9 +135,9 @@ function setUpWorldActionTags(name) {
     }
 }
 
-function addGetInventoryCommand() {
+function addEnterWorldCommand() {
     gameUpdateCommandList.push({
-        commandName: "getInventory"
+        commandName: "enterWorld"
     });
 }
 
@@ -244,7 +244,7 @@ class ClientDelegate {
         initializeSpriteSheet(() => {
             drawAllRecipes();
         });
-        addGetInventoryCommand();
+        addEnterWorldCommand();
         for (let name of worldActionNameSet) {
             setUpWorldActionTags(name);
         }

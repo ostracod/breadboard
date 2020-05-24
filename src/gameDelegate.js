@@ -2,8 +2,8 @@
 import ostracodMultiplayer from "ostracod-multiplayer";
 import {Pos, createPosFromJson} from "./pos.js";
 import {world} from "./world.js";
+import {dirtyComplexSpiritSet} from "./spirit.js";
 import {convertJsonToSpiritReference} from "./spiritReference.js";
-import {PlayerSpirit, EmptySpirit} from "./spirit.js";
 import {PlayerWorldTile} from "./worldTile.js";
 import {getRecipeById} from "./recipe.js";
 
@@ -36,14 +36,16 @@ function addUpdateInventoryItemCommand(inventoryItem, commandList) {
 // TODO: Verify value ranges for all command parameters.
 
 gameUtils.addCommandListener(
-    "getInventory",
-    true,
-    (command, player, commandList) => {
-        let tempSpirit = world.getPlayerSpirit(player);
-        let tempInventory = tempSpirit.inventory;
-        for (let item of tempInventory.items) {
-            addUpdateInventoryItemCommand(item, commandList);
-        }
+    "enterWorld",
+    false,
+    (command, player, commandList, done, errorHandler) => {
+        world.addPlayerTile(player).then(playerSpirit => {
+            let tempInventory = playerSpirit.inventory;
+            for (let item of tempInventory.items) {
+                addUpdateInventoryItemCommand(item, commandList);
+            }
+            done();
+        });
     }
 );
 
@@ -118,27 +120,20 @@ class GameDelegate {
     }
     
     playerEnterEvent(player) {
-        let tempSpirit = new PlayerSpirit(player);
-        let tempTile = new PlayerWorldTile(tempSpirit);
-        // TODO: Make player tile placement more robust.
-        let tempPos = new Pos(3, 3);
-        while (true) {
-            let tempOldTile = world.getTile(tempPos);
-            if (tempOldTile.spirit instanceof EmptySpirit) {
-                break;
-            }
-            tempPos.x += 1;
-        }
-        tempTile.addToWorld(world, tempPos);
+        // Player tile is created by enterWorld command.
     }
     
     playerLeaveEvent(player) {
         let tempTile = world.getPlayerTile(player);
-        tempTile.removeFromWorld();
+        if (tempTile !== null) {
+            tempTile.removeFromWorld();
+        }
     }
     
     persistEvent(done) {
         world.persist();
+        // TODO: Persist all spirits in dirtyComplexSpiritSet.
+        
         done();
     }
 }

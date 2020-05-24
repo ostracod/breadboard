@@ -19,6 +19,8 @@ export const spiritColorAmount = 16;
 
 export let simpleSpiritSet = [];
 let nextComplexSpiritId = 0;
+// Map from complex spirit ID to ComplexSpirit.
+export let dirtyComplexSpiritSet = {};
 
 // The idea is that a Spirit is something which may
 // exist as a Tile or Item.
@@ -125,11 +127,16 @@ for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
 
 export class ComplexSpirit extends Spirit {
     
-    constructor(classId) {
+    constructor(classId, id) {
         super();
         this.classId = classId;
-        this.id = nextComplexSpiritId;
-        nextComplexSpiritId += 1;
+        if (id === null) {
+            this.id = nextComplexSpiritId;
+            nextComplexSpiritId += 1;
+            dirtyComplexSpiritSet[this.id] = this;
+        } else {
+            this.id = id;
+        }
         this.reference = new ComplexSpiritReference(this.id);
     }
     
@@ -152,7 +159,11 @@ export class ComplexSpirit extends Spirit {
 export class PlayerSpirit extends ComplexSpirit {
     
     constructor(player) {
-        super(complexSpiritClassIdSet.player);
+        let lastId = player.extraFields.complexSpiritId;
+        super(complexSpiritClassIdSet.player, lastId);
+        if (lastId === null) {
+            player.extraFields.complexSpiritId = this.id;
+        }
         this.player = player;
         this.inventory = new Inventory();
         this.inventory.addObserver(this);
@@ -180,6 +191,22 @@ export class PlayerSpirit extends ComplexSpirit {
         // Player spirit should never be persisted in a container.
         return null;
     }
+}
+
+export function getNextComplexSpiritId() {
+    return nextComplexSpiritId;
+}
+
+export function setNextComplexSpiritId(id) {
+    nextComplexSpiritId = id;
+}
+
+export function loadComplexSpirit(id) {
+    if (id in dirtyComplexSpiritSet) {
+        return Promise.resolve(dirtyComplexSpiritSet[id]);
+    }
+    // TODO: Load spirit from DB.
+    
 }
 
 

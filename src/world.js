@@ -1,8 +1,9 @@
 
 import {Pos} from "./pos.js";
 import {TileGrid, convertJsonToTileGrid} from "./tileGrid.js";
-import {emptyWorldTile, barrierWorldTile, matteriteWorldTile, energiteWorldTile} from "./worldTile.js";
+import {emptyWorldTile, barrierWorldTile, matteriteWorldTile, energiteWorldTile, PlayerWorldTile} from "./worldTile.js";
 import {getWorldTileWithSpirit} from "./worldTileFactory.js";
+import {EmptySpirit, PlayerSpirit, getNextComplexSpiritId, setNextComplexSpiritId, loadComplexSpirit} from "./spirit.js";
 
 import * as fs from "fs";
 
@@ -16,8 +17,9 @@ class World {
     constructor(width, height) {
         if (fs.existsSync(worldFilePath)) {
             let tempData = JSON.parse(fs.readFileSync(worldFilePath, "utf8"));
+            setNextComplexSpiritId(tempData.nextComplexSpiritId);
             this.tileGrid = convertJsonToTileGrid(
-                tempData,
+                tempData.tileGrid,
                 worldFillTile,
                 worldOutsideTile,
                 getWorldTileWithSpirit
@@ -87,12 +89,46 @@ class World {
     
     getPlayerTile(player) {
         let index = this.findPlayerTile(player);
+        if (index < 0) {
+            return null;
+        }
         return this.playerTileList[index];
     }
     
     getPlayerSpirit(player) {
         let tempTile = this.getPlayerTile(player);
+        if (tempTile === null) {
+            return null;
+        }
         return tempTile.spirit;
+    }
+    
+    addPlayerTile(player) {
+        let tempTile = this.getPlayerTile(player);
+        if (tempTile !== null) {
+            return Promise.resolve(tempTile.spirit);
+        }
+        let tempPromise;
+        let tempId = player.extraFields.complexSpiritId;
+        if (tempId === null) {
+            tempPromise = Promise.resolve(new PlayerSpirit(player));
+        } else {
+            tempPromise = loadComplexSpirit(tempId);
+        }
+        return tempPromise.then(spirit => {
+            let tempTile = new PlayerWorldTile(spirit);
+            // TODO: Make player tile placement more robust.
+            let tempPos = new Pos(3, 3);
+            while (true) {
+                let tempOldTile = world.getTile(tempPos);
+                if (tempOldTile.spirit instanceof EmptySpirit) {
+                    break;
+                }
+                tempPos.x += 1;
+            }
+            tempTile.addToWorld(world, tempPos);
+            return spirit;
+        });
     }
     
     tick() {
@@ -101,7 +137,10 @@ class World {
     }
     
     getDbJson() {
-        return this.tileGrid.getDbJson();
+        return {
+            nextComplexSpiritId: getNextComplexSpiritId(),
+            tileGrid: this.tileGrid.getDbJson()
+        };
     }
     
     persist() {

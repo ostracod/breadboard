@@ -24,6 +24,33 @@
                 {
                     "name": "score",
                     "type": "BIGINT"
+                },
+                {
+                    "name": "complexSpiritId",
+                    "type": "INT"
+                }
+            ]
+        },
+        {
+            "name": "ComplexSpirits",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "INT",
+                    "primaryKey": true
+                },
+                {
+                    "name": "parentId",
+                    "type": "INT",
+                    "indexed": true
+                },
+                {
+                    "name": "attributeData",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "containerData",
+                    "type": "TEXT"
                 }
             ]
         }
