@@ -1,6 +1,6 @@
 
-import {simpleSpiritSerialIntegerSet, spiritColorAmount} from "./spirit.js";
-import {simpleSpiritTypeMap} from "./spiritType.js";
+import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, spiritColorAmount} from "./spirit.js";
+import {simpleSpiritTypeMap, complexSpiritTypeMap} from "./spiritType.js";
 
 export let recipeList = [];
 export let recipeDataList = [];
@@ -54,10 +54,27 @@ function createSimpleRecipeComponent(spiritKey, count, offset) {
     return new RecipeComponent(tempType, count);
 }
 
+function createMachineRecipeComponent(colorIndex) {
+    let tempTypeList = complexSpiritTypeMap[complexSpiritClassIdSet.machine];
+    for (let spiritType of tempTypeList) {
+        if (spiritType.colorIndex === colorIndex) {
+            return new RecipeComponent(spiritType, 1);
+        }
+    }
+    return null;
+}
+
 for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new Recipe(
         [createSimpleRecipeComponent("matterite", 2)],
         createSimpleRecipeComponent("block", 1, colorIndex)
+    );
+    new Recipe(
+        [
+            createSimpleRecipeComponent("energite", 1),
+            createSimpleRecipeComponent("matterite", 1)
+        ],
+        createMachineRecipeComponent(colorIndex)
     );
 }
 

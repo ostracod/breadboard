@@ -5,14 +5,14 @@
 class SpiritReference {
     
     // Concrete subclasses of SpiritReference must implement these methods:
-    // equals
+    // equals, getJson
     
     constructor() {
         
     }
 }
 
-export class SimpleSpiritReference extends SpiritReference {
+class SimpleSpiritReference extends SpiritReference {
     
     constructor(serialInteger) {
         super();
@@ -25,9 +25,16 @@ export class SimpleSpiritReference extends SpiritReference {
         }
         return (this.serialInteger == spiritReference.serialInteger);
     }
+    
+    getJson() {
+        return {
+            type: "simple",
+            serialInteger: this.serialInteger
+        };
+    }
 }
 
-export class ComplexSpiritReference extends SpiritReference {
+class ComplexSpiritReference extends SpiritReference {
     
     constructor(id) {
         super();
@@ -40,13 +47,12 @@ export class ComplexSpiritReference extends SpiritReference {
         }
         return (this.id === spiritReference.id);
     }
-}
-
-export function convertJsonToSpiritReference(data) {
-    if (data.type === "simple") {
-        return new SimpleSpiritReference(data.serialInteger);
-    } else {
-        return new ComplexSpiritReference(data.id);
+    
+    getJson() {
+        return {
+            type: "complex",
+            id: this.id
+        };
     }
 }
 

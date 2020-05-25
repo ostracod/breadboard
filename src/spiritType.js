@@ -1,5 +1,5 @@
 
-import {simpleSpiritSet, complexSpiritClassIdSet, dirtyComplexSpiritSet, SimpleSpirit, ComplexSpirit, PlayerSpirit} from "./spirit.js";
+import {simpleSpiritSet, complexSpiritClassIdSet, dirtyComplexSpiritSet, spiritColorAmount, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit} from "./spirit.js";
 import {convertJsonToInventory} from "./inventory.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
@@ -8,8 +8,8 @@ let dbUtils = ostracodMultiplayer.dbUtils;
 
 // Map from serial integer to SimpleSpiritType.
 export let simpleSpiritTypeMap = {};
-// Map from spirit class ID to ComplexSpiritType.
-let complexSpiritTypeMap = {};
+// Map from spirit class ID to list of ComplexSpiritType.
+export let complexSpiritTypeMap = {};
 
 // A SpiritType serves the following purposes:
 // > Identify whether a spirit instance matches particular criteria
@@ -18,7 +18,7 @@ let complexSpiritTypeMap = {};
 class SpiritType {
     
     // Concrete subclasses of SpiritType must implement these methods:
-    // matchesSpirit, getClientJson, convertJsonToSpirit, craft
+    // matchesSpirit, matchesSpiritJson, getClientJson, convertJsonToSpirit, craft
     
     constructor() {
     
@@ -40,6 +40,10 @@ export class SimpleSpiritType extends SpiritType {
     matchesSpirit(spirit) {
         return (spirit instanceof SimpleSpirit
             && this.spirit.serialInteger === spirit.serialInteger);
+    }
+    
+    matchesSpiritJson(data) {
+        return (typeof data === "number" && this.spirit.serialInteger === data);
     }
     
     getClientJson() {
@@ -67,7 +71,10 @@ class ComplexSpiritType extends SpiritType {
     constructor(spiritClassId) {
         super();
         this.spiritClassId = spiritClassId;
-        complexSpiritTypeMap[this.spiritClassId] = this;
+        if (!(this.spiritClassId in complexSpiritTypeMap)) {
+            complexSpiritTypeMap[this.spiritClassId] = [];
+        }
+        complexSpiritTypeMap[this.spiritClassId].push(this);
     }
     
     matchesSpirit(spirit) {
@@ -75,10 +82,14 @@ class ComplexSpiritType extends SpiritType {
             && this.spiritClassId === spirit.classId);
     }
     
+    matchesSpiritJson(data) {
+        return (typeof data !== "number" && this.spiritClassId === data.classId);
+    }
+    
     getClientJson() {
         return {
             type: "complex",
-            classId: this.spirit.classId
+            classId: this.spiritClassId
         };
     }
 }
@@ -104,14 +115,54 @@ class PlayerSpiritType extends ComplexSpiritType {
     }
 }
 
+class MachineSpiritType extends ComplexSpiritType {
+    
+    constructor(colorIndex) {
+        super(complexSpiritClassIdSet.machine);
+        this.colorIndex = colorIndex;
+    }
+    
+    matchesSpirit(spirit) {
+        return (super.matchesSpirit(spirit) && this.colorIndex === spirit.colorIndex);
+    }
+    
+    matchesSpiritJson(data) {
+        return (super.matchesSpiritJson(data) && this.colorIndex === data.colorIndex);
+    }
+    
+    getClientJson() {
+        let output = super.getClientJson();
+        output.colorIndex = this.colorIndex;
+        return output;
+    }
+    
+    convertJsonToSpirit(data) {
+        let tempInventory = convertJsonToInventory(data.containerData);
+        return new MachineSpirit(data.id, data.attributeData.colorIndex, tempInventory);
+    }
+    
+    craft() {
+        return new MachineSpirit(null, this.colorIndex);
+    }
+}
+
 new PlayerSpiritType();
+for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
+    new MachineSpiritType(colorIndex);
+}
 
 export function convertJsonToSpirit(data) {
     let tempType;
     if (typeof data === "number") {
         tempType = simpleSpiritTypeMap[data];
     } else {
-        tempType = complexSpiritTypeMap[data.classId];
+        let tempTypeList = complexSpiritTypeMap[data.classId];
+        for (let spiritType of tempTypeList) {
+            if (spiritType.matchesSpiritJson(data)) {
+                tempType = spiritType;
+                break;
+            }
+        }
     }
     return tempType.convertJsonToSpirit(data);
 }

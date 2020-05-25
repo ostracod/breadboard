@@ -27,6 +27,7 @@
         "javascript/gameConstants.js",
         "javascript/sprite.js",
         "javascript/optionRow.js",
+        "javascript/spiritReference.js",
         "javascript/spiritType.js",
         "javascript/spirit.js",
         "javascript/walkController.js",

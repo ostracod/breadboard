@@ -4,10 +4,14 @@ let simpleSpiritSet = [];
 class Spirit {
     
     // Concrete subclasses of Spirit must implement these methods:
-    // getClientJson, getSprite, getDisplayName, hasSameIdentity
+    // getReference, getSprite, getDisplayName
     
     constructor() {
         
+    }
+    
+    hasSameIdentity(spirit) {
+        return this.getReference().equals(spirit.getReference());
     }
     
     canBeMined() {
@@ -17,7 +21,7 @@ class Spirit {
 
 class LoadingSpirit extends Spirit {
     
-    getClientJson() {
+    getReference() {
         return null;
     }
     
@@ -28,10 +32,6 @@ class LoadingSpirit extends Spirit {
     getDisplayName() {
         return "Loading";
     }
-    
-    hasSameIdentity(spirit) {
-        return (spirit instanceof LoadingSpirit);
-    }
 }
 
 let loadingSpirit = new LoadingSpirit();
@@ -41,19 +41,13 @@ class SimpleSpirit extends Spirit {
     constructor(serialInteger) {
         super();
         this.serialInteger = serialInteger
+        this.reference = new SimpleSpiritReference(this.serialInteger);
         new SimpleSpiritType(this);
         simpleSpiritSet.push(this);
     }
     
-    getClientJson() {
-        return this.serialInteger;
-    }
-    
-    hasSameIdentity(spirit) {
-        if (!(spirit instanceof SimpleSpirit)) {
-            return false;
-        }
-        return (this.serialInteger == spirit.serialInteger);
+    getReference() {
+        return this.reference;
     }
 }
 
@@ -162,20 +156,11 @@ class ComplexSpirit extends Spirit {
         super();
         this.classId = classId;
         this.id = id;
+        this.reference = new ComplexSpiritReference(this.id);
     }
     
-    getClientJson() {
-        return {
-            classId: this.classId,
-            id: this.id
-        };
-    }
-    
-    hasSameIdentity(spirit) {
-        if (!(spirit instanceof ComplexSpirit)) {
-            return false;
-        }
-        return (this.id === spirit.id);
+    getReference() {
+        return this.reference;
     }
 }
 
@@ -186,18 +171,30 @@ class PlayerSpirit extends ComplexSpirit {
         this.username = username;
     }
     
-    getClientJson() {
-        let output = super.getClientJson();
-        output.username = this.player.username;
-        return output;
-    }
-    
     getSprite() {
         return playerSprite;
     }
     
     getDisplayName() {
         return this.username;
+    }
+}
+
+class MachineSpirit extends ComplexSpirit {
+    
+    constructor(id, colorIndex) {
+        super(complexSpiritClassIdSet.machine, id);
+        this.colorIndex = colorIndex;
+        this.sprite = new Sprite(machineSpriteSet, 0, this.colorIndex);
+        this.color = spiritColorSet[this.colorIndex];
+    }
+    
+    getSprite() {
+        return this.sprite;
+    }
+    
+    getDisplayName() {
+        return this.color.name + " Machine";
     }
 }
 

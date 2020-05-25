@@ -175,7 +175,7 @@ function addPlaceWorldTileCommand(pos, spirit) {
     gameUpdateCommandList.push({
         commandName: "placeWorldTile",
         pos: pos.toJson(),
-        spirit: spirit.getClientJson()
+        spirit: spirit.getReference().getJson()
     });
 }
 

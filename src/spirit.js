@@ -14,7 +14,8 @@ export const simpleSpiritSerialIntegerSet = {
 };
 
 export const complexSpiritClassIdSet = {
-    player: 0
+    player: 0,
+    machine: 1
 };
 
 export const spiritColorAmount = 16;
@@ -206,24 +207,40 @@ export class ComplexSpirit extends Spirit {
     }
 }
 
-export class PlayerSpirit extends ComplexSpirit {
+export class InventorySpirit extends ComplexSpirit {
     
-    constructor(player, inventory = null) {
-        let lastId = player.extraFields.complexSpiritId;
-        super(complexSpiritClassIdSet.player, lastId);
-        if (lastId === null) {
-            player.extraFields.complexSpiritId = this.id;
-        }
-        this.player = player;
+    constructor(classId, id, inventory) {
+        super(classId, id);
         if (inventory === null) {
             inventory = new Inventory();
         }
         this.inventory = inventory;
         this.inventory.addObserver(this);
+    }
+    
+    inventoryChangeEvent(inventory, item) {
+        this.markAsDirty();
+    }
+    
+    getContainerDbJson() {
+        return this.inventory.getDbJson();
+    }
+}
+
+export class PlayerSpirit extends InventorySpirit {
+    
+    constructor(player, inventory = null) {
+        let lastId = player.extraFields.complexSpiritId;
+        super(complexSpiritClassIdSet.player, lastId, inventory);
+        if (lastId === null) {
+            player.extraFields.complexSpiritId = this.id;
+        }
+        this.player = player;
         this.inventoryUpdates = [];
     }
     
     inventoryChangeEvent(inventory, item) {
+        super.inventoryChangeEvent(inventory, item);
         for (let index = 0; index < this.inventoryUpdates.length; index++) {
             let tempItem = this.inventoryUpdates[index];
             if (item.spirit === tempItem.spirit) {
@@ -232,7 +249,6 @@ export class PlayerSpirit extends ComplexSpirit {
             }
         }
         this.inventoryUpdates.push(item);
-        this.markAsDirty();
     }
     
     getClientJson() {
@@ -247,13 +263,29 @@ export class PlayerSpirit extends ComplexSpirit {
         };
     }
     
-    getContainerDbJson() {
-        return this.inventory.getDbJson();
-    }
-    
     getNestedDbJson() {
         // Player spirit should never be persisted in a container.
         return null;
+    }
+}
+
+export class MachineSpirit extends InventorySpirit {
+    
+    constructor(id, colorIndex, inventory = null) {
+        super(complexSpiritClassIdSet.player, id, inventory);
+        this.colorIndex = colorIndex;
+    }
+    
+    getClientJson() {
+        let output = super.getClientJson();
+        output.colorIndex = this.colorIndex;
+        return output;
+    }
+    
+    getAttributeDbJson() {
+        return {
+            colorIndex: this.colorIndex
+        };
     }
 }
 
