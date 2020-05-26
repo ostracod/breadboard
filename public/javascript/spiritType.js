@@ -10,7 +10,7 @@ let complexSpiritTypeMap = {};
 class SpiritType {
     
     // Concrete subclasses of SpiritType must implement these methods:
-    // matchesSpirit, matchesSpiritJson, matchesJson, convertJsonToSpirit
+    // matchesSpirit, matchesSpiritClientJson, matchesJson, convertClientJsonToSpirit
     
     craft() {
         return null;
@@ -30,7 +30,7 @@ class SimpleSpiritType extends SpiritType {
             && this.spirit.serialInteger === spirit.serialInteger);
     }
     
-    matchesSpiritJson(data) {
+    matchesSpiritClientJson(data) {
         return (typeof data === "number" && this.spirit.serialInteger === data);
     }
     
@@ -38,7 +38,7 @@ class SimpleSpiritType extends SpiritType {
         return (data.type === "simple" && this.spirit.serialInteger === data.serialInteger);
     }
     
-    convertJsonToSpirit(data) {
+    convertClientJsonToSpirit(data) {
         return this.spirit;
     }
     
@@ -63,7 +63,7 @@ class ComplexSpiritType extends SpiritType {
             && this.spiritClassId === spirit.classId);
     }
     
-    matchesSpiritJson(data) {
+    matchesSpiritClientJson(data) {
         return (typeof data !== "number" && this.spiritClassId === data.classId);
     }
     
@@ -78,7 +78,7 @@ class PlayerSpiritType extends ComplexSpiritType {
         super(complexSpiritClassIdSet.player);
     }
 
-    convertJsonToSpirit(data) {
+    convertClientJsonToSpirit(data) {
         return new PlayerSpirit(data.id, data.username);
     }
 }
@@ -94,15 +94,15 @@ class MachineSpiritType extends ComplexSpiritType {
         return (super.matchesSpirit(spirit) && this.colorIndex === spirit.colorIndex);
     }
     
-    matchesSpiritJson(data) {
-        return (super.matchesSpiritJson(data) && this.colorIndex === data.colorIndex);
+    matchesSpiritClientJson(data) {
+        return (super.matchesSpiritClientJson(data) && this.colorIndex === data.colorIndex);
     }
     
     matchesJson(data) {
         return (super.matchesJson(data) && this.colorIndex === data.colorIndex);
     }
     
-    convertJsonToSpirit(data) {
+    convertClientJsonToSpirit(data) {
         return new MachineSpirit(data.id, this.colorIndex);
     }
     
@@ -116,20 +116,20 @@ for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new MachineSpiritType(colorIndex);
 }
 
-function convertJsonToSpirit(data) {
+function convertClientJsonToSpirit(data) {
     let tempType;
     if (typeof data === "number") {
         tempType = simpleSpiritTypeMap[data];
     } else {
         let tempTypeList = complexSpiritTypeMap[data.classId];
         for (let spiritType of tempTypeList) {
-            if (spiritType.matchesSpiritJson(data)) {
+            if (spiritType.matchesSpiritClientJson(data)) {
                 tempType = spiritType;
                 break;
             }
         }
     }
-    return tempType.convertJsonToSpirit(data);
+    return tempType.convertClientJsonToSpirit(data);
 }
 
 function convertJsonToSpiritType(data) {

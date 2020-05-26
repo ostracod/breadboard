@@ -13,9 +13,9 @@ class RecipeComponent {
         this.count = count;
     }
     
-    getClientJson() {
+    getJson() {
         return {
-            spiritType: this.spiritType.getClientJson(),
+            spiritType: this.spiritType.getJson(),
             count: this.count
         };
     }
@@ -29,18 +29,18 @@ class Recipe {
         this.id = nextRecipeId;
         nextRecipeId += 1;
         recipeList.push(this);
-        recipeDataList.push(this.getClientJson());
+        recipeDataList.push(this.getJson());
     }
     
-    getClientJson() {
+    getJson() {
         let tempDataList = [];
         for (let ingredient of this.ingredients) {
-            tempDataList.push(ingredient.getClientJson());
+            tempDataList.push(ingredient.getJson());
         }
         return {
             id: this.id,
             ingredients: tempDataList,
-            product: this.product.getClientJson()
+            product: this.product.getJson()
         };
     }
 }
@@ -71,8 +71,9 @@ for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     );
     new Recipe(
         [
-            createSimpleRecipeComponent("energite", 1),
-            createSimpleRecipeComponent("matterite", 1)
+            createSimpleRecipeComponent("block", 1, colorIndex),
+            createSimpleRecipeComponent("matterite", 1),
+            createSimpleRecipeComponent("energite", 1)
         ],
         createMachineRecipeComponent(colorIndex)
     );

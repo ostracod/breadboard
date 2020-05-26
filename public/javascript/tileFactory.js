@@ -46,7 +46,7 @@ function convertJsonToWorldTile(data, pos) {
     if (typeof data === "number") {
         return simpleWorldTileMap[data];
     } else {
-        let tempSpirit = convertJsonToSpirit(data.spirit);
+        let tempSpirit = convertClientJsonToSpirit(data.spirit);
         let tempFactory = complexWorldTileFactoryMap[tempSpirit.classId];
         return tempFactory.convertJsonToTile(data, tempSpirit, pos);
     }

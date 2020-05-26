@@ -48,6 +48,10 @@ class Spirit {
     canBeMined() {
         return false;
     }
+    
+    setParentSpirit(spirit) {
+        // Do nothing.
+    }
 }
 
 export class SimpleSpirit extends Spirit {
@@ -132,6 +136,7 @@ export class ComplexSpirit extends Spirit {
     constructor(classId, id) {
         super();
         this.classId = classId;
+        this.parentSpirit = null;
         if (id === null) {
             this.id = nextComplexSpiritId;
             nextComplexSpiritId += 1;
@@ -145,6 +150,9 @@ export class ComplexSpirit extends Spirit {
     
     markAsDirty() {
         dirtyComplexSpiritSet[this.id] = this;
+        if (!this.hasDbRow && this.parentSpirit !== null) {
+            this.parentSpirit.markAsDirty();
+        }
     }
     
     getClientJson() {
@@ -175,9 +183,19 @@ export class ComplexSpirit extends Spirit {
         return this.reference;
     }
     
+    setParentSpirit(spirit) {
+        this.parentSpirit = spirit;
+        this.markAsDirty();
+    }
+    
+    shouldHaveDbRow() {
+        // TODO: Optimize nesting logic.
+        return (this.parentSpirit === null);
+    }
+    
     persist() {
+        let tempShouldHaveDbRow = this.shouldHaveDbRow();
         return new Promise((resolve, reject) => {
-            // TODO: Handle nested complex spirits.
             
             function queryCallback(error, results, fields) {
                 if (error) {
@@ -190,18 +208,30 @@ export class ComplexSpirit extends Spirit {
             let attributeData = JSON.stringify(this.getAttributeDbJson());
             let containerData = JSON.stringify(this.getContainerDbJson());
             if (this.hasDbRow) {
-                dbUtils.performQuery(
-                    "UPDATE ComplexSpirits SET attributeData = ?, containerData = ? WHERE id = ?",
-                    [attributeData, containerData, this.id],
-                    queryCallback
-                );
+                if (tempShouldHaveDbRow) {
+                    dbUtils.performQuery(
+                        "UPDATE ComplexSpirits SET attributeData = ?, containerData = ? WHERE id = ?",
+                        [attributeData, containerData, this.id],
+                        queryCallback
+                    );
+                } else {
+                    dbUtils.performQuery(
+                        "DELETE FROM ComplexSpirits WHERE id = ?",
+                        [this.id],
+                        queryCallback
+                    );
+                }
             } else {
-                this.hasDbRow = true;
-                dbUtils.performQuery(
-                    "INSERT INTO ComplexSpirits (id, parentId, classId, attributeData, containerData) VALUES (?, NULL, ?, ?, ?)",
-                    [this.id, this.classId, attributeData, containerData],
-                    queryCallback
-                );
+                if (tempShouldHaveDbRow) {
+                    this.hasDbRow = true;
+                    dbUtils.performQuery(
+                        "INSERT INTO ComplexSpirits (id, parentId, classId, attributeData, containerData) VALUES (?, NULL, ?, ?, ?)",
+                        [this.id, this.classId, attributeData, containerData],
+                        queryCallback
+                    );
+                } else {
+                    resolve();
+                }
             }
         });
     }
@@ -215,6 +245,7 @@ export class InventorySpirit extends ComplexSpirit {
             inventory = new Inventory();
         }
         this.inventory = inventory;
+        this.inventory.parentSpirit = this;
         this.inventory.addObserver(this);
     }
     
@@ -272,7 +303,7 @@ export class PlayerSpirit extends InventorySpirit {
 export class MachineSpirit extends InventorySpirit {
     
     constructor(id, colorIndex, inventory = null) {
-        super(complexSpiritClassIdSet.player, id, inventory);
+        super(complexSpiritClassIdSet.machine, id, inventory);
         this.colorIndex = colorIndex;
     }
     

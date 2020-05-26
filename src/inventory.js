@@ -1,6 +1,6 @@
 
 import {niceUtils} from "./niceUtils.js";
-import {convertJsonToSpirit} from "./spiritType.js";
+import {convertDbJsonToSpirit} from "./spiritType.js";
 
 export class InventoryItem {
     
@@ -42,10 +42,12 @@ export class InventoryItem {
         if (this.count >= offset) {
             this.setCount(this.count - offset);
             return offset;
-        } else {
+        } else if (this.count === offset) {
             let output = this.count;
             this.setCount(0);
             return output;
+        } else {
+            return 0;
         }
     }
 }
@@ -55,6 +57,7 @@ export class Inventory {
     constructor() {
         this.items = [];
         this.observers = [];
+        this.parentSpirit = null;
     }
     
     addObserver(observer) {
@@ -126,6 +129,7 @@ export class Inventory {
         let tempItem = this.getItemBySpirit(spirit);
         if (tempItem === null) {
             new InventoryItem(this, spirit, 1);
+            spirit.setParentSpirit(this.parentSpirit);
         } else {
             tempItem.setCount(tempItem.count + 1);
         }
@@ -134,6 +138,7 @@ export class Inventory {
     removeItem(item) {
         let index = this.findItem(item);
         this.items.splice(index, 1);
+        item.spirit.setParentSpirit(this.parentSpirit);
     }
     
     hasRecipeComponent(recipeComponent) {
@@ -189,7 +194,7 @@ export class Inventory {
 export function convertJsonToInventory(data) {
     let output = new Inventory();
     for (let itemData of data) {
-        let tempSpirit = convertJsonToSpirit(itemData.spirit);
+        let tempSpirit = convertDbJsonToSpirit(itemData.spirit);
         new InventoryItem(output, tempSpirit, itemData.count);
     }
     return output;

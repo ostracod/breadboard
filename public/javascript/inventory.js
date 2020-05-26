@@ -206,6 +206,7 @@ class Inventory {
         if (!this.canCraftRecipe(recipe)) {
             return;
         }
+        // TODO: Fix how this method interacts with server-side updates.
         for (let component of recipe.ingredients) {
             this.removeRecipeComponent(component);
         }

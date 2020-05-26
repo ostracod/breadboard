@@ -56,4 +56,12 @@ class ComplexSpiritReference extends SpiritReference {
     }
 }
 
+function convertJsonToSpiritReference(data) {
+    if (data.type === "simple") {
+        return new SimpleSpiritReference(data.serialInteger);
+    } else {
+        return new ComplexSpiritReference(data.id);
+    }
+}
+
 

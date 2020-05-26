@@ -1,6 +1,6 @@
 
 import {Pos} from "./pos.js";
-import {convertJsonToSpirit} from "./spiritType.js";
+import {convertDbJsonToSpirit} from "./spiritType.js";
 
 export class TileGrid {
     
@@ -78,7 +78,7 @@ export function convertJsonToTileGrid(data, fillTile, outsideTile, getTileWithSp
     let output = new TileGrid(data.width, data.height, fillTile, outsideTile);
     for (let index = 0; index < data.tiles.length; index++) {
         let tileData = data.tiles[index];
-        let tempSpirit = convertJsonToSpirit(tileData);
+        let tempSpirit = convertDbJsonToSpirit(tileData);
         output.tileList[index] = getTileWithSpirit(tempSpirit);
     }
     return output;

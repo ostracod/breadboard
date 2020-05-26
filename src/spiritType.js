@@ -18,7 +18,7 @@ export let complexSpiritTypeMap = {};
 class SpiritType {
     
     // Concrete subclasses of SpiritType must implement these methods:
-    // matchesSpirit, matchesSpiritJson, getClientJson, convertJsonToSpirit, craft
+    // matchesSpirit, matchesSpiritDbJson, getJson, convertDbJsonToSpirit, craft
     
     constructor() {
     
@@ -42,18 +42,18 @@ export class SimpleSpiritType extends SpiritType {
             && this.spirit.serialInteger === spirit.serialInteger);
     }
     
-    matchesSpiritJson(data) {
+    matchesSpiritDbJson(data) {
         return (typeof data === "number" && this.spirit.serialInteger === data);
     }
     
-    getClientJson() {
+    getJson() {
         return {
             type: "simple",
             serialInteger: this.spirit.serialInteger
         };
     }
     
-    convertJsonToSpirit(data) {
+    convertDbJsonToSpirit(data) {
         return this.spirit;
     }
     
@@ -82,11 +82,11 @@ class ComplexSpiritType extends SpiritType {
             && this.spiritClassId === spirit.classId);
     }
     
-    matchesSpiritJson(data) {
+    matchesSpiritDbJson(data) {
         return (typeof data !== "number" && this.spiritClassId === data.classId);
     }
     
-    getClientJson() {
+    getJson() {
         return {
             type: "complex",
             classId: this.spiritClassId
@@ -100,7 +100,7 @@ class PlayerSpiritType extends ComplexSpiritType {
         super(complexSpiritClassIdSet.player);
     }
     
-    convertJsonToSpirit(data) {
+    convertDbJsonToSpirit(data) {
         let tempPlayer = gameUtils.getPlayerByUsername(data.attributeData.username);
         if (tempPlayer === null) {
             return null;
@@ -126,17 +126,18 @@ class MachineSpiritType extends ComplexSpiritType {
         return (super.matchesSpirit(spirit) && this.colorIndex === spirit.colorIndex);
     }
     
-    matchesSpiritJson(data) {
-        return (super.matchesSpiritJson(data) && this.colorIndex === data.colorIndex);
+    matchesSpiritDbJson(data) {
+        return (super.matchesSpiritDbJson(data)
+            && this.colorIndex === data.attributeData.colorIndex);
     }
     
-    getClientJson() {
-        let output = super.getClientJson();
+    getJson() {
+        let output = super.getJson();
         output.colorIndex = this.colorIndex;
         return output;
     }
     
-    convertJsonToSpirit(data) {
+    convertDbJsonToSpirit(data) {
         let tempInventory = convertJsonToInventory(data.containerData);
         return new MachineSpirit(data.id, data.attributeData.colorIndex, tempInventory);
     }
@@ -151,20 +152,20 @@ for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new MachineSpiritType(colorIndex);
 }
 
-export function convertJsonToSpirit(data) {
+export function convertDbJsonToSpirit(data) {
     let tempType;
     if (typeof data === "number") {
         tempType = simpleSpiritTypeMap[data];
     } else {
         let tempTypeList = complexSpiritTypeMap[data.classId];
         for (let spiritType of tempTypeList) {
-            if (spiritType.matchesSpiritJson(data)) {
+            if (spiritType.matchesSpiritDbJson(data)) {
                 tempType = spiritType;
                 break;
             }
         }
     }
-    return tempType.convertJsonToSpirit(data);
+    return tempType.convertDbJsonToSpirit(data);
 }
 
 export function loadComplexSpirit(id) {
@@ -194,7 +195,7 @@ export function loadComplexSpirit(id) {
                 return;
             }
             let tempRow = dbResults[0];
-            let output = convertJsonToSpirit({
+            let output = convertDbJsonToSpirit({
                 id: tempRow.id,
                 classId: tempRow.classId,
                 attributeData: JSON.parse(tempRow.attributeData),

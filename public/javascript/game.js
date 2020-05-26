@@ -201,9 +201,11 @@ addCommandRepeater("mine", command => {
 
 addCommandRepeater("placeWorldTile", command => {
     let tempPos = createPosFromJson(command.pos);
-    let tempSpirit = convertJsonToSpirit(command.spirit);
-    let tempTile = getWorldTileWithSpirit(tempSpirit);
-    worldTileGrid.setTile(tempPos, tempTile);
+    let tempSpiritReference = convertJsonToSpiritReference(command.spirit);
+    // TODO: We somehow need to translate tempSpiritReference to tempSpirit.
+    
+    //let tempTile = getWorldTileWithSpirit(tempSpirit);
+    //worldTileGrid.setTile(tempPos, tempTile);
 });
 
 addCommandListener("setWorldTileGrid", command => {
@@ -228,7 +230,7 @@ addCommandListener("setWorldTileGrid", command => {
 
 addCommandListener("updateInventoryItem", command => {
     let tempItemData = command.inventoryItem;
-    let tempSpirit = convertJsonToSpirit(tempItemData.spirit);
+    let tempSpirit = convertClientJsonToSpirit(tempItemData.spirit);
     localPlayerInventory.setItemCountBySpirit(tempSpirit, tempItemData.count);
 });
 
