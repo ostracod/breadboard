@@ -1,11 +1,27 @@
 
-import {simpleSpiritSet, complexSpiritClassIdSet, dirtyComplexSpiritSet, spiritColorAmount, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit} from "./spirit.js";
+import {dirtyComplexSpiritSet, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit} from "./spirit.js";
 import {convertJsonToInventory} from "./inventory.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 let gameUtils = ostracodMultiplayer.gameUtils;
 let dbUtils = ostracodMultiplayer.dbUtils;
 
+export const simpleSpiritSerialIntegerSet = {
+    empty: 0,
+    barrier: 1,
+    matterite: 2,
+    energite: 3,
+    block: 4
+};
+
+export const complexSpiritClassIdSet = {
+    player: 0,
+    machine: 1
+};
+
+export const spiritColorAmount = 16;
+
+export let simpleSpiritSet = [];
 // Map from serial integer to SimpleSpiritType.
 export let simpleSpiritTypeMap = {};
 // Map from spirit class ID to list of ComplexSpiritType.
@@ -18,38 +34,39 @@ export let complexSpiritTypeMap = {};
 class SpiritType {
     
     // Concrete subclasses of SpiritType must implement these methods:
-    // matchesSpirit, matchesSpiritDbJson, getJson, convertDbJsonToSpirit, craft
+    // matchesSpiritDbJson, getJson, convertDbJsonToSpirit, craft
     
     constructor() {
     
     }
     
-    craft() {
-        return null;
+    matchesSpirit(spirit) {
+        return (spirit.spiritType === this);
+    }
+    
+    canBeMined() {
+        return false;
     }
 }
 
 export class SimpleSpiritType extends SpiritType {
     
-    constructor(spirit) {
+    constructor(serialInteger) {
         super();
-        this.spirit = spirit;
-        simpleSpiritTypeMap[this.spirit.serialInteger] = this;
-    }
-    
-    matchesSpirit(spirit) {
-        return (spirit instanceof SimpleSpirit
-            && this.spirit.serialInteger === spirit.serialInteger);
+        this.serialInteger = serialInteger;
+        this.spirit = new SimpleSpirit(this);
+        simpleSpiritSet.push(this.spirit);
+        simpleSpiritTypeMap[this.serialInteger] = this;
     }
     
     matchesSpiritDbJson(data) {
-        return (typeof data === "number" && this.spirit.serialInteger === data);
+        return (typeof data === "number" && this.serialInteger === data);
     }
     
     getJson() {
         return {
             type: "simple",
-            serialInteger: this.spirit.serialInteger
+            serialInteger: this.serialInteger
         };
     }
     
@@ -62,8 +79,59 @@ export class SimpleSpiritType extends SpiritType {
     }
 }
 
-for (let spirit of simpleSpiritSet) {
-    new SimpleSpiritType(spirit);
+export class EmptySpiritType extends SimpleSpiritType {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.empty);
+    }
+}
+
+export class BarrierSpiritType extends SimpleSpiritType {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.barrier);
+    }
+}
+
+class ResourceSpiritType extends SimpleSpiritType {
+    
+    canBeMined() {
+        return true;
+    }
+}
+
+export class MatteriteSpiritType extends ResourceSpiritType {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.matterite);
+    }
+}
+
+export class EnergiteSpiritType extends ResourceSpiritType {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.energite);
+    }
+}
+
+export class BlockSpiritType extends SimpleSpiritType {
+    
+    constructor(colorIndex) {
+        super(simpleSpiritSerialIntegerSet.block + colorIndex);
+    }
+    
+    canBeMined() {
+        return true;
+    }
+}
+
+export let emptySpiritType = new EmptySpiritType();
+export let emptySpirit = emptySpiritType.spirit;
+new BarrierSpiritType();
+new MatteriteSpiritType();
+new EnergiteSpiritType();
+for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
+    new BlockSpiritType(colorIndex);
 }
 
 class ComplexSpiritType extends SpiritType {
@@ -75,11 +143,6 @@ class ComplexSpiritType extends SpiritType {
             complexSpiritTypeMap[this.spiritClassId] = [];
         }
         complexSpiritTypeMap[this.spiritClassId].push(this);
-    }
-    
-    matchesSpirit(spirit) {
-        return (spirit instanceof ComplexSpirit
-            && this.spiritClassId === spirit.classId);
     }
     
     matchesSpiritDbJson(data) {
@@ -106,12 +169,16 @@ class PlayerSpiritType extends ComplexSpiritType {
             return null;
         } else {
             let tempInventory = convertJsonToInventory(data.containerData);
-            return new PlayerSpirit(tempPlayer, tempInventory);
+            return new PlayerSpirit(this, tempPlayer, tempInventory);
         }
     }
     
     craft() {
         throw new Error("Cannot craft player.");
+    }
+    
+    createPlayerSpirit(player) {
+        return new PlayerSpirit(this, player);
     }
 }
 
@@ -120,10 +187,6 @@ class MachineSpiritType extends ComplexSpiritType {
     constructor(colorIndex) {
         super(complexSpiritClassIdSet.machine);
         this.colorIndex = colorIndex;
-    }
-    
-    matchesSpirit(spirit) {
-        return (super.matchesSpirit(spirit) && this.colorIndex === spirit.colorIndex);
     }
     
     matchesSpiritDbJson(data) {
@@ -139,15 +202,19 @@ class MachineSpiritType extends ComplexSpiritType {
     
     convertDbJsonToSpirit(data) {
         let tempInventory = convertJsonToInventory(data.containerData);
-        return new MachineSpirit(data.id, data.attributeData.colorIndex, tempInventory);
+        return new MachineSpirit(this, data.id, tempInventory);
     }
     
     craft() {
-        return new MachineSpirit(null, this.colorIndex);
+        return new MachineSpirit(this, null);
+    }
+    
+    canBeMined() {
+        return true;
     }
 }
 
-new PlayerSpiritType();
+export let playerSpiritType = new PlayerSpiritType();
 for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new MachineSpiritType(colorIndex);
 }

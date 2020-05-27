@@ -1,6 +1,6 @@
 
 import {Tile} from "./tile.js";
-import {simpleSpiritSerialIntegerSet, simpleSpiritSet, EmptySpirit} from "./spirit.js";
+import {simpleSpiritSerialIntegerSet, simpleSpiritSet, emptySpiritType} from "./spiritType.js";
 import {getWorldTileWithSpirit} from "./worldTileFactory.js";
 
 // Map from spirit serial integer to WorldTile.
@@ -95,7 +95,7 @@ class ComplexWorldTile extends WorldTile {
         let tempNextPos = this.pos.copy();
         tempNextPos.add(offset);
         let tempTile = this.world.getTile(tempNextPos);
-        if (!(tempTile.spirit instanceof EmptySpirit)) {
+        if (tempTile.spirit.spiritType !== emptySpiritType) {
             return false;
         }
         this.world.swapTiles(this.pos, tempNextPos);
@@ -181,7 +181,7 @@ export class PlayerWorldTile extends ComplexWorldTile {
     
     placeWorldTile(pos, spiritReference) {
         let tempTile = this.world.getTile(pos);
-        if (!(tempTile.spirit instanceof EmptySpirit)) {
+        if (tempTile.spirit.spiritType !== emptySpiritType) {
             return null;
         }
         let tempItem = this.spirit.inventory.getItemBySpiritReference(spiritReference);

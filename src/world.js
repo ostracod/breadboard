@@ -3,8 +3,8 @@ import {Pos} from "./pos.js";
 import {TileGrid, convertJsonToTileGrid} from "./tileGrid.js";
 import {emptyWorldTile, barrierWorldTile, matteriteWorldTile, energiteWorldTile, PlayerWorldTile} from "./worldTile.js";
 import {getWorldTileWithSpirit} from "./worldTileFactory.js";
-import {EmptySpirit, PlayerSpirit, getNextComplexSpiritId, setNextComplexSpiritId} from "./spirit.js";
-import {loadComplexSpirit} from "./spiritType.js";
+import {getNextComplexSpiritId, setNextComplexSpiritId} from "./spirit.js";
+import {emptySpiritType, playerSpiritType, loadComplexSpirit} from "./spiritType.js";
 
 import * as fs from "fs";
 
@@ -112,7 +112,8 @@ class World {
         let tempPromise;
         let tempId = player.extraFields.complexSpiritId;
         if (tempId === null) {
-            tempPromise = Promise.resolve(new PlayerSpirit(player));
+            let tempSpirit = playerSpiritType.createPlayerSpirit(player);
+            tempPromise = Promise.resolve(tempSpirit);
         } else {
             tempPromise = loadComplexSpirit(tempId);
         }
@@ -122,7 +123,7 @@ class World {
             let tempPos = new Pos(3, 3);
             while (true) {
                 let tempOldTile = world.getTile(tempPos);
-                if (tempOldTile.spirit instanceof EmptySpirit) {
+                if (tempOldTile.spirit.spiritType === emptySpiritType) {
                     break;
                 }
                 tempPos.x += 1;

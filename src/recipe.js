@@ -1,6 +1,5 @@
 
-import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, spiritColorAmount} from "./spirit.js";
-import {simpleSpiritTypeMap, complexSpiritTypeMap} from "./spiritType.js";
+import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, spiritColorAmount, simpleSpiritTypeMap, complexSpiritTypeMap} from "./spiritType.js";
 
 export let recipeList = [];
 export let recipeDataList = [];

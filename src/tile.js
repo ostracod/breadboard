@@ -1,5 +1,5 @@
 
-import {emptySpirit} from "./spirit.js";
+import {emptySpirit} from "./spiritType.js";
 
 export class Tile {
     

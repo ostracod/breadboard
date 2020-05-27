@@ -5,22 +5,6 @@ import {Inventory} from "./inventory.js";
 import ostracodMultiplayer from "ostracod-multiplayer";
 let dbUtils = ostracodMultiplayer.dbUtils;
 
-export const simpleSpiritSerialIntegerSet = {
-    empty: 0,
-    barrier: 1,
-    matterite: 2,
-    energite: 3,
-    block: 4
-};
-
-export const complexSpiritClassIdSet = {
-    player: 0,
-    machine: 1
-};
-
-export const spiritColorAmount = 16;
-
-export let simpleSpiritSet = [];
 let nextComplexSpiritId = 0;
 // Map from complex spirit ID to ComplexSpirit.
 export let dirtyComplexSpiritSet = {};
@@ -37,8 +21,8 @@ class Spirit {
     // Concrete subclasses of Spirit must implement these methods:
     // getClientJson, getNestedDbJson, getReference
     
-    constructor() {
-        
+    constructor(spiritType) {
+        this.spiritType = spiritType;
     }
     
     hasSameIdentity(spirit) {
@@ -46,7 +30,7 @@ class Spirit {
     }
     
     canBeMined() {
-        return false;
+        return this.spiritType.canBeMined();
     }
     
     setParentSpirit(spirit) {
@@ -56,11 +40,10 @@ class Spirit {
 
 export class SimpleSpirit extends Spirit {
     
-    constructor(serialInteger) {
-        super();
-        this.serialInteger = serialInteger
+    constructor(spiritType) {
+        super(spiritType);
+        this.serialInteger = this.spiritType.serialInteger;
         this.reference = new SimpleSpiritReference(this.serialInteger);
-        simpleSpiritSet.push(this);
     }
     
     getClientJson() {
@@ -76,66 +59,11 @@ export class SimpleSpirit extends Spirit {
     }
 }
 
-export class EmptySpirit extends SimpleSpirit {
-    
-    constructor() {
-        super(simpleSpiritSerialIntegerSet.empty);
-    }
-}
-
-export class BarrierSpirit extends SimpleSpirit {
-    
-    constructor() {
-        super(simpleSpiritSerialIntegerSet.barrier);
-    }
-}
-
-class ResourceSpirit extends SimpleSpirit {
-    
-    canBeMined() {
-        return true;
-    }
-}
-
-export class MatteriteSpirit extends ResourceSpirit {
-    
-    constructor() {
-        super(simpleSpiritSerialIntegerSet.matterite);
-    }
-}
-
-export class EnergiteSpirit extends ResourceSpirit {
-    
-    constructor() {
-        super(simpleSpiritSerialIntegerSet.energite);
-    }
-}
-
-export class BlockSpirit extends SimpleSpirit {
-    
-    constructor(colorIndex) {
-        super(simpleSpiritSerialIntegerSet.block + colorIndex);
-    }
-    
-    canBeMined() {
-        return true;
-    }
-}
-
-export let emptySpirit = new EmptySpirit();
-new BarrierSpirit();
-new MatteriteSpirit();
-new EnergiteSpirit();
-
-for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
-    new BlockSpirit(colorIndex);
-}
-
 export class ComplexSpirit extends Spirit {
     
-    constructor(classId, id) {
-        super();
-        this.classId = classId;
+    constructor(spiritType, id) {
+        super(spiritType);
+        this.classId = this.spiritType.spiritClassId;
         this.parentSpirit = null;
         if (id === null) {
             this.id = nextComplexSpiritId;
@@ -239,8 +167,8 @@ export class ComplexSpirit extends Spirit {
 
 export class InventorySpirit extends ComplexSpirit {
     
-    constructor(classId, id, inventory) {
-        super(classId, id);
+    constructor(spiritType, id, inventory) {
+        super(spiritType, id);
         if (inventory === null) {
             inventory = new Inventory();
         }
@@ -260,9 +188,9 @@ export class InventorySpirit extends ComplexSpirit {
 
 export class PlayerSpirit extends InventorySpirit {
     
-    constructor(player, inventory = null) {
+    constructor(spiritType, player, inventory = null) {
         let lastId = player.extraFields.complexSpiritId;
-        super(complexSpiritClassIdSet.player, lastId, inventory);
+        super(spiritType, lastId, inventory);
         if (lastId === null) {
             player.extraFields.complexSpiritId = this.id;
         }
@@ -302,9 +230,9 @@ export class PlayerSpirit extends InventorySpirit {
 
 export class MachineSpirit extends InventorySpirit {
     
-    constructor(id, colorIndex, inventory = null) {
-        super(complexSpiritClassIdSet.machine, id, inventory);
-        this.colorIndex = colorIndex;
+    constructor(spiritType, id, inventory = null) {
+        super(spiritType, id, inventory);
+        this.colorIndex = this.spiritType.colorIndex;
     }
     
     getClientJson() {

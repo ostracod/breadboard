@@ -1,5 +1,6 @@
 
-import {SimpleSpirit, ComplexSpirit, complexSpiritClassIdSet} from "./spirit.js";
+import {SimpleSpirit, ComplexSpirit} from "./spirit.js";
+import {complexSpiritClassIdSet} from "./spiritType.js";
 import {simpleWorldTileMap, PlayerWorldTile} from "./worldTile.js";
 
 // Map from spirit class ID to ComplexWorldTileFactory.
