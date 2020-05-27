@@ -84,11 +84,11 @@ class InventoryOptionRow extends CountOptionRow {
 class RecipeOptionRow extends OptionRow {
     
     constructor(recipe) {
-        let tempSpirit = recipe.product.spirit;
+        let tempSpiritType = recipe.product.spiritType;
         super(
             document.getElementById("recipes"),
-            tempSpirit.getDisplayName(),
-            tempSpirit.getSprite()
+            tempSpiritType.getDisplayName(),
+            tempSpiritType.getSprite()
         );
         this.recipe = recipe;
     }

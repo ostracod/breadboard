@@ -7,7 +7,6 @@ class RecipeComponent {
     constructor(spiritType, count) {
         this.spiritType = spiritType;
         this.count = count;
-        this.spirit = this.spiritType.craft();
         this.tag = null;
     }
 }
@@ -54,7 +53,7 @@ class Recipe {
         tempContainer.innerHTML = "";
         for (let component of this.ingredients) {
             let tempTag = document.createElement("div");
-            tempTag.innerHTML = component.spirit.getDisplayName() + " (x" + component.count + ")";
+            tempTag.innerHTML = component.spiritType.getDisplayName() + " (x" + component.count + ")";
             tempContainer.appendChild(tempTag);
             component.tag = tempTag;
         }

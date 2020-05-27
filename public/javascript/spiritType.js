@@ -1,33 +1,37 @@
 
+let simpleSpiritSet = [];
 // Map from spirit serial integer to SimpleSpiritType.
 let simpleSpiritTypeMap = {};
 // Map from spirit class ID to list of ComplexSpiritType.
 let complexSpiritTypeMap = {};
 
-// TODO: Associate SpiritType with each Spirit so that we may
-// get sprite and display name without invoking craft method.
-
 class SpiritType {
     
     // Concrete subclasses of SpiritType must implement these methods:
-    // matchesSpirit, matchesSpiritClientJson, matchesJson, convertClientJsonToSpirit
+    // matchesSpiritClientJson, matchesJson, convertClientJsonToSpirit, craft,
+    // getSprite, getDisplayName
     
-    craft() {
-        return null;
+    constructor() {
+    
+    }
+    
+    matchesSpirit(spirit) {
+        return (spirit.spiritType === this);
+    }
+    
+    canBeMined() {
+        return false;
     }
 }
 
 class SimpleSpiritType extends SpiritType {
     
-    constructor(spirit) {
+    constructor(serialInteger) {
         super();
-        this.spirit = spirit;
+        this.serialInteger = serialInteger;
+        this.spirit = new SimpleSpirit(this);
+        simpleSpiritSet.push(this.spirit);
         simpleSpiritTypeMap[this.spirit.serialInteger] = this;
-    }
-    
-    matchesSpirit(spirit) {
-        return (spirit instanceof SimpleSpirit
-            && this.spirit.serialInteger === spirit.serialInteger);
     }
     
     matchesSpiritClientJson(data) {
@@ -47,6 +51,122 @@ class SimpleSpiritType extends SpiritType {
     }
 }
 
+class LoadingSpiritType extends SimpleSpiritType {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.loading);
+    }
+    
+    getSprite() {
+        return loadingSprite;
+    }
+    
+    getDisplayName() {
+        return "Loading";
+    }
+}
+
+class EmptySpiritType extends SimpleSpiritType {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.empty);
+    }
+    
+    getSprite() {
+        return null;
+    }
+    
+    getDisplayName() {
+        return "Empty";
+    }
+}
+
+class BarrierSpiritType extends SimpleSpiritType {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.barrier);
+    }
+    
+    getSprite() {
+        return barrierSprite;
+    }
+    
+    getDisplayName() {
+        return "Barrier";
+    }
+}
+
+class ResourceSpiritType extends SimpleSpiritType {
+    
+    constructor(serialInteger, paletteIndex) {
+        super(serialInteger);
+        this.sprite = new Sprite(resourceSpriteSet, 0, paletteIndex);
+    }
+    
+    getSprite() {
+        return this.sprite;
+    }
+    
+    canBeMined() {
+        return true;
+    }
+}
+
+class MatteriteSpiritType extends ResourceSpiritType {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.matterite, 0);
+    }
+    
+    getDisplayName() {
+        return "Matterite";
+    }
+}
+
+class EnergiteSpiritType extends ResourceSpiritType {
+    
+    constructor() {
+        super(simpleSpiritSerialIntegerSet.energite, 1);
+    }
+    
+    getDisplayName() {
+        return "Energite";
+    }
+}
+
+class BlockSpiritType extends SimpleSpiritType {
+    
+    constructor(colorIndex) {
+        super(simpleSpiritSerialIntegerSet.block + colorIndex);
+        this.colorIndex = colorIndex;
+        this.sprite = new Sprite(blockSpriteSet, 0, this.colorIndex);
+        this.color = spiritColorSet[this.colorIndex];
+    }
+    
+    getSprite() {
+        return this.sprite;
+    }
+    
+    getDisplayName() {
+        return this.color.name + " Block";
+    }
+    
+    canBeMined() {
+        return true;
+    }
+}
+
+let loadingSpiritType = new LoadingSpiritType();
+let loadingSpirit = loadingSpiritType.spirit;
+let emptySpiritType = new EmptySpiritType();
+let emptySpirit = emptySpiritType.spirit;
+new BarrierSpiritType();
+new MatteriteSpiritType();
+new EnergiteSpiritType();
+for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
+    new BlockSpiritType(colorIndex);
+}
+
 class ComplexSpiritType extends SpiritType {
     
     constructor(spiritClassId) {
@@ -56,11 +176,6 @@ class ComplexSpiritType extends SpiritType {
             complexSpiritTypeMap[this.spiritClassId] = [];
         }
         complexSpiritTypeMap[this.spiritClassId].push(this);
-    }
-    
-    matchesSpirit(spirit) {
-        return (spirit instanceof ComplexSpirit
-            && this.spiritClassId === spirit.classId);
     }
     
     matchesSpiritClientJson(data) {
@@ -77,9 +192,21 @@ class PlayerSpiritType extends ComplexSpiritType {
     constructor() {
         super(complexSpiritClassIdSet.player);
     }
-
+    
     convertClientJsonToSpirit(data) {
-        return new PlayerSpirit(data.id, data.username);
+        return new PlayerSpirit(this, data.id, data.username);
+    }
+    
+    craft() {
+        throw new Error("Cannot craft player.");
+    }
+    
+    getSprite() {
+        return playerSprite;
+    }
+    
+    getDisplayName() {
+        return "Player";
     }
 }
 
@@ -88,10 +215,8 @@ class MachineSpiritType extends ComplexSpiritType {
     constructor(colorIndex) {
         super(complexSpiritClassIdSet.machine);
         this.colorIndex = colorIndex;
-    }
-    
-    matchesSpirit(spirit) {
-        return (super.matchesSpirit(spirit) && this.colorIndex === spirit.colorIndex);
+        this.sprite = new Sprite(machineSpriteSet, 0, this.colorIndex);
+        this.color = spiritColorSet[this.colorIndex];
     }
     
     matchesSpiritClientJson(data) {
@@ -103,11 +228,23 @@ class MachineSpiritType extends ComplexSpiritType {
     }
     
     convertClientJsonToSpirit(data) {
-        return new MachineSpirit(data.id, this.colorIndex);
+        return new MachineSpirit(this, data.id);
     }
     
     craft() {
-        return new MachineSpirit(null, this.colorIndex);
+        return new MachineSpirit(this, null);
+    }
+    
+    getSprite() {
+        return this.sprite;
+    }
+    
+    getDisplayName() {
+        return this.color.name + " Machine";
+    }
+    
+    canBeMined() {
+        return true;
     }
 }
 

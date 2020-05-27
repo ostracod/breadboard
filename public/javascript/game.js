@@ -93,7 +93,7 @@ function placeWorldTile(offset) {
     let tempPos = localPlayerWorldTile.pos.copy();
     tempPos.add(offset);
     let tempTile = worldTileGrid.getTile(tempPos);
-    if (!(tempTile.spirit instanceof EmptySpirit)) {
+    if (tempTile.spirit.spiritType !== emptySpiritType) {
         return
     }
     let tempItem = localPlayerInventory.selectedItem;

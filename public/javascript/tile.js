@@ -74,7 +74,7 @@ class ComplexWorldTile extends WorldTile {
         let tempNextPos = this.pos.copy();
         tempNextPos.add(offset);
         let tempTile = worldTileGrid.getTile(tempNextPos);
-        if (!(tempTile.spirit instanceof EmptySpirit)) {
+        if (tempTile.spirit.spiritType !== emptySpiritType) {
             return false;
         }
         worldTileGrid.setTile(this.pos, emptyWorldTile);
