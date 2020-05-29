@@ -12,7 +12,7 @@ export const simpleSpiritSerialIntegerSet = {
     matterite: 2,
     energite: 3,
     block: 4,
-    loading: 5
+    loading: 30
 };
 
 export const complexSpiritClassIdSet = {

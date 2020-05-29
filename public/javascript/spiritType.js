@@ -178,6 +178,13 @@ class ComplexSpiritType extends SpiritType {
         complexSpiritTypeMap[this.spiritClassId].push(this);
     }
     
+    matchesSpirit(spirit) {
+        if (!super.matchesSpirit(spirit)) {
+            return false;
+        }
+        return (spirit.id !== null);
+    }
+    
     matchesSpiritClientJson(data) {
         return (typeof data !== "number" && this.spiritClassId === data.classId);
     }

@@ -50,6 +50,13 @@ class ComplexSpirit extends Spirit {
     getReference() {
         return this.reference;
     }
+    
+    getDisplayName() {
+        if (this.id === null) {
+            return "Loading...";
+        }
+        return super.getDisplayName();
+    }
 }
 
 class PlayerSpirit extends ComplexSpirit {

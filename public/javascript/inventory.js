@@ -129,6 +129,19 @@ class Inventory {
         }
     }
     
+    populateComplexSpiritId(spirit) {
+        for (let item of this.items) {
+            let tempSpirit = item.spirit;
+            if (tempSpirit instanceof ComplexSpirit && tempSpirit.id === null
+                    && tempSpirit.spiritType == spirit.spiritType) {
+                tempSpirit.id = spirit.id;
+                item.row.draw();
+                return true;
+            }
+        }
+        return false;
+    }
+    
     removeItem(item) {
         let index = this.findItem(item);
         this.items.splice(index, 1);

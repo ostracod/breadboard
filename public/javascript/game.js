@@ -17,6 +17,7 @@ let mineTargetPos;
 let mineDelay;
 const worldActionNameSet = ["mine", "place", "inspect", "attack"];
 let selectedWorldAction = worldActionNameSet[0];
+let placedComplexWorldTileCache = {};
 
 function drawMineCrack() {
     if (!isMining) {
@@ -103,10 +104,17 @@ function placeWorldTile(offset) {
     if (tempItem.count < 1) {
         return;
     }
+    let tempSpirit = tempItem.spirit;
+    if (tempSpirit instanceof ComplexSpirit && tempSpirit.id === null) {
+        return;
+    }
     tempItem.setCount(tempItem.count - 1);
-    tempTile = getWorldTileWithSpirit(tempItem.spirit);
+    tempTile = getWorldTileWithSpirit(tempSpirit);
     worldTileGrid.setTile(tempPos, tempTile);
-    addPlaceWorldTileCommand(tempPos, tempItem.spirit);
+    addPlaceWorldTileCommand(tempPos, tempSpirit);
+    if (tempTile instanceof ComplexWorldTile) {
+        placedComplexWorldTileCache[tempSpirit.id] = tempTile;
+    }
 }
 
 function selectWorldAction(name) {
@@ -202,10 +210,13 @@ addCommandRepeater("mine", command => {
 addCommandRepeater("placeWorldTile", command => {
     let tempPos = createPosFromJson(command.pos);
     let tempSpiritReference = convertJsonToSpiritReference(command.spirit);
-    // TODO: We somehow need to translate tempSpiritReference to tempSpirit.
-    
-    //let tempTile = getWorldTileWithSpirit(tempSpirit);
-    //worldTileGrid.setTile(tempPos, tempTile);
+    let tempTile;
+    if (tempSpiritReference instanceof SimpleSpiritReference) {
+        tempTile = simpleWorldTileMap[tempSpiritReference.serialInteger];
+    } else {
+        tempTile = placedComplexWorldTileCache[tempSpiritReference.id];
+    }
+    worldTileGrid.setTile(tempPos, tempTile);
 });
 
 addCommandListener("setWorldTileGrid", command => {
@@ -226,11 +237,18 @@ addCommandListener("setWorldTileGrid", command => {
         }
     }
     worldTileGrid.setTiles(tempTileList, command.width, command.height);
+    placedComplexWorldTileCache = {};
 });
 
 addCommandListener("updateInventoryItem", command => {
     let tempItemData = command.inventoryItem;
     let tempSpirit = convertClientJsonToSpirit(tempItemData.spirit);
+    if (tempSpirit instanceof ComplexSpirit) {
+        let tempResult = localPlayerInventory.populateComplexSpiritId(tempSpirit);
+        if (tempResult) {
+            return;
+        }
+    }
     localPlayerInventory.setItemCountBySpirit(tempSpirit, tempItemData.count);
 });
 

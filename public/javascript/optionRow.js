@@ -16,12 +16,16 @@ class OptionRow {
             tempCanvas.style.marginRight = "8px";
         }
         
-        let tempTag = document.createElement("strong");
-        tempTag.innerHTML = text;
-        tempTag.style.verticalAlign = "4px";
-        this.tag.appendChild(tempTag);
+        this.textTag = document.createElement("strong");
+        this.textTag.innerHTML = text;
+        this.textTag.style.verticalAlign = "4px";
+        this.tag.appendChild(this.textTag);
         
         this.parentTag.appendChild(this.tag);
+    }
+    
+    displayText(text) {
+        this.textTag.innerHTML = text;
     }
     
     clickEvent() {
@@ -63,13 +67,10 @@ class InventoryOptionRow extends CountOptionRow {
     
     constructor(inventoryItem) {
         let tempSpirit = inventoryItem.spirit;
-        super(
-            inventoryItem.inventory.tag,
-            tempSpirit.getDisplayName(),
-            inventoryItem.count,
-            tempSpirit.getSprite()
-        );
+        super(inventoryItem.inventory.tag, "", 0, tempSpirit.getSprite());
         this.inventoryItem = inventoryItem;
+        this.spirit = tempSpirit;
+        this.draw();
     }
     
     clickEvent() {
@@ -77,6 +78,7 @@ class InventoryOptionRow extends CountOptionRow {
     }
     
     draw() {
+        this.displayText(this.spirit.getDisplayName());
         this.displayCount(this.inventoryItem.count);
     }
 }
