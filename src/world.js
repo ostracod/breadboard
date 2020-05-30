@@ -2,7 +2,7 @@
 import {Pos} from "./pos.js";
 import {TileGrid, convertJsonToTileGrid} from "./tileGrid.js";
 import {emptyWorldTile, barrierWorldTile, matteriteWorldTile, energiteWorldTile, PlayerWorldTile} from "./worldTile.js";
-import {getWorldTileWithSpirit} from "./worldTileFactory.js";
+import {convertDbJsonToWorldTile} from "./worldTileFactory.js";
 import {getNextComplexSpiritId, setNextComplexSpiritId} from "./spirit.js";
 import {emptySpiritType, playerSpiritType, loadComplexSpirit} from "./spiritType.js";
 
@@ -23,7 +23,7 @@ class World {
                 tempData.tileGrid,
                 worldFillTile,
                 worldOutsideTile,
-                getWorldTileWithSpirit
+                convertDbJsonToWorldTile
             );
         } else {
             this.tileGrid = new TileGrid(

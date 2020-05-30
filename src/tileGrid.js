@@ -74,11 +74,11 @@ export class TileGrid {
     }
 }
 
-export function convertJsonToTileGrid(data, fillTile, outsideTile, getTileWithSpirit) {
+export function convertJsonToTileGrid(data, fillTile, outsideTile, convertJsonToTile) {
     let output = new TileGrid(data.width, data.height, fillTile, outsideTile);
     for (let index = 0; index < data.tiles.length; index++) {
         let tileData = data.tiles[index];
-        output.tileList[index] = convertDbJsonToWorldTile(tileData);
+        output.tileList[index] = convertJsonToTile(tileData);
     }
     return output;
 }
