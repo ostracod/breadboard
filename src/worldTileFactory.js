@@ -1,7 +1,7 @@
 
-import {SimpleSpirit, ComplexSpirit} from "./spirit.js";
 import {complexSpiritClassIdSet} from "./spiritType.js";
-import {simpleWorldTileMap, PlayerWorldTile} from "./worldTile.js";
+import {SimpleSpirit, ComplexSpirit} from "./spirit.js";
+import {simpleWorldTileMap, PlayerWorldTile, MachineWorldTile} from "./worldTile.js";
 
 // Map from spirit class ID to ComplexWorldTileFactory.
 let complexWorldTileFactoryMap = {};
@@ -9,7 +9,7 @@ let complexWorldTileFactoryMap = {};
 class ComplexWorldTileFactory {
     
     // Concrete subclasses of ComplexWorldTileFactory must implement these methods:
-    // createTileWithSpirit
+    // convertDbJsonToTile, createTileWithSpirit
     
     constructor(spiritClassId) {
         complexWorldTileFactoryMap[spiritClassId] = this;
@@ -22,12 +22,32 @@ class PlayerWorldTileFactory extends ComplexWorldTileFactory {
         super(complexSpiritClassIdSet.player);
     }
     
+    convertDbJsonToTile(data, spirit) {
+        throw new Error("Player should not be persisted as world tile.");
+    }
+    
     createTileWithSpirit(spirit) {
         return new PlayerWorldTile(spirit);
     }
 }
 
+class MachineWorldTileFactory extends ComplexWorldTileFactory {
+    
+    constructor() {
+        super(complexSpiritClassIdSet.machine);
+    }
+    
+    convertDbJsonToTile(data, spirit) {
+        return new MachineWorldTile(spirit);
+    }
+    
+    createTileWithSpirit(spirit) {
+        return new MachineWorldTile(spirit);
+    }
+}
+
 new PlayerWorldTileFactory();
+new MachineWorldTileFactory();
 
 export function getWorldTileWithSpirit(spirit) {
     if (spirit instanceof SimpleSpirit) {
@@ -38,6 +58,16 @@ export function getWorldTileWithSpirit(spirit) {
         return tempFactory.createTileWithSpirit(spirit);
     }
     return null;
+}
+
+export function convertDbJsonToWorldTile(data) {
+    if (typeof data === "number") {
+        return simpleWorldTileMap[data];
+    } else {
+        let tempSpirit = convertClientJsonToSpirit(data.spirit);
+        let tempFactory = complexWorldTileFactoryMap[tempSpirit.classId];
+        return tempFactory.convertDbJsonToTile(data, tempSpirit, pos);
+    }
 }
 
 

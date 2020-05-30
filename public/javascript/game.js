@@ -17,7 +17,9 @@ let mineTargetPos;
 let mineDelay;
 const worldActionNameSet = ["mine", "place", "inspect", "attack"];
 let selectedWorldAction = worldActionNameSet[0];
-let placedComplexWorldTileCache = {};
+// Array of {tile: ComplexWorldTile, setWorldTileGridCount: number}.
+let placedComplexWorldTileCache = [];
+let setWorldTileGridCount = 0;
 
 function drawMineCrack() {
     if (!isMining) {
@@ -113,7 +115,10 @@ function placeWorldTile(offset) {
     worldTileGrid.setTile(tempPos, tempTile);
     addPlaceWorldTileCommand(tempPos, tempSpirit);
     if (tempTile instanceof ComplexWorldTile) {
-        placedComplexWorldTileCache[tempSpirit.id] = tempTile;
+        placedComplexWorldTileCache.push({
+            tile: tempTile,
+            setWorldTileGridCount: setWorldTileGridCount
+        });
     }
 }
 
@@ -214,7 +219,12 @@ addCommandRepeater("placeWorldTile", command => {
     if (tempSpiritReference instanceof SimpleSpiritReference) {
         tempTile = simpleWorldTileMap[tempSpiritReference.serialInteger];
     } else {
-        tempTile = placedComplexWorldTileCache[tempSpiritReference.id];
+        for (let item of placedComplexWorldTileCache) {
+            if (item.tile.spirit.id === tempSpiritReference.id) {
+                tempTile = item.tile;
+                break;
+            }
+        }
     }
     worldTileGrid.setTile(tempPos, tempTile);
 });
@@ -228,7 +238,8 @@ addCommandListener("setWorldTileGrid", command => {
     for (let data of command.tiles) {
         tempPos.set(worldTileGrid.windowOffset);
         tempPos.add(tempOffset);
-        let tempTile = convertJsonToWorldTile(data, tempPos);
+        let tempTile = convertClientJsonToWorldTile(data);
+        tempTile.addEvent(tempPos);
         tempTileList.push(tempTile);
         tempOffset.x += 1;
         if (tempOffset.x >= command.width) {
@@ -237,7 +248,14 @@ addCommandListener("setWorldTileGrid", command => {
         }
     }
     worldTileGrid.setTiles(tempTileList, command.width, command.height);
-    placedComplexWorldTileCache = {};
+    setWorldTileGridCount += 1;
+    // Remove stale items in placedComplexWorldTileCache.
+    for (let index = placedComplexWorldTileCache.length - 1; index >= 0; index--) {
+        let tempItem = placedComplexWorldTileCache[index];
+        if (tempItem.setWorldTileGridCount < setWorldTileGridCount - 10) {
+            placedComplexWorldTileCache.splice(index, 1);
+        }
+    }
 });
 
 addCommandListener("updateInventoryItem", command => {

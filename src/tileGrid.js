@@ -1,6 +1,6 @@
 
 import {Pos} from "./pos.js";
-import {convertDbJsonToSpirit} from "./spiritType.js";
+import {convertDbJsonToWorldTile} from "./worldTileFactory.js";
 
 export class TileGrid {
     
@@ -78,8 +78,7 @@ export function convertJsonToTileGrid(data, fillTile, outsideTile, getTileWithSp
     let output = new TileGrid(data.width, data.height, fillTile, outsideTile);
     for (let index = 0; index < data.tiles.length; index++) {
         let tileData = data.tiles[index];
-        let tempSpirit = convertDbJsonToSpirit(tileData);
-        output.tileList[index] = getTileWithSpirit(tempSpirit);
+        output.tileList[index] = convertDbJsonToWorldTile(tileData);
     }
     return output;
 }

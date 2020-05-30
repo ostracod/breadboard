@@ -197,4 +197,8 @@ export class PlayerWorldTile extends ComplexWorldTile {
     }
 }
 
+export class MachineWorldTile extends ComplexWorldTile {
+    
+}
+
 

@@ -36,6 +36,7 @@ class TileGrid {
             return;
         }
         this.tileList[index] = tile;
+        tile.addEvent(pos);
     }
     
     setTiles(tileList, width, height) {
