@@ -5,10 +5,9 @@ import ostracodMultiplayer from "ostracod-multiplayer";
 import {gameDelegate} from "./src/gameDelegate.js";
 import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet} from "./src/spiritType.js";
 import {recipeDataList} from "./src/recipe.js";
+import {world} from "./src/world.js";
 
 let ostracodMultiplayerInstance = ostracodMultiplayer.ostracodMultiplayer;
-
-console.log("Starting BreadBoard server...");
 
 let router = express.Router();
 
@@ -21,14 +20,20 @@ router.get("/javascript/gameConstants.js", (req, res, next) => {
     res.send(tempLineList.join("\n"));
 });
 
+console.log("Starting BreadBoard server...");
 let tempResult = ostracodMultiplayerInstance.initializeServer(
     pathUtils.resolve(),
     gameDelegate,
     [router]
 );
-
 if (!tempResult) {
     process.exit(1);
 }
+
+console.log("Loading world tile grid...");
+// TODO: Disable web requests until this promise finishes.
+world.loadTileGrid().then(() => {
+    console.log("Finished loading world tile grid.");
+});
 
 

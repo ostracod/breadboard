@@ -138,7 +138,7 @@ export class Inventory {
     removeItem(item) {
         let index = this.findItem(item);
         this.items.splice(index, 1);
-        item.spirit.setParentSpirit(this.parentSpirit);
+        item.spirit.setParentSpirit(null);
     }
     
     hasRecipeComponent(recipeComponent) {

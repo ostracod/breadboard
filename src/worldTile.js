@@ -36,6 +36,10 @@ class SimpleWorldTile extends WorldTile {
     getClientJson() {
         return this.spirit.getClientJson();
     }
+    
+    getDbJson() {
+        return this.spirit.getNestedDbJson();
+    }
 }
 
 for (let spirit of simpleSpiritSet) {
@@ -63,6 +67,16 @@ class ComplexWorldTile extends WorldTile {
     getClientJson() {
         return {
             spirit: this.spirit.getClientJson()
+        };
+    }
+    
+    getDbJson() {
+        let tempSpiritData = this.spirit.getNestedDbJson();
+        if (tempSpiritData === null) {
+            return emptyWorldTile.getDbJson();
+        }
+        return {
+            spirit: tempSpiritData
         };
     }
     

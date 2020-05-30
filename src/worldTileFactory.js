@@ -1,5 +1,5 @@
 
-import {complexSpiritClassIdSet, convertDbJsonToSpirit} from "./spiritType.js";
+import {complexSpiritClassIdSet, convertNestedDbJsonToSpirit} from "./spiritType.js";
 import {SimpleSpirit, ComplexSpirit} from "./spirit.js";
 import {simpleWorldTileMap, PlayerWorldTile, MachineWorldTile} from "./worldTile.js";
 
@@ -60,13 +60,17 @@ export function getWorldTileWithSpirit(spirit) {
     return null;
 }
 
-export function convertDbJsonToWorldTile(data) {
+export function convertDbJsonToWorldTile(data, shouldPerformTransaction = true) {
     if (typeof data === "number") {
-        return simpleWorldTileMap[data];
+        return Promise.resolve(simpleWorldTileMap[data]);
     } else {
-        let tempSpirit = convertDbJsonToSpirit(data.spirit);
-        let tempFactory = complexWorldTileFactoryMap[tempSpirit.classId];
-        return tempFactory.convertDbJsonToTile(data, tempSpirit, pos);
+        return convertNestedDbJsonToSpirit(
+            data.spirit,
+            shouldPerformTransaction
+        ).then(spirit => {
+            let tempFactory = complexWorldTileFactoryMap[spirit.classId];
+            return tempFactory.convertDbJsonToTile(data, spirit);
+        });
     }
 }
 

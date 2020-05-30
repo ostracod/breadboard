@@ -1,6 +1,6 @@
 
 import {Pos} from "./pos.js";
-import {TileGrid, convertJsonToTileGrid} from "./tileGrid.js";
+import {TileGrid, convertDbJsonToTileGrid} from "./tileGrid.js";
 import {emptyWorldTile, barrierWorldTile, matteriteWorldTile, energiteWorldTile, PlayerWorldTile} from "./worldTile.js";
 import {convertDbJsonToWorldTile} from "./worldTileFactory.js";
 import {getNextComplexSpiritId, setNextComplexSpiritId} from "./spirit.js";
@@ -16,15 +16,22 @@ const worldOutsideTile = barrierWorldTile;
 class World {
     
     constructor(width, height) {
+        this.tileGrid = null;
+        this.playerTileList = [];
+    }
+    
+    loadTileGrid() {
         if (fs.existsSync(worldFilePath)) {
             let tempData = JSON.parse(fs.readFileSync(worldFilePath, "utf8"));
             setNextComplexSpiritId(tempData.nextComplexSpiritId);
-            this.tileGrid = convertJsonToTileGrid(
+            return convertDbJsonToTileGrid(
                 tempData.tileGrid,
                 worldFillTile,
                 worldOutsideTile,
                 convertDbJsonToWorldTile
-            );
+            ).then(tileGrid => {
+                this.tileGrid = tileGrid
+            });
         } else {
             this.tileGrid = new TileGrid(
                 defaultWorldSize,
@@ -33,8 +40,8 @@ class World {
                 worldOutsideTile
             );
             this.generateTerrain();
+            return Promise.resolve();
         }
-        this.playerTileList = [];
     }
     
     generateTerrain() {

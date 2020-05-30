@@ -1,6 +1,8 @@
 
 import {Pos} from "./pos.js";
-import {convertDbJsonToWorldTile} from "./worldTileFactory.js";
+
+import ostracodMultiplayer from "ostracod-multiplayer";
+let dbUtils = ostracodMultiplayer.dbUtils;
 
 export class TileGrid {
     
@@ -74,13 +76,30 @@ export class TileGrid {
     }
 }
 
-export function convertJsonToTileGrid(data, fillTile, outsideTile, convertJsonToTile) {
-    let output = new TileGrid(data.width, data.height, fillTile, outsideTile);
-    for (let index = 0; index < data.tiles.length; index++) {
-        let tileData = data.tiles[index];
-        output.tileList[index] = convertJsonToTile(tileData);
-    }
-    return output;
+export function convertDbJsonToTileGrid(data, fillTile, outsideTile, convertDbJsonToTile) {
+    return new Promise((resolve, reject) => {
+        let output = new TileGrid(data.width, data.height, fillTile, outsideTile);
+        dbUtils.performTransaction(callback => {
+            let index = 0;
+            function convertNextTile() {
+                if (index >= data.tiles.length) {
+                    callback();
+                    return;
+                }
+                convertDbJsonToTile(
+                    data.tiles[index],
+                    false
+                ).then(tile => {
+                    output.tileList[index] = tile;
+                    index += 1;
+                    convertNextTile();
+                });
+            }
+            convertNextTile();
+        }, () => {
+            resolve(output);
+        });
+    });
 }
 
 

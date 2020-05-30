@@ -236,24 +236,29 @@ export function convertDbJsonToSpirit(data) {
     return tempType.convertDbJsonToSpirit(data);
 }
 
-export function loadComplexSpirit(id) {
+export function loadComplexSpirit(id, shouldPerformTransaction = true) {
     if (id in dirtyComplexSpiritSet) {
         return Promise.resolve(dirtyComplexSpiritSet[id]);
     }
+    
+    let dbError;
+    let dbResults;
+    
+    function performQuery(callback) {
+        dbUtils.performQuery(
+            "SELECT * FROM ComplexSpirits WHERE id = ?",
+            [id],
+            (error, results, fields) => {
+                dbError = error;
+                dbResults = results;
+                callback();
+            }
+        );
+    }
+    
     return new Promise((resolve, reject) => {
-        let dbError;
-        let dbResults;
-        dbUtils.performTransaction(callback => {
-            dbUtils.performQuery(
-                "SELECT * FROM ComplexSpirits WHERE id = ?",
-                [id],
-                (error, results, fields) => {
-                    dbError = error;
-                    dbResults = results;
-                    callback();
-                }
-            );
-        }, () => {
+        
+        function processResults() {
             if (dbError) {
                 reject(dbUtils.convertSqlErrorToText(dbError));
                 return;
@@ -271,8 +276,21 @@ export function loadComplexSpirit(id) {
             });
             output.hasDbRow = true;
             resolve(output);
-        });
+        }
+        
+        if (shouldPerformTransaction) {
+            dbUtils.performTransaction(performQuery, processResults);
+        } else {
+            performQuery(processResults);
+        }
     });
+}
+
+export function convertNestedDbJsonToSpirit(data, shouldPerformTransaction = true) {
+    if (typeof data === "number" || "classId" in data) {
+        return Promise.resolve(convertDbJsonToSpirit(data));
+    }
+    return loadComplexSpirit(data.id, shouldPerformTransaction);
 }
 
 

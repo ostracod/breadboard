@@ -99,12 +99,18 @@ export class ComplexSpirit extends Spirit {
     }
     
     getNestedDbJson() {
-        return {
-            id: this.id,
-            classId: this.classId,
-            attributeData: this.getAttributeDbJson(),
-            containerData: this.getContainerDbJson()
-        };
+        if (this.shouldHaveDbRow()) {
+            return {
+                id: this.id
+            };
+        } else {
+            return {
+                id: this.id,
+                classId: this.classId,
+                attributeData: this.getAttributeDbJson(),
+                containerData: this.getContainerDbJson()
+            };
+        }
     }
     
     getReference() {

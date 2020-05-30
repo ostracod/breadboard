@@ -8,18 +8,18 @@
             "shouldShowOnLoad": true
         },
         {
-            "name": "playerInventory",
-            "buttonLabel": "Inventory",
-            "title": "Player Inventory",
-            "viewFile": "playerInventoryModule.html",
-            "shouldShowOnLoad": true
-        },
-        {
             "name": "recipes",
             "buttonLabel": "Crafting",
             "title": "Crafting Recipes",
             "viewFile": "recipesModule.html",
             "shouldShowOnLoad": false
+        },
+        {
+            "name": "playerInventory",
+            "buttonLabel": "Inventory",
+            "title": "Player Inventory",
+            "viewFile": "playerInventoryModule.html",
+            "shouldShowOnLoad": true
         }
     ],
     "instructionsViewFile": "instructions.html",
