@@ -20,6 +20,13 @@
             "title": "Player Inventory",
             "viewFile": "playerInventoryModule.html",
             "shouldShowOnLoad": true
+        },
+        {
+            "name": "machine",
+            "buttonLabel": "Machine",
+            "title": "Inspect Machine",
+            "viewFile": "machineModule.html",
+            "shouldShowOnLoad": false
         }
     ],
     "instructionsViewFile": "instructions.html",

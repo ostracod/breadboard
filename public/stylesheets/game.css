@@ -3,12 +3,14 @@ input[type="radio"] {
     vertical-align: 2px;
 }
 
-.redButton {
+.redButton, .redButton:active {
     background: #884444;
 }
 
-.redButton:active {
-    background: #442222;
+button {
+    padding-top: 7px;
+    padding-bottom: 7px;
+    border-radius: 10px;
 }
 
 

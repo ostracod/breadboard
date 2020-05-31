@@ -133,8 +133,8 @@ class Inventory {
         for (let item of this.items) {
             let tempSpirit = item.spirit;
             if (tempSpirit instanceof ComplexSpirit && tempSpirit.id === null
-                    && tempSpirit.spiritType == spirit.spiritType) {
-                tempSpirit.id = spirit.id;
+                    && tempSpirit.spiritType === spirit.spiritType) {
+                tempSpirit.setId(spirit.id);
                 item.row.draw();
                 return true;
             }

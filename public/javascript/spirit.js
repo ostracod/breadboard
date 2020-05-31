@@ -43,8 +43,7 @@ class ComplexSpirit extends Spirit {
     constructor(spiritType, id) {
         super(spiritType);
         this.classId = spiritType.spiritClassId;
-        this.id = id;
-        this.reference = new ComplexSpiritReference(this.id);
+        this.setId(id);
     }
     
     getReference() {
@@ -56,6 +55,11 @@ class ComplexSpirit extends Spirit {
             return "Loading...";
         }
         return super.getDisplayName();
+    }
+    
+    setId(id) {
+        this.id = id;
+        this.reference = new ComplexSpiritReference(this.id);
     }
 }
 

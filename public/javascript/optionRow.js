@@ -38,8 +38,21 @@ class OptionRow {
     
     select() {
         this.tag.style.border = "2px #000000 solid";
-        // TODO: Scroll container to display row.
-        
+        let tempPosY = this.tag.offsetTop - this.parentTag.offsetTop;
+        let tempHeight = this.tag.offsetHeight;
+        let tempScrollY = this.parentTag.scrollTop;
+        let tempParentHeight = this.parentTag.clientHeight;
+        let nextScrollY;
+        if (tempPosY < tempScrollY) {
+            nextScrollY = tempPosY;
+        } else if (tempPosY + tempHeight > tempScrollY + tempParentHeight) {
+            nextScrollY = tempPosY + tempHeight - tempParentHeight;
+        } else {
+            nextScrollY = null;
+        }
+        if (nextScrollY !== null) {
+            this.parentTag.scrollTop = nextScrollY;
+        }
     }
     
     remove() {
