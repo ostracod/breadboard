@@ -1,5 +1,8 @@
 
-let localPlayerInventory;
+// Map from parent spirit ID to inventory.
+let parentSpiritInventoryMap = {};
+let localPlayerInventory = null;
+let inspectedMachineInventory = null;
 
 class InventoryItem {
     
@@ -61,11 +64,14 @@ class InventoryItem {
 
 class Inventory {
     
-    constructor(tag) {
+    constructor(tag, parentSpiritId) {
         this.tag = tag;
+        this.tag.innerHTML = "";
+        this.parentSpiritId = parentSpiritId;
         this.items = [];
         this.selectedItem = null;
         this.observers = [];
+        parentSpiritInventoryMap[this.parentSpiritId] = this;
     }
     
     addObserver(observer) {
@@ -84,6 +90,10 @@ class Inventory {
         for (let observer of this.observers) {
             observer.inventoryChangeEvent(this, item);
         }
+    }
+    
+    cleanUp() {
+        delete parentSpiritInventoryMap[this.parentSpiritId];
     }
     
     findItemBySpirit(spirit) {
@@ -225,6 +235,28 @@ class Inventory {
         }
         this.addRecipeComponent(recipe.product);
         addCraftCommand(recipe);
+    }
+    
+    inspectSelectedItem() {
+        if (this.selectedItem === null) {
+            return;
+        }
+        let tempSpirit = this.selectedItem.spirit;
+        if (tempSpirit instanceof MachineSpirit) {
+            inspectMachine(tempSpirit);
+        }
+    }
+    
+    transferSelectedItem(destinationInventory) {
+        if (destinationInventory === null) {
+            return;
+        }
+        if (this.selectedItem === null) {
+            return;
+        }
+        let tempItem = this.selectedItem;
+        tempItem.decreaseCount(1);
+        destinationInventory.incrementItemCountBySpirit(tempItem.spirit);
     }
 }
 

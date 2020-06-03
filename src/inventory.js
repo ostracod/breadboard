@@ -78,6 +78,13 @@ export class Inventory {
         }
     }
     
+    populateParentSpirit(spirit) {
+        this.parentSpirit = spirit;
+        for (let item of this.items) {
+            item.spirit.populateParentSpirit(this.parentSpirit);
+        }
+    }
+    
     getDbJson() {
         return this.items.map(item => item.getDbJson());
     }
@@ -129,7 +136,7 @@ export class Inventory {
         let tempItem = this.getItemBySpirit(spirit);
         if (tempItem === null) {
             new InventoryItem(this, spirit, 1);
-            spirit.setParentSpirit(this.parentSpirit);
+            spirit.changeParentSpirit(this.parentSpirit);
         } else {
             tempItem.setCount(tempItem.count + 1);
         }
@@ -138,7 +145,7 @@ export class Inventory {
     removeItem(item) {
         let index = this.findItem(item);
         this.items.splice(index, 1);
-        item.spirit.setParentSpirit(null);
+        item.spirit.changeParentSpirit(null);
     }
     
     hasRecipeComponent(recipeComponent) {

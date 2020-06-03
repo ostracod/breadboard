@@ -1,6 +1,6 @@
 <div style="height: 50px;">
-    <button>Move to Machine</button>
-    <button>Inspect</button>
+    <button onclick="localPlayerInventory.inspectSelectedItem();">Inspect</button>
+    <button onclick="localPlayerInventory.transferSelectedItem(inspectedMachineInventory);">Move to Machine</button>
     <button>Recycle</button>
 </div>
 <div id="playerInventoryItems" style="height: 200px; overflow-y: scroll;"></div>

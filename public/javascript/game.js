@@ -5,6 +5,7 @@ let canvasTileWidth;
 let canvasTileHeight;
 let cameraPos = new Pos(0, 0);
 let localPlayerUsername;
+let localPlayerSpiritId;
 const playerActionOffsetSet = [
     new Pos(-1, 0),
     new Pos(1, 0),
@@ -148,6 +149,17 @@ function setUpWorldActionTags(name) {
     }
 }
 
+function inspectMachine(spirit) {
+    if (inspectedMachineInventory !== null) {
+        inspectedMachineInventory.cleanUp();
+    }
+    let tempTag = document.getElementById("machineInventoryItems");
+    inspectedMachineInventory = new Inventory(tempTag, spirit.id);
+    document.getElementById("machineInfoPlaceholder").style.display = "none";
+    document.getElementById("machineInfo").style.display = "block";
+    showModuleByName("machine");
+}
+
 function addEnterWorldCommand() {
     gameUpdateCommandList.push({
         commandName: "enterWorld"
@@ -259,15 +271,19 @@ addCommandListener("setWorldTileGrid", command => {
 });
 
 addCommandListener("updateInventoryItem", command => {
+    let tempInventory = parentSpiritInventoryMap[command.parentSpiritId];
+    if (typeof tempInventory === "undefined") {
+        return;
+    }
     let tempItemData = command.inventoryItem;
     let tempSpirit = convertClientJsonToSpirit(tempItemData.spirit);
     if (tempSpirit instanceof ComplexSpirit) {
-        let tempResult = localPlayerInventory.populateComplexSpiritId(tempSpirit);
+        let tempResult = tempInventory.populateComplexSpiritId(tempSpirit);
         if (tempResult) {
             return;
         }
     }
-    localPlayerInventory.setItemCountBySpirit(tempSpirit, tempItemData.count);
+    tempInventory.setItemCountBySpirit(tempSpirit, tempItemData.count);
 });
 
 class ClientDelegate {
@@ -286,12 +302,13 @@ class ClientDelegate {
         for (let name of worldActionNameSet) {
             setUpWorldActionTags(name);
         }
-        let tempTag = document.getElementById("playerInventoryItems");
-        localPlayerInventory = new Inventory(tempTag);
     }
     
     setLocalPlayerInfo(command) {
         localPlayerUsername = command.username;
+        localPlayerSpiritId = command.extraFields.complexSpiritId;
+        let tempTag = document.getElementById("playerInventoryItems");
+        localPlayerInventory = new Inventory(tempTag, localPlayerSpiritId);
     }
     
     addCommandsBeforeUpdateRequest() {

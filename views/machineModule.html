@@ -2,6 +2,12 @@
     No machine selected.
 </p>
 <div id="machineInfo" style="display: none;">
+    <div style="height: 90px;">
+        <button onclick="inspectedMachineInventory.inspectSelectedItem();">Inspect</button>
+        <button onclick="inspectedMachineInventory.transferSelectedItem(localPlayerInventory);">Move to Player</button>
+        <button>Install Circuit</button>
+        <button>Recycle</button>
+    </div>
     <div id="machineInventoryItems" style="height: 200px; overflow-y: scroll;"></div>
 </div>
 

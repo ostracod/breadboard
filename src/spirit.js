@@ -33,7 +33,11 @@ class Spirit {
         return this.spiritType.canBeMined();
     }
     
-    setParentSpirit(spirit) {
+    populateParentSpirit(spirit) {
+        // Do nothing.
+    }
+    
+    changeParentSpirit(spirit) {
         // Do nothing.
     }
 }
@@ -117,7 +121,11 @@ export class ComplexSpirit extends Spirit {
         return this.reference;
     }
     
-    setParentSpirit(spirit) {
+    populateParentSpirit(spirit) {
+        this.parentSpirit = spirit;
+    }
+    
+    changeParentSpirit(spirit) {
         this.parentSpirit = spirit;
         this.markAsDirty();
     }
@@ -179,7 +187,7 @@ export class InventorySpirit extends ComplexSpirit {
             inventory = new Inventory();
         }
         this.inventory = inventory;
-        this.inventory.parentSpirit = this;
+        this.inventory.populateParentSpirit(this);
         this.inventory.addObserver(this);
     }
     
@@ -208,7 +216,7 @@ export class PlayerSpirit extends InventorySpirit {
         super.inventoryChangeEvent(inventory, item);
         for (let index = 0; index < this.inventoryUpdates.length; index++) {
             let tempItem = this.inventoryUpdates[index];
-            if (item.spirit === tempItem.spirit) {
+            if (item.inventory === tempItem.inventory && item.spirit === tempItem.spirit) {
                 this.inventoryUpdates[index] = item;
                 return;
             }

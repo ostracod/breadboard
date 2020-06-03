@@ -29,6 +29,7 @@ function addSetWorldTileGridCommand(player, commandList) {
 function addUpdateInventoryItemCommand(inventoryItem, commandList) {
     commandList.push({
         commandName: "updateInventoryItem",
+        parentSpiritId: inventoryItem.inventory.parentSpirit.id,
         inventoryItem: inventoryItem.getClientJson()
     });
 }
