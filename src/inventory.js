@@ -42,12 +42,10 @@ export class InventoryItem {
         if (this.count >= offset) {
             this.setCount(this.count - offset);
             return offset;
-        } else if (this.count === offset) {
+        } else {
             let output = this.count;
             this.setCount(0);
             return output;
-        } else {
-            return 0;
         }
     }
 }
@@ -132,14 +130,18 @@ export class Inventory {
         }
     }
     
-    incrementItemCountBySpirit(spirit) {
+    increaseItemCountBySpirit(spirit, count) {
         let tempItem = this.getItemBySpirit(spirit);
         if (tempItem === null) {
-            new InventoryItem(this, spirit, 1);
+            new InventoryItem(this, spirit, count);
             spirit.changeParentSpirit(this.parentSpirit);
         } else {
-            tempItem.setCount(tempItem.count + 1);
+            tempItem.setCount(tempItem.count + count);
         }
+    }
+    
+    incrementItemCountBySpirit(spirit) {
+        this.increaseItemCountBySpirit(spirit, 1);
     }
     
     removeItem(item) {

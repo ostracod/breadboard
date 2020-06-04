@@ -268,12 +268,40 @@ export class PlayerSpirit extends InventorySpirit {
         }
     }
     
-    inspectByContainerName(containerName, spiritReference) {
+    getInventoryByContainerName(containerName) {
         if (containerName === "playerInventory") {
-            return this.inspectByInventory(this.inventory, spiritReference);
+            return this.inventory
         }
-        // TODO: Allow inspection of item in inspected machine inventory.
+        if (containerName === "machineInventory") {
+            if (this.inspectedMachine === null) {
+                return null;
+            } else {
+                return this.inspectedMachine.inventory
+            }
+        }
+    }
+    
+    inspectByContainerName(containerName, spiritReference) {
+        let tempInventory = this.getInventoryByContainerName(containerName);
+        if (tempInventory !== null) {
+            return this.inspectByInventory(tempInventory, spiritReference);
+        }
         return null;
+    }
+    
+    transferInventoryItem(sourceContainerName, destinationContainerName, spiritReference) {
+        let sourceInventory = this.getInventoryByContainerName(sourceContainerName);
+        let destinationInventory = this.getInventoryByContainerName(destinationContainerName);
+        if (sourceInventory === null || destinationInventory === null) {
+            return;
+        }
+        let tempItem = sourceInventory.getItemBySpiritReference(spiritReference);
+        if (tempItem === null) {
+            return;
+        }
+        let tempCount = tempItem.decreaseCount(1);
+        let tempSpirit = tempItem.spirit;
+        destinationInventory.increaseItemCountBySpirit(tempSpirit, tempCount);
     }
 }
 

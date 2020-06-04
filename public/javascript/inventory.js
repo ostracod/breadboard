@@ -120,13 +120,17 @@ class Inventory {
         }
     }
     
-    incrementItemCountBySpirit(spirit) {
+    increaseItemCountBySpirit(spirit, count) {
         let tempItem = this.getItemBySpirit(spirit);
         if (tempItem === null) {
-            new InventoryItem(this, spirit, 1);
+            new InventoryItem(this, spirit, count);
         } else {
-            tempItem.setCount(tempItem.count + 1);
+            tempItem.setCount(tempItem.count + count);
         }
+    }
+    
+    incrementItemCountBySpirit(spirit) {
+        this.increaseItemCountBySpirit(spirit, 1);
     }
     
     setItemCountBySpirit(spirit, count) {
@@ -256,8 +260,10 @@ class Inventory {
             return;
         }
         let tempItem = this.selectedItem;
-        tempItem.decreaseCount(1);
-        destinationInventory.incrementItemCountBySpirit(tempItem.spirit);
+        let tempSpirit = tempItem.spirit;
+        let tempCount = tempItem.decreaseCount(1);
+        destinationInventory.increaseItemCountBySpirit(tempSpirit, tempCount);
+        addTransferCommand(this, destinationInventory, tempSpirit);
     }
 }
 

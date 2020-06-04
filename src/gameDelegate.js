@@ -124,6 +124,14 @@ addCommandListener("inspect", (command, playerTile, commandList) => {
     }
 });
 
+addCommandListener("transfer", (command, playerTile, commandList) => {
+    playerTile.spirit.transferInventoryItem(
+        command.sourceContainerName,
+        command.destinationContainerName,
+        convertJsonToSpiritReference(command.spirit)
+    );
+});
+
 class GameDelegate {
     
     constructor() {

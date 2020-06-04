@@ -220,6 +220,15 @@ function addInspectCommand(containerName, spirit) {
     });
 }
 
+function addTransferCommand(sourceInventory, destinationInventory, spirit) {
+    gameUpdateCommandList.push({
+        commandName: "transfer",
+        sourceContainerName: sourceInventory.containerName,
+        destinationContainerName: destinationInventory.containerName,
+        spirit: spirit.getReference().getJson()
+    });
+}
+
 addCommandRepeater("walk", command => {
     if (localPlayerWorldTile === null) {
         return;
