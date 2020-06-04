@@ -2,17 +2,16 @@
 import ostracodMultiplayer from "ostracod-multiplayer";
 import {Pos, createPosFromJson} from "./pos.js";
 import {world} from "./world.js";
-import {persistAllComplexSpirits} from "./spirit.js";
+import {MachineSpirit, persistAllComplexSpirits} from "./spirit.js";
 import {convertJsonToSpiritReference} from "./spiritReference.js";
 import {PlayerWorldTile} from "./worldTile.js";
 import {getRecipeById} from "./recipe.js";
 
 let gameUtils = ostracodMultiplayer.gameUtils;
 
-function addSetWorldTileGridCommand(player, commandList) {
+function addSetWorldTileGridCommand(playerTile, commandList) {
     let tempWindowSize = 21;
-    let tempTile = world.getPlayerTile(player);
-    let tempPos = tempTile.pos.copy();
+    let tempPos = playerTile.pos.copy();
     let tempCenterOffset = Math.floor(tempWindowSize / 2);
     tempPos.x -= tempCenterOffset;
     tempPos.y -= tempCenterOffset;
@@ -34,6 +33,12 @@ function addUpdateInventoryItemCommand(inventoryItem, commandList) {
     });
 }
 
+function addUpdateInventoryItemCommands(inventory, commandList) {
+    for (let item of inventory.items) {
+        addUpdateInventoryItemCommand(item, commandList);
+    }
+}
+
 // TODO: Verify value ranges for all command parameters.
 
 gameUtils.addCommandListener(
@@ -42,77 +47,82 @@ gameUtils.addCommandListener(
     (command, player, commandList, done, errorHandler) => {
         world.addPlayerTile(player).then(playerSpirit => {
             let tempInventory = playerSpirit.inventory;
-            for (let item of tempInventory.items) {
-                addUpdateInventoryItemCommand(item, commandList);
-            }
+            addUpdateInventoryItemCommands(tempInventory, commandList);
             done();
         });
     }
 );
 
-gameUtils.addCommandListener(
-    "setWalkController",
-    true,
-    (command, player, commandList) => {
-        let tempTile = world.getPlayerTile(player);
-        tempTile.walkControllerData = command.walkController;
+function addCommandListener(commandName, handler) {
+    if (handler.length === 3) {
+        gameUtils.addCommandListener(
+            commandName,
+            true,
+            (command, player, commandList) => {
+                handler(command, world.getPlayerTile(player), commandList);
+            }
+        );
+    } else {
+        gameUtils.addCommandListener(
+            commandName,
+            false,
+            (command, player, commandList, done, errorHandler) => {
+                handler(
+                    command,
+                    world.getPlayerTile(player),
+                    commandList,
+                    done,
+                    errorHandler
+                );
+            }
+        );
     }
-);
+}
 
-gameUtils.addCommandListener(
-    "getState",
-    true,
-    (command, player, commandList) => {
-        addSetWorldTileGridCommand(player, commandList);
-        let tempSpirit = world.getPlayerTile(player).spirit;
-        for (let item of tempSpirit.inventoryUpdates) {
-            addUpdateInventoryItemCommand(item, commandList);
-        }
-        tempSpirit.inventoryUpdates = [];
-    }
-);
+addCommandListener("setWalkController", (command, playerTile, commandList) => {
+    playerTile.walkControllerData = command.walkController;
+});
 
-gameUtils.addCommandListener(
-    "walk",
-    true,
-    (command, player, commandList) => {
-        let tempTile = world.getPlayerTile(player);
-        let tempOffset = createPosFromJson(command.offset);
-        tempTile.walk(tempOffset);
+addCommandListener("getState", (command, playerTile, commandList) => {
+    addSetWorldTileGridCommand(playerTile, commandList);
+    let playerSpirit = playerTile.spirit;
+    for (let item of playerSpirit.inventoryUpdates) {
+        addUpdateInventoryItemCommand(item, commandList);
     }
-);
+    playerSpirit.inventoryUpdates = [];
+});
 
-gameUtils.addCommandListener(
-    "mine",
-    true,
-    (command, player, commandList) => {
-        let tempTile = world.getPlayerTile(player);
-        let tempPos = createPosFromJson(command.pos);
-        tempTile.mine(tempPos);
-    }
-);
+addCommandListener("walk", (command, playerTile, commandList) => {
+    let tempOffset = createPosFromJson(command.offset);
+    playerTile.walk(tempOffset);
+});
 
-gameUtils.addCommandListener(
-    "placeWorldTile",
-    true,
-    (command, player, commandList) => {
-        let tempTile = world.getPlayerTile(player);
-        let tempPos = createPosFromJson(command.pos);
-        let tempReference = convertJsonToSpiritReference(command.spirit);
-        tempTile.placeWorldTile(tempPos, tempReference);
-    }
-);
+addCommandListener("mine", (command, playerTile, commandList) => {
+    let tempPos = createPosFromJson(command.pos);
+    playerTile.mine(tempPos);
+});
 
-gameUtils.addCommandListener(
-    "craft",
-    true,
-    (command, player, commandList) => {
-        let tempTile = world.getPlayerTile(player);
-        let tempInventory = tempTile.spirit.inventory;
-        let tempRecipe = getRecipeById(command.recipeId);
-        tempInventory.craftRecipe(tempRecipe);
+addCommandListener("placeWorldTile", (command, playerTile, commandList) => {
+    let tempPos = createPosFromJson(command.pos);
+    let tempReference = convertJsonToSpiritReference(command.spirit);
+    playerTile.placeWorldTile(tempPos, tempReference);
+});
+
+addCommandListener("craft", (command, playerTile, commandList) => {
+    let tempInventory = playerTile.spirit.inventory;
+    let tempRecipe = getRecipeById(command.recipeId);
+    tempInventory.craftRecipe(tempRecipe);
+});
+
+addCommandListener("inspect", (command, playerTile, commandList) => {
+    let tempSpirit = playerTile.inspectByContainerName(
+        command.containerName,
+        convertJsonToSpiritReference(command.spirit)
+    );
+    if (tempSpirit instanceof MachineSpirit) {
+        addUpdateInventoryItemCommands(tempSpirit.inventory, commandList);
     }
-);
+});
 
 class GameDelegate {
     

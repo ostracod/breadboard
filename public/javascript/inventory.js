@@ -64,7 +64,8 @@ class InventoryItem {
 
 class Inventory {
     
-    constructor(tag, parentSpiritId) {
+    constructor(containerName, tag, parentSpiritId) {
+        this.containerName = containerName;
         this.tag = tag;
         this.tag.innerHTML = "";
         this.parentSpiritId = parentSpiritId;
@@ -243,7 +244,7 @@ class Inventory {
         }
         let tempSpirit = this.selectedItem.spirit;
         if (tempSpirit instanceof MachineSpirit) {
-            inspectMachine(tempSpirit);
+            inspectMachine(this.containerName, tempSpirit);
         }
     }
     

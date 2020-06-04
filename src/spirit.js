@@ -209,6 +209,7 @@ export class PlayerSpirit extends InventorySpirit {
             player.extraFields.complexSpiritId = this.id;
         }
         this.player = player;
+        this.inspectedMachine = null;
         this.inventoryUpdates = [];
     }
     
@@ -238,6 +239,40 @@ export class PlayerSpirit extends InventorySpirit {
     
     getNestedDbJson() {
         // Player spirit should never be persisted in a container.
+        return null;
+    }
+    
+    inspect(spirit) {
+        if (spirit instanceof MachineSpirit) {
+            if (this.inspectedMachine !== null) {
+                this.inspectedMachine.inventory.removeObserver(this);
+            }
+            this.inspectedMachine = spirit;
+            this.inspectedMachine.inventory.addObserver(this);
+            return true;
+        }
+        return false;
+    }
+    
+    inspectByInventory(inventory, spiritReference) {
+        let tempItem = inventory.getItemBySpiritReference(spiritReference);
+        if (tempItem === null) {
+            return null;
+        }
+        let tempSpirit = tempItem.spirit;
+        let tempResult = this.inspect(tempSpirit);
+        if (tempResult) {
+            return tempSpirit;
+        } else {
+            return null;
+        }
+    }
+    
+    inspectByContainerName(containerName, spiritReference) {
+        if (containerName === "playerInventory") {
+            return this.inspectByInventory(this.inventory, spiritReference);
+        }
+        // TODO: Allow inspection of item in inspected machine inventory.
         return null;
     }
 }

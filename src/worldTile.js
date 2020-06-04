@@ -209,6 +209,11 @@ export class PlayerWorldTile extends ComplexWorldTile {
         tempTile = getWorldTileWithSpirit(tempItem.spirit);
         this.world.setTile(pos, tempTile);
     }
+    
+    inspectByContainerName(containerName, spiritReference) {
+        // TODO: Allow inspection of tile adjacent to player.
+        return this.spirit.inspectByContainerName(containerName, spiritReference);
+    }
 }
 
 export class MachineWorldTile extends ComplexWorldTile {

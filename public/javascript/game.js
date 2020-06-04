@@ -149,15 +149,16 @@ function setUpWorldActionTags(name) {
     }
 }
 
-function inspectMachine(spirit) {
+function inspectMachine(containerName, spirit) {
     if (inspectedMachineInventory !== null) {
         inspectedMachineInventory.cleanUp();
     }
     let tempTag = document.getElementById("machineInventoryItems");
-    inspectedMachineInventory = new Inventory(tempTag, spirit.id);
+    inspectedMachineInventory = new Inventory("machineInventory", tempTag, spirit.id);
     document.getElementById("machineInfoPlaceholder").style.display = "none";
     document.getElementById("machineInfo").style.display = "block";
     showModuleByName("machine");
+    addInspectCommand(containerName, spirit);
 }
 
 function addEnterWorldCommand() {
@@ -208,6 +209,14 @@ function addCraftCommand(recipe) {
     gameUpdateCommandList.push({
         commandName: "craft",
         recipeId: recipe.id
+    });
+}
+
+function addInspectCommand(containerName, spirit) {
+    gameUpdateCommandList.push({
+        commandName: "inspect",
+        containerName: containerName,
+        spirit: spirit.getReference().getJson()
     });
 }
 
@@ -308,7 +317,7 @@ class ClientDelegate {
         localPlayerUsername = command.username;
         localPlayerSpiritId = command.extraFields.complexSpiritId;
         let tempTag = document.getElementById("playerInventoryItems");
-        localPlayerInventory = new Inventory(tempTag, localPlayerSpiritId);
+        localPlayerInventory = new Inventory("playerInventory", tempTag, localPlayerSpiritId);
     }
     
     addCommandsBeforeUpdateRequest() {
