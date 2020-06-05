@@ -125,11 +125,20 @@ addCommandListener("inspect", (command, playerTile, commandList) => {
 });
 
 addCommandListener("transfer", (command, playerTile, commandList) => {
-    playerTile.spirit.transferInventoryItem(
+    let tempResult = playerTile.spirit.transferInventoryItem(
         command.sourceContainerName,
         command.destinationContainerName,
         convertJsonToSpiritReference(command.spirit)
     );
+    if (tempResult !== null && !tempResult.success) {
+        let sourceInventory = tempResult.sourceInventory;
+        let destinationInventory = tempResult.destinationInventory;
+        let tempSpirit = tempResult.spirit;
+        let tempItem1 = sourceInventory.getItemBySpirit(tempSpirit, true);
+        let tempItem2 = destinationInventory.getItemBySpirit(tempSpirit, true);
+        addUpdateInventoryItemCommand(tempItem1, commandList);
+        addUpdateInventoryItemCommand(tempItem2, commandList);
+    }
 });
 
 class GameDelegate {

@@ -8,8 +8,10 @@ export class InventoryItem {
         this.inventory = inventory;
         this.spirit = spirit;
         this.count = count;
-        this.inventory.items.push(this);
-        this.notifyInventoryObservers();
+        if (this.count > 0) {
+            this.inventory.items.push(this);
+            this.notifyInventoryObservers();
+        }
     }
     
     notifyInventoryObservers() {
@@ -101,10 +103,12 @@ export class Inventory {
         return this.findItemBySpirit(item.spirit);
     }
     
-    getItemBySpirit(spirit) {
+    getItemBySpirit(spirit, shouldCreateDummy=false) {
         let index = this.findItemBySpirit(spirit);
         if (index >= 0) {
             return this.items[index];
+        } else if (shouldCreateDummy) {
+            return new InventoryItem(this, spirit, 0);
         } else {
             return null;
         }
@@ -197,6 +201,18 @@ export class Inventory {
             this.removeRecipeComponent(component);
         }
         this.addRecipeComponent(recipe.product);
+    }
+    
+    // Parent may be any number of steps removed.
+    hasParentSpirit(spirit) {
+        let tempSpirit = this.parentSpirit;
+        while (tempSpirit !== null) {
+            if (spirit.hasSameIdentity(tempSpirit)) {
+                return true;
+            }
+            tempSpirit = tempSpirit.parentSpirit;
+        }
+        return false;
     }
 }
 
