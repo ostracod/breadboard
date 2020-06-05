@@ -22,7 +22,6 @@ export const complexSpiritClassIdSet = {
 
 export const spiritColorAmount = 16;
 
-export let simpleSpiritSet = [];
 // Map from serial integer to SimpleSpiritType.
 export let simpleSpiritTypeMap = {};
 // Map from spirit class ID to list of ComplexSpiritType.
@@ -56,7 +55,6 @@ export class SimpleSpiritType extends SpiritType {
         super();
         this.serialInteger = serialInteger;
         this.spirit = new SimpleSpirit(this);
-        simpleSpiritSet.push(this.spirit);
         simpleSpiritTypeMap[this.serialInteger] = this;
     }
     

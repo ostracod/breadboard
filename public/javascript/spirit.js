@@ -1,4 +1,7 @@
 
+// Map from serial integer to SimpleSpirit.
+let simpleSpiritSet = {};
+
 class Spirit {
     
     // Concrete subclasses of Spirit must implement these methods:
@@ -31,6 +34,7 @@ class SimpleSpirit extends Spirit {
         super(spiritType);
         this.serialInteger = this.spiritType.serialInteger;
         this.reference = new SimpleSpiritReference(this.serialInteger);
+        simpleSpiritSet[this.serialInteger] = this;
     }
     
     getReference() {

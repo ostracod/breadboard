@@ -1,6 +1,7 @@
 
 import {Tile} from "./tile.js";
-import {simpleSpiritSerialIntegerSet, simpleSpiritSet, emptySpiritType} from "./spiritType.js";
+import {simpleSpiritSerialIntegerSet, emptySpiritType} from "./spiritType.js";
+import {simpleSpiritSet} from "./spirit.js";
 import {getWorldTileWithSpirit} from "./worldTileFactory.js";
 
 // Map from spirit serial integer to WorldTile.
@@ -42,8 +43,9 @@ class SimpleWorldTile extends WorldTile {
     }
 }
 
-for (let spirit of simpleSpiritSet) {
-    new SimpleWorldTile(spirit);
+for (let serialInteger in simpleSpiritSet) {
+    let tempSpirit = simpleSpiritSet[serialInteger];
+    new SimpleWorldTile(tempSpirit);
 }
 
 function getSimpleWorldTile(spiritKey) {

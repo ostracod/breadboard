@@ -39,8 +39,9 @@ class SimpleWorldTile extends WorldTile {
     }
 }
 
-for (let spirit of simpleSpiritSet) {
-    new SimpleWorldTile(spirit);
+for (let serialInteger in simpleSpiritSet) {
+    let tempSpirit = simpleSpiritSet[serialInteger];
+    new SimpleWorldTile(tempSpirit);
 }
 
 function getSimpleWorldTile(spiritKey) {

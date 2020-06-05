@@ -5,6 +5,8 @@ import {Inventory} from "./inventory.js";
 import ostracodMultiplayer from "ostracod-multiplayer";
 let dbUtils = ostracodMultiplayer.dbUtils;
 
+// Map from serial integer to SimpleSpirit.
+export let simpleSpiritSet = {};
 let nextComplexSpiritId = 0;
 // Map from complex spirit ID to ComplexSpirit.
 export let dirtyComplexSpiritSet = {};
@@ -48,6 +50,7 @@ export class SimpleSpirit extends Spirit {
         super(spiritType);
         this.serialInteger = this.spiritType.serialInteger;
         this.reference = new SimpleSpiritReference(this.serialInteger);
+        simpleSpiritSet[this.serialInteger] = this;
     }
     
     getClientJson() {

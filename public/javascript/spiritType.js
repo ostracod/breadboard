@@ -1,8 +1,7 @@
 
-let simpleSpiritSet = [];
-// Map from spirit serial integer to SimpleSpiritType.
+// Map from serial integer to SimpleSpiritType.
 let simpleSpiritTypeMap = {};
-// Map from spirit class ID to list of ComplexSpiritType.
+// Map from class ID to list of ComplexSpiritType.
 let complexSpiritTypeMap = {};
 
 class SpiritType {
@@ -30,7 +29,6 @@ class SimpleSpiritType extends SpiritType {
         super();
         this.serialInteger = serialInteger;
         this.spirit = new SimpleSpirit(this);
-        simpleSpiritSet.push(this.spirit);
         simpleSpiritTypeMap[this.spirit.serialInteger] = this;
     }
     

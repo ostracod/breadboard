@@ -18,9 +18,9 @@ let mineTargetPos;
 let mineDelay;
 const worldActionNameSet = ["mine", "place", "inspect", "attack"];
 let selectedWorldAction = worldActionNameSet[0];
-// Array of {tile: ComplexWorldTile, setWorldTileGridCount: number}.
-let placedComplexWorldTileCache = [];
-let setWorldTileGridCount = 0;
+// Array of {spirit: ComplexSpirit, updateRequestCount: number}.
+let complexSpiritCache = [];
+let updateRequestCount = 0;
 
 function drawMineCrack() {
     if (!isMining) {
@@ -115,12 +115,7 @@ function placeWorldTile(offset) {
     tempTile = getWorldTileWithSpirit(tempSpirit);
     worldTileGrid.setTile(tempPos, tempTile);
     addPlaceWorldTileCommand(tempPos, tempSpirit);
-    if (tempTile instanceof ComplexWorldTile) {
-        placedComplexWorldTileCache.push({
-            tile: tempTile,
-            setWorldTileGridCount: setWorldTileGridCount
-        });
-    }
+    addSpiritToCache(tempSpirit);
 }
 
 function selectWorldAction(name) {
@@ -159,6 +154,52 @@ function inspectMachine(containerName, spirit) {
     document.getElementById("machineInfo").style.display = "block";
     showModuleByName("machine");
     addInspectCommand(containerName, spirit);
+}
+
+function findComplexSpiritInCache(spiritId) {
+    for (let index = 0; index < complexSpiritCache.length; index++) {
+        let tempItem = complexSpiritCache[index];
+        if (tempItem.spirit.id === spiritId) {
+            return index;
+        }
+    }
+    return -1;
+}
+
+function getSpiritInCache(spiritReference) {
+    if (spiritReference instanceof SimpleSpiritReference) {
+        return simpleSpiritSet[spiritReference.serialInteger];
+    }
+    let index = findComplexSpiritInCache(spiritReference.id);
+    if (index < 0) {
+        return null;
+    } else {
+        return complexSpiritCache[index].spirit;
+    }
+}
+
+function addSpiritToCache(spirit) {
+    if (!(spirit instanceof ComplexSpirit)) {
+        return;
+    }
+    let index = findComplexSpiritInCache(spirit.id);
+    if (index >= 0) {
+        complexSpiritCache[index].spirit = spirit;
+        return;
+    }
+    complexSpiritCache.push({
+        spirit: spirit,
+        updateRequestCount: updateRequestCount
+    });
+}
+
+function removeStaleSpiritsInCache() {
+    for (let index = complexSpiritCache.length - 1; index >= 0; index--) {
+        let tempItem = complexSpiritCache[index];
+        if (tempItem.updateRequestCount < updateRequestCount - 10) {
+            complexSpiritCache.splice(index, 1);
+        }
+    }
 }
 
 function addEnterWorldCommand() {
@@ -245,17 +286,8 @@ addCommandRepeater("mine", command => {
 addCommandRepeater("placeWorldTile", command => {
     let tempPos = createPosFromJson(command.pos);
     let tempSpiritReference = convertJsonToSpiritReference(command.spirit);
-    let tempTile;
-    if (tempSpiritReference instanceof SimpleSpiritReference) {
-        tempTile = simpleWorldTileMap[tempSpiritReference.serialInteger];
-    } else {
-        for (let item of placedComplexWorldTileCache) {
-            if (item.tile.spirit.id === tempSpiritReference.id) {
-                tempTile = item.tile;
-                break;
-            }
-        }
-    }
+    let tempSpirit = getSpiritInCache(tempSpiritReference);
+    let tempTile = getWorldTileWithSpirit(tempSpirit);
     worldTileGrid.setTile(tempPos, tempTile);
 });
 
@@ -278,14 +310,6 @@ addCommandListener("setWorldTileGrid", command => {
         }
     }
     worldTileGrid.setTiles(tempTileList, command.width, command.height);
-    setWorldTileGridCount += 1;
-    // Remove stale items in placedComplexWorldTileCache.
-    for (let index = placedComplexWorldTileCache.length - 1; index >= 0; index--) {
-        let tempItem = placedComplexWorldTileCache[index];
-        if (tempItem.setWorldTileGridCount < setWorldTileGridCount - 10) {
-            placedComplexWorldTileCache.splice(index, 1);
-        }
-    }
 });
 
 addCommandListener("updateInventoryItem", command => {
@@ -332,6 +356,8 @@ class ClientDelegate {
     addCommandsBeforeUpdateRequest() {
         addSetWalkControllerCommand();
         addGetStateCommand();
+        updateRequestCount += 1;
+        removeStaleSpiritsInCache();
     }
     
     timerEvent() {
