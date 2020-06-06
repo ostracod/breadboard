@@ -109,7 +109,7 @@ function placeWorldTile(offset) {
         return;
     }
     let tempSpirit = tempItem.spirit;
-    if (tempSpirit instanceof ComplexSpirit && tempSpirit.id === null) {
+    if (tempSpirit instanceof ComplexSpirit && tempSpirit.id < 0) {
         return;
     }
     tempItem.setCount(tempItem.count - 1);
@@ -259,11 +259,11 @@ function addPlaceWorldTileCommand(pos, spirit) {
     ]);
 }
 
-function addCraftCommand(recipe) {
+function addCraftCommand(recipe, inventoryUpdateList) {
     addInventoryCommand({
         commandName: "craft",
         recipeId: recipe.id
-    }, []); // TODO: Add inventory updates.
+    }, inventoryUpdateList);
 }
 
 function addInspectCommand(containerName, spirit) {
@@ -350,12 +350,6 @@ addCommandListener("updateInventoryItem", command => {
     }
     let tempItemData = command.inventoryItem;
     let tempSpirit = convertClientJsonToSpirit(tempItemData.spirit);
-    if (tempSpirit instanceof ComplexSpirit) {
-        let tempResult = tempInventory.populateComplexSpiritId(tempSpirit);
-        if (tempResult) {
-            return;
-        }
-    }
     tempInventory.setItemCountBySpirit(tempSpirit, tempItemData.count);
 });
 

@@ -157,19 +157,6 @@ class Inventory {
         }
     }
     
-    populateComplexSpiritId(spirit) {
-        for (let item of this.items) {
-            let tempSpirit = item.spirit;
-            if (tempSpirit instanceof ComplexSpirit && tempSpirit.id === null
-                    && tempSpirit.spiritType === spirit.spiritType) {
-                tempSpirit.setId(spirit.id);
-                item.row.draw();
-                return true;
-            }
-        }
-        return false;
-    }
-    
     removeItem(item) {
         let index = this.findItem(item);
         this.items.splice(index, 1);
@@ -224,35 +211,44 @@ class Inventory {
     }
     
     removeRecipeComponent(recipeComponent) {
+        let output = [];
         let tempCount = recipeComponent.count;
         for (let item of this.items) {
             if (recipeComponent.spiritType.matchesSpirit(item.spirit)) {
                 let tempResult = item.decreaseCount(tempCount);
+                output.push(item.getInventoryUpdate());
                 tempCount -= tempResult;
                 if (tempCount <= 0) {
                     break;
                 }
             }
         }
+        return output;
     }
     
     addRecipeComponent(recipeComponent) {
+        let output = [];
         for (let count = 0; count < recipeComponent.count; count++) {
             let tempSpirit = recipeComponent.spiritType.craft();
             this.incrementItemCountBySpirit(tempSpirit);
+            let tempUpdate = this.getInventoryUpdate(tempSpirit);
+            output.push(tempUpdate);
         }
+        return output;
     }
     
     craftRecipe(recipe) {
         if (!this.canCraftRecipe(recipe)) {
             return;
         }
-        // TODO: Fix how this method interacts with server-side updates.
+        let inventoryUpdateList = [];
         for (let component of recipe.ingredients) {
-            this.removeRecipeComponent(component);
+            let tempUpdateList = this.removeRecipeComponent(component);
+            pushInventoryUpdates(inventoryUpdateList, tempUpdateList);
         }
-        this.addRecipeComponent(recipe.product);
-        addCraftCommand(recipe);
+        let tempUpdateList = this.addRecipeComponent(recipe.product);
+        pushInventoryUpdates(inventoryUpdateList, tempUpdateList);
+        addCraftCommand(recipe, inventoryUpdateList);
     }
     
     inspectSelectedItem() {
@@ -260,6 +256,9 @@ class Inventory {
             return;
         }
         let tempSpirit = this.selectedItem.spirit;
+        if (tempSpirit.id < 0) {
+            return;
+        }
         if (tempSpirit instanceof MachineSpirit) {
             inspectMachine(this.containerName, tempSpirit);
         }
@@ -274,6 +273,9 @@ class Inventory {
         }
         let tempItem = this.selectedItem;
         let tempSpirit = tempItem.spirit;
+        if (tempSpirit.id < 0) {
+            return;
+        }
         let tempCount = tempItem.decreaseCount(1);
         destinationInventory.increaseItemCountBySpirit(tempSpirit, tempCount);
         addTransferCommand(this, destinationInventory, tempSpirit);
@@ -313,6 +315,19 @@ function convertJsonToInventoryUpdate(data) {
         return null;
     }
     return new InventoryUpdate(tempInventory, tempSpirit, data.count);
+}
+
+function pushInventoryUpdates(destination, updateList) {
+    for (let update of updateList) {
+        for (let index = destination.length - 1; index >= 0; index--) {
+            let tempUpdate = destination[index];
+            if (tempUpdate.inventory === update.inventory
+                    && tempUpdate.spirit.hasSameIdentity(update.spirit)) {
+                destination.splice(index, 1);
+            }
+        }
+        destination.push(update);
+    }
 }
 
 

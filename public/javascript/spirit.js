@@ -1,6 +1,10 @@
 
 // Map from serial integer to SimpleSpirit.
 let simpleSpiritSet = {};
+// Negative spirit IDs are assigned by the client, and are
+// intended to be replaced by the server.
+// Non-negative spirit IDs are assigned by the server.
+let nextComplexSpiritId = -1;
 
 class Spirit {
     
@@ -47,7 +51,13 @@ class ComplexSpirit extends Spirit {
     constructor(spiritType, id) {
         super(spiritType);
         this.classId = spiritType.spiritClassId;
-        this.setId(id);
+        if (id === null) {
+            this.id = nextComplexSpiritId;
+            nextComplexSpiritId -= 1;
+        } else {
+            this.id = id;
+        }
+        this.reference = new ComplexSpiritReference(this.id);
     }
     
     getReference() {
@@ -55,15 +65,10 @@ class ComplexSpirit extends Spirit {
     }
     
     getDisplayName() {
-        if (this.id === null) {
+        if (this.id < 0) {
             return "Loading...";
         }
         return super.getDisplayName();
-    }
-    
-    setId(id) {
-        this.id = id;
-        this.reference = new ComplexSpiritReference(this.id);
     }
 }
 
