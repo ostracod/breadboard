@@ -88,8 +88,9 @@ function processMineTick() {
         return;
     }
     worldTileGrid.setTile(mineTargetPos, emptyWorldTile);
-    localPlayerInventory.incrementItemCountBySpirit(tempTile.spirit);
-    addMineCommand(mineTargetPos);
+    let tempSpirit = tempTile.spirit;
+    localPlayerInventory.incrementItemCountBySpirit(tempSpirit);
+    addMineCommand(mineTargetPos, tempSpirit);
     isMining = false;
 }
 
@@ -202,6 +203,14 @@ function removeStaleSpiritsInCache() {
     }
 }
 
+function addInventoryCommand(command, inventoryUpdateList) {
+    for (let update of inventoryUpdateList) {
+        addSpiritToCache(update.spirit);
+    }
+    command.inventoryUpdates = inventoryUpdateList.map(update => update.getJson());
+    gameUpdateCommandList.push(command);
+}
+
 function addEnterWorldCommand() {
     gameUpdateCommandList.push({
         commandName: "enterWorld"
@@ -231,26 +240,30 @@ function addWalkCommand(offset) {
     });
 }
 
-function addMineCommand(pos) {
-    gameUpdateCommandList.push({
+function addMineCommand(pos, spirit) {
+    addInventoryCommand({
         commandName: "mine",
         pos: pos.toJson()
-    });
+    }, [
+        localPlayerInventory.getInventoryUpdate(spirit)
+    ]);
 }
 
 function addPlaceWorldTileCommand(pos, spirit) {
-    gameUpdateCommandList.push({
+    addInventoryCommand({
         commandName: "placeWorldTile",
         pos: pos.toJson(),
         spirit: spirit.getReference().getJson()
-    });
+    }, [
+        localPlayerInventory.getInventoryUpdate(spirit)
+    ]);
 }
 
 function addCraftCommand(recipe) {
-    gameUpdateCommandList.push({
+    addInventoryCommand({
         commandName: "craft",
         recipeId: recipe.id
-    });
+    }, []); // TODO: Add inventory updates.
 }
 
 function addInspectCommand(containerName, spirit) {
@@ -262,11 +275,26 @@ function addInspectCommand(containerName, spirit) {
 }
 
 function addTransferCommand(sourceInventory, destinationInventory, spirit) {
-    gameUpdateCommandList.push({
+    addInventoryCommand({
         commandName: "transfer",
         sourceContainerName: sourceInventory.containerName,
         destinationContainerName: destinationInventory.containerName,
         spirit: spirit.getReference().getJson()
+    }, [
+        sourceInventory.getInventoryUpdate(spirit),
+        destinationInventory.getInventoryUpdate(spirit)
+    ]);
+}
+
+function addInventoryCommandRepeater(commandName, handler = null) {
+    addCommandRepeater(commandName, command => {
+        for (let updateData of command.inventoryUpdates) {
+            let tempUpdate = convertJsonToInventoryUpdate(updateData);
+            tempUpdate.applyToInventory();
+        }
+        if (handler !== null) {
+            handler(command);
+        }
     });
 }
 
@@ -278,18 +306,21 @@ addCommandRepeater("walk", command => {
     localPlayerWorldTile.move(tempOffset);
 });
 
-addCommandRepeater("mine", command => {
+addInventoryCommandRepeater("mine", command => {
     let tempPos = createPosFromJson(command.pos);
     worldTileGrid.setTile(tempPos, emptyWorldTile);
 });
 
-addCommandRepeater("placeWorldTile", command => {
+addInventoryCommandRepeater("placeWorldTile", command => {
     let tempPos = createPosFromJson(command.pos);
     let tempSpiritReference = convertJsonToSpiritReference(command.spirit);
     let tempSpirit = getSpiritInCache(tempSpiritReference);
     let tempTile = getWorldTileWithSpirit(tempSpirit);
     worldTileGrid.setTile(tempPos, tempTile);
 });
+
+addInventoryCommandRepeater("craft");
+addInventoryCommandRepeater("transfer");
 
 addCommandListener("setWorldTileGrid", command => {
     worldTileGrid.windowOffset = createPosFromJson(command.pos);

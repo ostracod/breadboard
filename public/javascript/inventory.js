@@ -60,6 +60,10 @@ class InventoryItem {
             return output;
         }
     }
+    
+    getInventoryUpdate() {
+        return new InventoryUpdate(this.inventory, this.spirit, this.count);
+    }
 }
 
 class Inventory {
@@ -117,6 +121,15 @@ class Inventory {
             return this.items[index];
         } else {
             return null;
+        }
+    }
+    
+    getInventoryUpdate(spirit) {
+        let tempItem = this.getItemBySpirit(spirit);
+        if (tempItem === null) {
+            return new InventoryUpdate(this, spirit, 0);
+        } else {
+            return tempItem.getInventoryUpdate();
         }
     }
     
@@ -265,6 +278,41 @@ class Inventory {
         destinationInventory.increaseItemCountBySpirit(tempSpirit, tempCount);
         addTransferCommand(this, destinationInventory, tempSpirit);
     }
+}
+
+class InventoryUpdate {
+    
+    constructor(inventory, spirit, count) {
+        this.inventory = inventory;
+        this.spirit = spirit;
+        this.count = count;
+    }
+    
+    getJson() {
+        let tempReference = this.spirit.getReference();
+        return {
+            parentSpiritId: this.inventory.parentSpiritId,
+            spirit: tempReference.getJson(),
+            count: this.count
+        }
+    }
+    
+    applyToInventory() {
+        this.inventory.setItemCountBySpirit(this.spirit, this.count);
+    }
+}
+
+function convertJsonToInventoryUpdate(data) {
+    let tempInventory = parentSpiritInventoryMap[data.parentSpiritId];
+    if (typeof tempInventory === "undefined") {
+        return null;
+    }
+    let tempReference = convertJsonToSpiritReference(data.spirit);
+    let tempSpirit = getSpiritInCache(tempReference);
+    if (tempSpirit === null) {
+        return null;
+    }
+    return new InventoryUpdate(tempInventory, tempSpirit, data.count);
 }
 
 
