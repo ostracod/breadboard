@@ -254,6 +254,7 @@ export class PlayerSpirit extends InventorySpirit {
     }
     
     inspect(spirit) {
+        // TODO: Verify that the player is able to inspect the given spirit.
         if (spirit instanceof MachineSpirit) {
             if (this.inspectedMachine !== null) {
                 this.inspectedMachine.inventory.removeObserver(this);
@@ -265,44 +266,20 @@ export class PlayerSpirit extends InventorySpirit {
         return false;
     }
     
-    inspectByInventory(inventory, spiritReference) {
-        let tempItem = inventory.getItemBySpiritReference(spiritReference);
-        if (tempItem === null) {
+    getInventoryByParentSpiritId(parentSpiritId) {
+        let tempSpirit = complexSpiritSet[parentSpiritId];
+        if (typeof tempSpirit === "undefined") {
             return null;
         }
-        let tempSpirit = tempItem.spirit;
-        let tempResult = this.inspect(tempSpirit);
-        if (tempResult) {
-            return tempSpirit;
-        } else {
+        if (tempSpirit !== this && tempSpirit !== this.inspectedMachine) {
             return null;
         }
+        return tempSpirit.inventory;
     }
     
-    getInventoryByContainerName(containerName) {
-        if (containerName === "playerInventory") {
-            return this.inventory
-        }
-        if (containerName === "machineInventory") {
-            if (this.inspectedMachine === null) {
-                return null;
-            } else {
-                return this.inspectedMachine.inventory
-            }
-        }
-    }
-    
-    inspectByContainerName(containerName, spiritReference) {
-        let tempInventory = this.getInventoryByContainerName(containerName);
-        if (tempInventory !== null) {
-            return this.inspectByInventory(tempInventory, spiritReference);
-        }
-        return null;
-    }
-    
-    transferInventoryItem(sourceContainerName, destinationContainerName, spiritReference) {
-        let sourceInventory = this.getInventoryByContainerName(sourceContainerName);
-        let destinationInventory = this.getInventoryByContainerName(destinationContainerName);
+    transferInventoryItem(sourceParentSpiritId, destinationParentSpiritId, spiritReference) {
+        let sourceInventory = this.getInventoryByParentSpiritId(sourceParentSpiritId);
+        let destinationInventory = this.getInventoryByParentSpiritId(destinationParentSpiritId);
         if (sourceInventory === null || destinationInventory === null) {
             return null;
         }

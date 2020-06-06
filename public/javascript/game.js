@@ -143,16 +143,16 @@ function setUpWorldActionTags(name) {
     }
 }
 
-function inspectMachine(containerName, spirit) {
+function inspectMachine(spirit) {
     if (inspectedMachineInventory !== null) {
         inspectedMachineInventory.cleanUp();
     }
     let tempTag = document.getElementById("machineInventoryItems");
-    inspectedMachineInventory = new Inventory("machineInventory", tempTag, spirit.id);
+    inspectedMachineInventory = new Inventory(tempTag, spirit.id);
     document.getElementById("machineInfoPlaceholder").style.display = "none";
     document.getElementById("machineInfo").style.display = "block";
     showModuleByName("machine");
-    addInspectCommand(containerName, spirit);
+    addInspectCommand(spirit);
 }
 
 function addInventoryCommand(command, inventoryUpdateList) {
@@ -218,10 +218,9 @@ function addCraftCommand(recipe, inventoryUpdateList) {
     }, inventoryUpdateList);
 }
 
-function addInspectCommand(containerName, spirit) {
+function addInspectCommand(spirit) {
     gameUpdateCommandList.push({
         commandName: "inspect",
-        containerName: containerName,
         spiritReference: spirit.getReference().getJson()
     });
 }
@@ -229,8 +228,8 @@ function addInspectCommand(containerName, spirit) {
 function addTransferCommand(sourceInventory, destinationInventory, spirit) {
     addInventoryCommand({
         commandName: "transfer",
-        sourceContainerName: sourceInventory.containerName,
-        destinationContainerName: destinationInventory.containerName,
+        sourceParentSpiritId: sourceInventory.parentSpiritId,
+        destinationParentSpiritId: destinationInventory.parentSpiritId,
         spiritReference: spirit.getReference().getJson()
     }, [
         sourceInventory.getInventoryUpdate(spirit),
@@ -326,7 +325,7 @@ class ClientDelegate {
         localPlayerUsername = command.username;
         localPlayerSpiritId = command.extraFields.complexSpiritId;
         let tempTag = document.getElementById("playerInventoryItems");
-        localPlayerInventory = new Inventory("playerInventory", tempTag, localPlayerSpiritId);
+        localPlayerInventory = new Inventory(tempTag, localPlayerSpiritId);
     }
     
     addCommandsBeforeUpdateRequest() {

@@ -115,10 +115,9 @@ addCommandListener("craft", (command, playerTile, commandList) => {
 });
 
 addCommandListener("inspect", (command, playerTile, commandList) => {
-    let tempSpirit = playerTile.inspectByContainerName(
-        command.containerName,
-        convertJsonToSpiritReference(command.spiritReference)
-    );
+    let tempReference = convertJsonToSpiritReference(command.spiritReference);
+    let tempSpirit = tempReference.getSpirit();
+    playerTile.inspect(tempSpirit);
     if (tempSpirit instanceof MachineSpirit) {
         addUpdateInventoryItemCommands(tempSpirit.inventory, commandList);
     }
@@ -126,8 +125,8 @@ addCommandListener("inspect", (command, playerTile, commandList) => {
 
 addCommandListener("transfer", (command, playerTile, commandList) => {
     let tempResult = playerTile.spirit.transferInventoryItem(
-        command.sourceContainerName,
-        command.destinationContainerName,
+        command.sourceParentSpiritId,
+        command.destinationParentSpiritId,
         convertJsonToSpiritReference(command.spiritReference)
     );
     if (tempResult !== null && !tempResult.success) {
