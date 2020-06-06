@@ -50,6 +50,10 @@ export class InventoryItem {
             return output;
         }
     }
+    
+    getInventoryUpdate() {
+        return new InventoryUpdate(this.inventory, this.spirit, this.count);
+    }
 }
 
 export class Inventory {
@@ -103,12 +107,10 @@ export class Inventory {
         return this.findItemBySpirit(item.spirit);
     }
     
-    getItemBySpirit(spirit, shouldCreateDummy=false) {
+    getItemBySpirit(spirit) {
         let index = this.findItemBySpirit(spirit);
         if (index >= 0) {
             return this.items[index];
-        } else if (shouldCreateDummy) {
-            return new InventoryItem(this, spirit, 0);
         } else {
             return null;
         }
@@ -131,6 +133,15 @@ export class Inventory {
             return this.items[index];
         } else {
             return null;
+        }
+    }
+    
+    getInventoryUpdate(spirit) {
+        let tempItem = this.getItemBySpirit(spirit);
+        if (tempItem === null) {
+            return new InventoryUpdate(this, spirit, 0);
+        } else {
+            return tempItem.getInventoryUpdate();
         }
     }
     
@@ -216,6 +227,33 @@ export class Inventory {
     }
 }
 
+class InventoryUpdate {
+    
+    constructor(inventory, spirit, count) {
+        this.inventory = inventory;
+        this.spirit = spirit;
+        this.count = count;
+    }
+    
+    getClientJson(shouldUseReference = true) {
+        let output = {
+            parentSpiritId: this.inventory.parentSpirit.id,
+            count: this.count
+        };
+        if (shouldUseReference) {
+            let tempReference = this.spirit.getReference();
+            output.spiritReference = tempReference.getJson();
+        } else {
+            output.spirit = this.spirit.getClientJson();
+        }
+        return output;
+    }
+    
+    applyToInventory() {
+        this.inventory.setItemCountBySpirit(this.spirit, this.count);
+    }
+}
+
 export function convertJsonToInventory(data) {
     let output = new Inventory();
     for (let itemData of data) {
@@ -223,6 +261,23 @@ export function convertJsonToInventory(data) {
         new InventoryItem(output, tempSpirit, itemData.count);
     }
     return output;
+}
+
+export function pushInventoryUpdate(destination, update) {
+    for (let index = destination.length - 1; index >= 0; index--) {
+        let tempUpdate = destination[index];
+        if (tempUpdate.inventory === update.inventory
+                && tempUpdate.spirit.hasSameIdentity(update.spirit)) {
+            destination.splice(index, 1);
+        }
+    }
+    destination.push(update);
+}
+
+export function pushInventoryUpdates(destination, updateList) {
+    for (let update of updateList) {
+        pushInventoryUpdate(destination, update);
+    }
 }
 
 

@@ -25,17 +25,17 @@ function addSetWorldTileGridCommand(playerTile, commandList) {
     });
 }
 
-function addUpdateInventoryItemCommand(inventoryItem, commandList) {
+function addUpdateInventoryItemCommand(inventoryUpdate, commandList) {
     commandList.push({
         commandName: "updateInventoryItem",
-        parentSpiritId: inventoryItem.inventory.parentSpirit.id,
-        inventoryItem: inventoryItem.getClientJson()
+        inventoryUpdate: inventoryUpdate.getClientJson(false)
     });
 }
 
 function addUpdateInventoryItemCommands(inventory, commandList) {
     for (let item of inventory.items) {
-        addUpdateInventoryItemCommand(item, commandList);
+        let tempUpdate = item.getInventoryUpdate();
+        addUpdateInventoryItemCommand(tempUpdate, commandList);
     }
 }
 
@@ -86,8 +86,8 @@ addCommandListener("setWalkController", (command, playerTile, commandList) => {
 addCommandListener("getState", (command, playerTile, commandList) => {
     addSetWorldTileGridCommand(playerTile, commandList);
     let playerSpirit = playerTile.spirit;
-    for (let item of playerSpirit.inventoryUpdates) {
-        addUpdateInventoryItemCommand(item, commandList);
+    for (let update of playerSpirit.inventoryUpdates) {
+        addUpdateInventoryItemCommand(update, commandList);
     }
     playerSpirit.inventoryUpdates = [];
 });
@@ -104,7 +104,7 @@ addCommandListener("mine", (command, playerTile, commandList) => {
 
 addCommandListener("placeWorldTile", (command, playerTile, commandList) => {
     let tempPos = createPosFromJson(command.pos);
-    let tempReference = convertJsonToSpiritReference(command.spirit);
+    let tempReference = convertJsonToSpiritReference(command.spiritReference);
     playerTile.placeWorldTile(tempPos, tempReference);
 });
 
@@ -117,7 +117,7 @@ addCommandListener("craft", (command, playerTile, commandList) => {
 addCommandListener("inspect", (command, playerTile, commandList) => {
     let tempSpirit = playerTile.inspectByContainerName(
         command.containerName,
-        convertJsonToSpiritReference(command.spirit)
+        convertJsonToSpiritReference(command.spiritReference)
     );
     if (tempSpirit instanceof MachineSpirit) {
         addUpdateInventoryItemCommands(tempSpirit.inventory, commandList);
@@ -128,16 +128,18 @@ addCommandListener("transfer", (command, playerTile, commandList) => {
     let tempResult = playerTile.spirit.transferInventoryItem(
         command.sourceContainerName,
         command.destinationContainerName,
-        convertJsonToSpiritReference(command.spirit)
+        convertJsonToSpiritReference(command.spiritReference)
     );
     if (tempResult !== null && !tempResult.success) {
+        // TODO: Standardize how we fix inventory items
+        // during failure condition.
         let sourceInventory = tempResult.sourceInventory;
         let destinationInventory = tempResult.destinationInventory;
         let tempSpirit = tempResult.spirit;
-        let tempItem1 = sourceInventory.getItemBySpirit(tempSpirit, true);
-        let tempItem2 = destinationInventory.getItemBySpirit(tempSpirit, true);
-        addUpdateInventoryItemCommand(tempItem1, commandList);
-        addUpdateInventoryItemCommand(tempItem2, commandList);
+        let tempUpdate1 = sourceInventory.getInventoryUpdate(tempSpirit);
+        let tempUpdate2 = destinationInventory.getInventoryUpdate(tempSpirit);
+        addUpdateInventoryItemCommand(tempUpdate1, commandList);
+        addUpdateInventoryItemCommand(tempUpdate2, commandList);
     }
 });
 

@@ -1,6 +1,6 @@
 
 import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
-import {Inventory} from "./inventory.js";
+import {Inventory, pushInventoryUpdate} from "./inventory.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 let dbUtils = ostracodMultiplayer.dbUtils;
@@ -218,14 +218,8 @@ export class PlayerSpirit extends InventorySpirit {
     
     inventoryChangeEvent(inventory, item) {
         super.inventoryChangeEvent(inventory, item);
-        for (let index = 0; index < this.inventoryUpdates.length; index++) {
-            let tempItem = this.inventoryUpdates[index];
-            if (item.inventory === tempItem.inventory && item.spirit === tempItem.spirit) {
-                this.inventoryUpdates[index] = item;
-                return;
-            }
-        }
-        this.inventoryUpdates.push(item);
+        let tempUpdate = item.getInventoryUpdate();
+        pushInventoryUpdate(this.inventoryUpdates, tempUpdate);
     }
     
     getClientJson() {

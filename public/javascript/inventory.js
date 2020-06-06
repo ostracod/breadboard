@@ -290,13 +290,18 @@ class InventoryUpdate {
         this.count = count;
     }
     
-    getJson() {
-        let tempReference = this.spirit.getReference();
-        return {
+    getClientJson(shouldUseReference = true) {
+        let output = {
             parentSpiritId: this.inventory.parentSpiritId,
-            spirit: tempReference.getJson(),
             count: this.count
+        };
+        if (shouldUseReference) {
+            let tempReference = this.spirit.getReference();
+            output.spiritReference = tempReference.getJson();
+        } else {
+            throw new Error("Operation not supported.");
         }
+        return output;
     }
     
     applyToInventory() {
@@ -304,29 +309,38 @@ class InventoryUpdate {
     }
 }
 
-function convertJsonToInventoryUpdate(data) {
+function convertClientJsonToInventoryUpdate(data) {
     let tempInventory = parentSpiritInventoryMap[data.parentSpiritId];
     if (typeof tempInventory === "undefined") {
         return null;
     }
-    let tempReference = convertJsonToSpiritReference(data.spirit);
-    let tempSpirit = getSpiritInCache(tempReference);
-    if (tempSpirit === null) {
-        return null;
+    let tempSpirit;
+    if ("spirit" in data) {
+        tempSpirit = convertClientJsonToSpirit(data.spirit);
+    } else {
+        let tempReference = convertJsonToSpiritReference(data.spiritReference);
+        tempSpirit = getSpiritInCache(tempReference);
+        if (tempSpirit === null) {
+            return null;
+        }
     }
     return new InventoryUpdate(tempInventory, tempSpirit, data.count);
 }
 
+function pushInventoryUpdate(destination, update) {
+    for (let index = destination.length - 1; index >= 0; index--) {
+        let tempUpdate = destination[index];
+        if (tempUpdate.inventory === update.inventory
+                && tempUpdate.spirit.hasSameIdentity(update.spirit)) {
+            destination.splice(index, 1);
+        }
+    }
+    destination.push(update);
+}
+
 function pushInventoryUpdates(destination, updateList) {
     for (let update of updateList) {
-        for (let index = destination.length - 1; index >= 0; index--) {
-            let tempUpdate = destination[index];
-            if (tempUpdate.inventory === update.inventory
-                    && tempUpdate.spirit.hasSameIdentity(update.spirit)) {
-                destination.splice(index, 1);
-            }
-        }
-        destination.push(update);
+        pushInventoryUpdate(destination, update);
     }
 }
 

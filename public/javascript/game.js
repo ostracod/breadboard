@@ -207,7 +207,7 @@ function addInventoryCommand(command, inventoryUpdateList) {
     for (let update of inventoryUpdateList) {
         addSpiritToCache(update.spirit);
     }
-    command.inventoryUpdates = inventoryUpdateList.map(update => update.getJson());
+    command.inventoryUpdates = inventoryUpdateList.map(update => update.getClientJson());
     gameUpdateCommandList.push(command);
 }
 
@@ -253,7 +253,7 @@ function addPlaceWorldTileCommand(pos, spirit) {
     addInventoryCommand({
         commandName: "placeWorldTile",
         pos: pos.toJson(),
-        spirit: spirit.getReference().getJson()
+        spiritReference: spirit.getReference().getJson()
     }, [
         localPlayerInventory.getInventoryUpdate(spirit)
     ]);
@@ -270,7 +270,7 @@ function addInspectCommand(containerName, spirit) {
     gameUpdateCommandList.push({
         commandName: "inspect",
         containerName: containerName,
-        spirit: spirit.getReference().getJson()
+        spiritReference: spirit.getReference().getJson()
     });
 }
 
@@ -279,7 +279,7 @@ function addTransferCommand(sourceInventory, destinationInventory, spirit) {
         commandName: "transfer",
         sourceContainerName: sourceInventory.containerName,
         destinationContainerName: destinationInventory.containerName,
-        spirit: spirit.getReference().getJson()
+        spiritReference: spirit.getReference().getJson()
     }, [
         sourceInventory.getInventoryUpdate(spirit),
         destinationInventory.getInventoryUpdate(spirit)
@@ -289,7 +289,7 @@ function addTransferCommand(sourceInventory, destinationInventory, spirit) {
 function addInventoryCommandRepeater(commandName, handler = null) {
     addCommandRepeater(commandName, command => {
         for (let updateData of command.inventoryUpdates) {
-            let tempUpdate = convertJsonToInventoryUpdate(updateData);
+            let tempUpdate = convertClientJsonToInventoryUpdate(updateData);
             tempUpdate.applyToInventory();
         }
         if (handler !== null) {
@@ -313,7 +313,7 @@ addInventoryCommandRepeater("mine", command => {
 
 addInventoryCommandRepeater("placeWorldTile", command => {
     let tempPos = createPosFromJson(command.pos);
-    let tempSpiritReference = convertJsonToSpiritReference(command.spirit);
+    let tempSpiritReference = convertJsonToSpiritReference(command.spiritReference);
     let tempSpirit = getSpiritInCache(tempSpiritReference);
     let tempTile = getWorldTileWithSpirit(tempSpirit);
     worldTileGrid.setTile(tempPos, tempTile);
@@ -344,13 +344,12 @@ addCommandListener("setWorldTileGrid", command => {
 });
 
 addCommandListener("updateInventoryItem", command => {
-    let tempInventory = parentSpiritInventoryMap[command.parentSpiritId];
-    if (typeof tempInventory === "undefined") {
+    let tempUpdateData = command.inventoryUpdate;
+    let tempUpdate = convertClientJsonToInventoryUpdate(tempUpdateData);
+    if (tempUpdate === null) {
         return;
     }
-    let tempItemData = command.inventoryItem;
-    let tempSpirit = convertClientJsonToSpirit(tempItemData.spirit);
-    tempInventory.setItemCountBySpirit(tempSpirit, tempItemData.count);
+    tempUpdate.applyToInventory();
 });
 
 class ClientDelegate {
