@@ -2,7 +2,7 @@
 import ostracodMultiplayer from "ostracod-multiplayer";
 import {Pos, createPosFromJson} from "./pos.js";
 import {world} from "./world.js";
-import {MachineSpirit, persistAllComplexSpirits} from "./spirit.js";
+import {MachineSpirit, persistAllComplexSpirits, complexSpiritSet} from "./spirit.js";
 import {convertJsonToSpiritReference} from "./spiritReference.js";
 import {PlayerWorldTile} from "./worldTile.js";
 import {getRecipeById} from "./recipe.js";
@@ -157,6 +157,7 @@ class GameDelegate {
         let tempTile = world.getPlayerTile(player);
         if (tempTile !== null) {
             tempTile.removeFromWorld();
+            delete complexSpiritSet[tempTile.spirit.id];
         }
     }
     

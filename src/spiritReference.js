@@ -1,11 +1,13 @@
 
+import {simpleSpiritSet, complexSpiritSet} from "./spirit.js";
+
 // A SpiritReference is used to identify unique
 // instances of Spirits.
 
 class SpiritReference {
     
     // Concrete subclasses of SpiritReference must implement these methods:
-    // equals
+    // equals, getSpirit
     
     constructor() {
         
@@ -25,6 +27,10 @@ export class SimpleSpiritReference extends SpiritReference {
         }
         return (this.serialInteger == spiritReference.serialInteger);
     }
+    
+    getSpirit() {
+        return simpleSpiritSet[this.serialInteger];
+    }
 }
 
 export class ComplexSpiritReference extends SpiritReference {
@@ -39,6 +45,14 @@ export class ComplexSpiritReference extends SpiritReference {
             return false;
         }
         return (this.id === spiritReference.id);
+    }
+    
+    getSpirit() {
+        if (this.id in simpleSpiritSet) {
+            return complexSpiritSet[this.id];
+        } else {
+            return null;
+        }
     }
 }
 

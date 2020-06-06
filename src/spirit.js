@@ -9,6 +9,8 @@ let dbUtils = ostracodMultiplayer.dbUtils;
 export let simpleSpiritSet = {};
 let nextComplexSpiritId = 0;
 // Map from complex spirit ID to ComplexSpirit.
+export let complexSpiritSet = {};
+// Map from complex spirit ID to ComplexSpirit.
 export let dirtyComplexSpiritSet = {};
 
 // The idea is that a Spirit is something which may
@@ -79,8 +81,10 @@ export class ComplexSpirit extends Spirit {
         } else {
             this.id = id;
         }
+        complexSpiritSet[this.id] = this;
         this.reference = new ComplexSpiritReference(this.id);
         this.hasDbRow = false;
+        this.isDestroyed = false;
     }
     
     markAsDirty() {
@@ -133,7 +137,17 @@ export class ComplexSpirit extends Spirit {
         this.markAsDirty();
     }
     
+    // Spirit must be removed from parent before invoking destroy method.
+    destroy() {
+        delete complexSpiritSet[this.id];
+        this.isDestroyed = true;
+        this.markAsDirty();
+    }
+    
     shouldHaveDbRow() {
+        if (this.isDestroyed) {
+            return false;
+        }
         // TODO: Optimize nesting logic.
         return (this.parentSpirit === null);
     }

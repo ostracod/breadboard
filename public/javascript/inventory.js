@@ -319,7 +319,7 @@ function convertClientJsonToInventoryUpdate(data) {
         tempSpirit = convertClientJsonToSpirit(data.spirit);
     } else {
         let tempReference = convertJsonToSpiritReference(data.spiritReference);
-        tempSpirit = getSpiritInCache(tempReference);
+        tempSpirit = tempReference.getCachedSpirit();
         if (tempSpirit === null) {
             return null;
         }

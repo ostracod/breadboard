@@ -5,6 +5,8 @@ let simpleSpiritSet = {};
 // intended to be replaced by the server.
 // Non-negative spirit IDs are assigned by the server.
 let nextComplexSpiritId = -1;
+// Array of {spirit: ComplexSpirit, updateRequestCount: number}.
+let complexSpiritCache = [];
 
 class Spirit {
     
@@ -29,6 +31,10 @@ class Spirit {
     
     canBeMined() {
         return this.spiritType.canBeMined();
+    }
+    
+    addToCache() {
+        // Do nothing.
     }
 }
 
@@ -64,6 +70,18 @@ class ComplexSpirit extends Spirit {
         return this.reference;
     }
     
+    addToCache() {
+        let index = findComplexSpiritInCache(this.id);
+        if (index >= 0) {
+            complexSpiritCache[index].spirit = this;
+            return;
+        }
+        complexSpiritCache.push({
+            spirit: this,
+            updateRequestCount: updateRequestCount
+        });
+    }
+    
     getDisplayName() {
         if (this.id < 0) {
             return "Loading...";
@@ -86,6 +104,26 @@ class PlayerSpirit extends ComplexSpirit {
 
 class MachineSpirit extends ComplexSpirit {
     
+}
+
+
+function findComplexSpiritInCache(spiritId) {
+    for (let index = 0; index < complexSpiritCache.length; index++) {
+        let tempItem = complexSpiritCache[index];
+        if (tempItem.spirit.id === spiritId) {
+            return index;
+        }
+    }
+    return -1;
+}
+
+function removeStaleSpiritsInCache() {
+    for (let index = complexSpiritCache.length - 1; index >= 0; index--) {
+        let tempItem = complexSpiritCache[index];
+        if (tempItem.updateRequestCount < updateRequestCount - 10) {
+            complexSpiritCache.splice(index, 1);
+        }
+    }
 }
 
 

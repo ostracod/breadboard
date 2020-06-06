@@ -18,8 +18,6 @@ let mineTargetPos;
 let mineDelay;
 const worldActionNameSet = ["mine", "place", "inspect", "attack"];
 let selectedWorldAction = worldActionNameSet[0];
-// Array of {spirit: ComplexSpirit, updateRequestCount: number}.
-let complexSpiritCache = [];
 let updateRequestCount = 0;
 
 function drawMineCrack() {
@@ -116,7 +114,7 @@ function placeWorldTile(offset) {
     tempTile = getWorldTileWithSpirit(tempSpirit);
     worldTileGrid.setTile(tempPos, tempTile);
     addPlaceWorldTileCommand(tempPos, tempSpirit);
-    addSpiritToCache(tempSpirit);
+    tempSpirit.addToCache();
 }
 
 function selectWorldAction(name) {
@@ -157,55 +155,9 @@ function inspectMachine(containerName, spirit) {
     addInspectCommand(containerName, spirit);
 }
 
-function findComplexSpiritInCache(spiritId) {
-    for (let index = 0; index < complexSpiritCache.length; index++) {
-        let tempItem = complexSpiritCache[index];
-        if (tempItem.spirit.id === spiritId) {
-            return index;
-        }
-    }
-    return -1;
-}
-
-function getSpiritInCache(spiritReference) {
-    if (spiritReference instanceof SimpleSpiritReference) {
-        return simpleSpiritSet[spiritReference.serialInteger];
-    }
-    let index = findComplexSpiritInCache(spiritReference.id);
-    if (index < 0) {
-        return null;
-    } else {
-        return complexSpiritCache[index].spirit;
-    }
-}
-
-function addSpiritToCache(spirit) {
-    if (!(spirit instanceof ComplexSpirit)) {
-        return;
-    }
-    let index = findComplexSpiritInCache(spirit.id);
-    if (index >= 0) {
-        complexSpiritCache[index].spirit = spirit;
-        return;
-    }
-    complexSpiritCache.push({
-        spirit: spirit,
-        updateRequestCount: updateRequestCount
-    });
-}
-
-function removeStaleSpiritsInCache() {
-    for (let index = complexSpiritCache.length - 1; index >= 0; index--) {
-        let tempItem = complexSpiritCache[index];
-        if (tempItem.updateRequestCount < updateRequestCount - 10) {
-            complexSpiritCache.splice(index, 1);
-        }
-    }
-}
-
 function addInventoryCommand(command, inventoryUpdateList) {
     for (let update of inventoryUpdateList) {
-        addSpiritToCache(update.spirit);
+        update.spirit.addToCache();
     }
     command.inventoryUpdates = inventoryUpdateList.map(update => update.getClientJson());
     gameUpdateCommandList.push(command);
@@ -314,7 +266,7 @@ addInventoryCommandRepeater("mine", command => {
 addInventoryCommandRepeater("placeWorldTile", command => {
     let tempPos = createPosFromJson(command.pos);
     let tempSpiritReference = convertJsonToSpiritReference(command.spiritReference);
-    let tempSpirit = getSpiritInCache(tempSpiritReference);
+    let tempSpirit = tempSpiritReference.getCachedSpirit();
     let tempTile = getWorldTileWithSpirit(tempSpirit);
     worldTileGrid.setTile(tempPos, tempTile);
 });

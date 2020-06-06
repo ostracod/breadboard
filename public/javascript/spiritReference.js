@@ -5,7 +5,7 @@
 class SpiritReference {
     
     // Concrete subclasses of SpiritReference must implement these methods:
-    // equals, getJson
+    // equals, getJson, getCachedSpirit
     
     constructor() {
         
@@ -32,6 +32,10 @@ class SimpleSpiritReference extends SpiritReference {
             serialInteger: this.serialInteger
         };
     }
+    
+    getCachedSpirit() {
+        return simpleSpiritSet[this.serialInteger];
+    }
 }
 
 class ComplexSpiritReference extends SpiritReference {
@@ -53,6 +57,15 @@ class ComplexSpiritReference extends SpiritReference {
             type: "complex",
             id: this.id
         };
+    }
+    
+    getCachedSpirit() {
+        let index = findComplexSpiritInCache(this.id);
+        if (index < 0) {
+            return null;
+        } else {
+            return complexSpiritCache[index].spirit;
+        }
     }
 }
 
