@@ -23,6 +23,9 @@ class InventoryItem {
     }
     
     unselect() {
+        if (this.inventory.selectedItem !== this) {
+            return;
+        }
         this.row.unselect();
         this.inventory.selectedItem = null;
     }
@@ -159,7 +162,7 @@ class Inventory {
     removeItem(item) {
         let index = this.findItem(item);
         this.items.splice(index, 1);
-        if (this.items.length > 0) {
+        if (this.selectedItem === null && this.items.length > 0) {
             this.items[0].select();
         }
     }

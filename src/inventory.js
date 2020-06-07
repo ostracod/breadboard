@@ -9,10 +9,8 @@ export class InventoryItem {
         this.inventory = inventory;
         this.spirit = spirit;
         this.count = count;
-        if (this.count > 0) {
-            this.inventory.items.push(this);
-            this.notifyInventoryObservers();
-        }
+        this.inventory.items.push(this);
+        this.notifyInventoryObservers();
     }
     
     notifyInventoryObservers() {
