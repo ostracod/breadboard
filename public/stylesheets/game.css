@@ -5,6 +5,7 @@ input[type="radio"] {
 
 .redButton, .redButton:active {
     background: #884444;
+    cursor: default;
 }
 
 button {

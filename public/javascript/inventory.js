@@ -1,4 +1,6 @@
 
+const inventoryButtonTagIdPrefixSet = ["inspect", "transfer", "recycle", "install"];
+
 // Map from parent spirit ID to inventory.
 let parentSpiritInventoryMap = {};
 let localPlayerInventory = null;
@@ -27,7 +29,7 @@ class InventoryItem {
             return;
         }
         this.row.unselect();
-        this.inventory.selectedItem = null;
+        this.inventory.setSelectedItem(null);
     }
     
     select() {
@@ -35,7 +37,7 @@ class InventoryItem {
             this.inventory.selectedItem.unselect();
         }
         this.row.select();
-        this.inventory.selectedItem = this;
+        this.inventory.setSelectedItem(this);
     }
     
     setCount(count) {
@@ -90,14 +92,22 @@ class InventoryItem {
 
 class Inventory {
     
-    constructor(tag, parentSpiritId) {
-        this.tag = tag;
+    constructor(tagIdPrefix, parentSpiritId) {
+        this.tag = document.getElementById(tagIdPrefix + "InventoryItems");
         this.tag.innerHTML = "";
+        this.buttonTagMap = {};
+        for (let buttonTagIdPrefix of inventoryButtonTagIdPrefixSet) {
+            let tempTag = document.getElementById(buttonTagIdPrefix + capitalize(tagIdPrefix) + "ItemButton");
+            if (tempTag !== null) {
+                this.buttonTagMap[buttonTagIdPrefix] = tempTag;
+            }
+        }
         this.parentSpiritId = parentSpiritId;
         this.items = [];
         this.selectedItem = null;
         this.observers = [];
         parentSpiritInventoryMap[this.parentSpiritId] = this;
+        this.updateButtonColors();
     }
     
     addObserver(observer) {
@@ -190,6 +200,11 @@ class Inventory {
         if (this.selectedItem === null && this.items.length > 0) {
             this.items[0].select();
         }
+    }
+    
+    setSelectedItem(item) {
+        this.selectedItem = item;
+        this.updateButtonColors();
     }
     
     selectPreviousItem() {
@@ -320,6 +335,35 @@ class Inventory {
         }
         this.selectedItem.recycle();
     }
+    
+    updateButtonColor(buttonTagIdPrefix, isAvailable) {
+        if (!(buttonTagIdPrefix in this.buttonTagMap)) {
+            return;
+        }
+        let tempTag = this.buttonTagMap[buttonTagIdPrefix];
+        if (isAvailable) {
+            tempTag.className = "";
+        } else {
+            tempTag.className = "redButton";
+        }
+    }
+    
+    updateButtonColors() {
+        if (this.selectedItem === null) {
+            for (let key in this.buttonTagMap) {
+                this.updateButtonColor(key, false);
+            }
+            return;
+        }
+        let tempSpirit = this.selectedItem.spirit;
+        this.updateButtonColor("inspect", tempSpirit.canBeInspected());
+        this.updateButtonColor("transfer", (inspectedMachineInventory !== null));
+        this.updateButtonColor(
+            "recycle",
+            !(tempSpirit.spiritType instanceof ResourceSpiritType)
+        );
+        this.updateButtonColor("install", false);
+    }
 }
 
 class InventoryUpdate {
@@ -347,6 +391,10 @@ class InventoryUpdate {
     applyToInventory() {
         this.inventory.setItemCountBySpirit(this.spirit, this.count);
     }
+}
+
+function capitalize(text) {
+    return text.charAt(0).toUpperCase() + text.substring(1, text.length);
 }
 
 function convertClientJsonToInventoryUpdate(data) {

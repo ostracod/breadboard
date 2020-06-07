@@ -334,8 +334,9 @@ export class PlayerSpirit extends InventorySpirit {
             return false;
         }
         tempItem.decrementCount();
-        // TODO: Destroy item if count is zero.
-        
+        if (tempItem.count <= 0) {
+            tempItem.spirit.destroy();
+        }
         let tempProductList = tempItem.spirit.getRecycleProducts();
         for (let product of tempProductList) {
             this.inventory.addRecipeComponent(product);

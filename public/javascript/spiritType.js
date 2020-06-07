@@ -22,6 +22,10 @@ class SpiritType {
         return false;
     }
     
+    canBeInspected() {
+        return false;
+    }
+    
     // Returns a list of RecipeComponent.
     getBaseRecycleProducts() {
         return [];
@@ -255,6 +259,10 @@ class MachineSpiritType extends ComplexSpiritType {
     }
     
     canBeMined() {
+        return true;
+    }
+    
+    canBeInspected() {
         return true;
     }
     

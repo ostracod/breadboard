@@ -33,6 +33,10 @@ class Spirit {
         return this.spiritType.canBeMined();
     }
     
+    canBeInspected() {
+        return this.spiritType.canBeInspected();
+    }
+    
     addToCache() {
         // Do nothing.
     }

@@ -147,8 +147,8 @@ function inspectMachine(spirit) {
     if (inspectedMachineInventory !== null) {
         inspectedMachineInventory.cleanUp();
     }
-    let tempTag = document.getElementById("machineInventoryItems");
-    inspectedMachineInventory = new Inventory(tempTag, spirit.id);
+    inspectedMachineInventory = new Inventory("machine", spirit.id);
+    localPlayerInventory.updateButtonColors();
     document.getElementById("machineInfoPlaceholder").style.display = "none";
     document.getElementById("machineInfo").style.display = "block";
     showModuleByName("machine");
@@ -334,8 +334,7 @@ class ClientDelegate {
     setLocalPlayerInfo(command) {
         localPlayerUsername = command.username;
         localPlayerSpiritId = command.extraFields.complexSpiritId;
-        let tempTag = document.getElementById("playerInventoryItems");
-        localPlayerInventory = new Inventory(tempTag, localPlayerSpiritId);
+        localPlayerInventory = new Inventory("player", localPlayerSpiritId);
     }
     
     addCommandsBeforeUpdateRequest() {

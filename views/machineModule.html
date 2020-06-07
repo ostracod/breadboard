@@ -3,10 +3,10 @@
 </p>
 <div id="machineInfo" style="display: none;">
     <div style="height: 90px;">
-        <button onclick="inspectedMachineInventory.inspectSelectedItem();">Inspect</button>
-        <button onclick="inspectedMachineInventory.transferSelectedItem(localPlayerInventory);">Move to Player</button>
-        <button>Install Circuit</button>
-        <button onclick="inspectedMachineInventory.recycleSelectedItem();">Recycle</button>
+        <button id="inspectMachineItemButton" onclick="inspectedMachineInventory.inspectSelectedItem();">Inspect</button>
+        <button id="transferMachineItemButton" onclick="inspectedMachineInventory.transferSelectedItem(localPlayerInventory);">Move to Player</button>
+        <button id="installMachineItemButton">Install Circuit</button>
+        <button id="recycleMachineItemButton" onclick="inspectedMachineInventory.recycleSelectedItem();">Recycle</button>
     </div>
     <div id="machineInventoryItems" style="height: 200px; overflow-y: scroll;"></div>
 </div>
