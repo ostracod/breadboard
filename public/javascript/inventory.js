@@ -304,12 +304,7 @@ class Inventory {
             return;
         }
         let tempSpirit = this.selectedItem.spirit;
-        if (tempSpirit.id < 0) {
-            return;
-        }
-        if (tempSpirit instanceof MachineSpirit) {
-            inspectMachine(tempSpirit);
-        }
+        inspectSpirit(tempSpirit);
     }
     
     transferSelectedItem(destinationInventory) {

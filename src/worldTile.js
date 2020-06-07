@@ -214,9 +214,8 @@ export class PlayerWorldTile extends ComplexWorldTile {
         return true;
     }
     
-    inspect(spiritReference) {
-        // TODO: Allow inspection of tile adjacent to player.
-        return this.spirit.inspect(spiritReference);
+    inspect(spirit) {
+        return this.spirit.inspect(spirit);
     }
 }
 

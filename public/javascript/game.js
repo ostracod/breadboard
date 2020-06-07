@@ -53,18 +53,16 @@ function drawEverything() {
     worldTileGrid.drawLayer(cameraPos, 1);
 }
 
-function startMining(offset) {
-    let tempPos = localPlayerWorldTile.pos.copy();
-    tempPos.add(offset);
-    if (isMining && mineTargetPos.equals(tempPos)) {
+function startMining(pos) {
+    if (isMining && mineTargetPos.equals(pos)) {
         return;
     }
-    let tempTile = worldTileGrid.getTile(tempPos);
+    let tempTile = worldTileGrid.getTile(pos);
     if (!tempTile.canBeMined()) {
         return;
     }
     minePlayerPos = localPlayerWorldTile.pos.copy();
-    mineTargetPos = tempPos;
+    mineTargetPos = pos;
     mineDelay = 36;
     isMining = true;
 }
@@ -92,10 +90,8 @@ function processMineTick() {
     isMining = false;
 }
 
-function placeWorldTile(offset) {
-    let tempPos = localPlayerWorldTile.pos.copy();
-    tempPos.add(offset);
-    let tempTile = worldTileGrid.getTile(tempPos);
+function placeWorldTile(pos) {
+    let tempTile = worldTileGrid.getTile(pos);
     if (tempTile.spirit.spiritType !== emptySpiritType) {
         return
     }
@@ -112,9 +108,15 @@ function placeWorldTile(offset) {
     }
     tempItem.setCount(tempItem.count - 1);
     tempTile = getWorldTileWithSpirit(tempSpirit);
-    worldTileGrid.setTile(tempPos, tempTile);
-    addPlaceWorldTileCommand(tempPos, tempSpirit);
+    worldTileGrid.setTile(pos, tempTile);
+    addPlaceWorldTileCommand(pos, tempSpirit);
     tempSpirit.addToCache();
+}
+
+function inspectWorldTile(pos) {
+    let tempTile = worldTileGrid.getTile(pos);
+    let tempSpirit = tempTile.spirit;
+    inspectSpirit(tempSpirit);
 }
 
 function selectWorldAction(name) {
@@ -140,6 +142,15 @@ function setUpWorldActionTags(name) {
     tempTag = document.getElementById(name + "WorldAction");
     tempTag.onchange = () => {
         selectWorldAction(name);
+    }
+}
+
+function inspectSpirit(spirit) {
+    if (!spirit.canBeInspected()) {
+        return;
+    }
+    if (spirit instanceof MachineSpirit) {
+        inspectMachine(spirit);
     }
 }
 
@@ -418,10 +429,14 @@ function startLocalPlayerAction(offsetIndex) {
     }
     let offset = playerActionOffsetSet[offsetIndex];
     if (shiftKeyIsHeld) {
-        if (selectedWorldAction == "mine") {
-            startMining(offset);
-        } else if (selectedWorldAction == "place") {
-            placeWorldTile(offset);
+        let tempPos = localPlayerWorldTile.pos.copy();
+        tempPos.add(offset);
+        if (selectedWorldAction === "mine") {
+            startMining(tempPos);
+        } else if (selectedWorldAction === "place") {
+            placeWorldTile(tempPos);
+        } else if (selectedWorldAction === "inspect") {
+            inspectWorldTile(tempPos);
         }
     } else {
         localPlayerWorldTile.walkController.startWalk(offset);

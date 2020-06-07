@@ -78,6 +78,13 @@ class ComplexSpirit extends Spirit {
         return this.reference;
     }
     
+    canBeInspected() {
+        if (!super.canBeInspected()) {
+            return false;
+        }
+        return (this.id >= 0);
+    }
+    
     addToCache() {
         let index = findComplexSpiritInCache(this.id);
         if (index >= 0) {
