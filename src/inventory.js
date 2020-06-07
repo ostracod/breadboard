@@ -207,12 +207,13 @@ export class Inventory {
     
     craftRecipe(recipe) {
         if (!this.canCraftRecipe(recipe)) {
-            return;
+            return false;
         }
         for (let component of recipe.ingredients) {
             this.removeRecipeComponent(component);
         }
         this.addRecipeComponent(recipe.product);
+        return true;
     }
     
     // Parent may be any number of steps removed.

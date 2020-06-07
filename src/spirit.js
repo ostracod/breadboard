@@ -281,25 +281,19 @@ export class PlayerSpirit extends InventorySpirit {
         let sourceInventory = this.getInventoryByParentSpiritId(sourceParentSpiritId);
         let destinationInventory = this.getInventoryByParentSpiritId(destinationParentSpiritId);
         if (sourceInventory === null || destinationInventory === null) {
-            return null;
+            return false;
         }
         let tempItem = sourceInventory.getItemBySpiritReference(spiritReference);
         if (tempItem === null) {
-            return null;
+            return false;
         }
         let tempSpirit = tempItem.spirit;
-        let tempCanTransfer = (!destinationInventory.hasParentSpirit(tempSpirit));
-        let output = {
-            sourceInventory: sourceInventory,
-            destinationInventory: destinationInventory,
-            spirit: tempSpirit,
-            success: tempCanTransfer
-        };
-        if (tempCanTransfer) {
-            let tempCount = tempItem.decreaseCount(1);
-            destinationInventory.increaseItemCountBySpirit(tempSpirit, tempCount);
+        if (destinationInventory.hasParentSpirit(tempSpirit)) {
+            return false;
         }
-        return output;
+        let tempCount = tempItem.decreaseCount(1);
+        destinationInventory.increaseItemCountBySpirit(tempSpirit, tempCount);
+        return true;
     }
 }
 

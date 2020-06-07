@@ -3,7 +3,7 @@ import ostracodMultiplayer from "ostracod-multiplayer";
 import {Pos, createPosFromJson} from "./pos.js";
 import {world} from "./world.js";
 import {MachineSpirit, persistAllComplexSpirits, complexSpiritSet} from "./spirit.js";
-import {convertJsonToSpiritReference} from "./spiritReference.js";
+import {ComplexSpiritReference, convertJsonToSpiritReference} from "./spiritReference.js";
 import {PlayerWorldTile} from "./worldTile.js";
 import {getRecipeById} from "./recipe.js";
 
@@ -25,17 +25,51 @@ function addSetWorldTileGridCommand(playerTile, commandList) {
     });
 }
 
-function addUpdateInventoryItemCommand(inventoryUpdate, commandList) {
+function addUpdateInventoryItemCommandHelper(inventoryUpdateData, commandList) {
     commandList.push({
         commandName: "updateInventoryItem",
-        inventoryUpdate: inventoryUpdate.getClientJson(false)
+        inventoryUpdate: inventoryUpdateData
     });
+}
+
+function addUpdateInventoryItemCommand(inventoryUpdate, commandList) {
+    addUpdateInventoryItemCommandHelper(
+        inventoryUpdate.getClientJson(false),
+        commandList
+    );
 }
 
 function addUpdateInventoryItemCommands(inventory, commandList) {
     for (let item of inventory.items) {
         let tempUpdate = item.getInventoryUpdate();
         addUpdateInventoryItemCommand(tempUpdate, commandList);
+    }
+}
+
+function processInventoryUpdates(command, playerSpirit, commandList, shouldRevert) {
+    for (let updateData of command.inventoryUpdates) {
+        let tempReference = convertJsonToSpiritReference(updateData.spiritReference);
+        if (tempReference instanceof ComplexSpiritReference && tempReference.id < 0) {
+            updateData.count = 0;
+            addUpdateInventoryItemCommandHelper(updateData, commandList);
+            continue;
+        }
+        if (!shouldRevert) {
+            continue;
+        }
+        let tempInventory = playerSpirit.getInventoryByParentSpiritId(
+            updateData.parentSpiritId
+        );
+        if (tempInventory === null) {
+            continue;
+        }
+        let tempItem = tempInventory.getItemBySpiritReference(tempReference);
+        if (tempItem === null) {
+            updateData.count = 0;
+        } else {
+            updateData.count = tempItem.count;
+        }
+        addUpdateInventoryItemCommandHelper(updateData, commandList);
     }
 }
 
@@ -99,19 +133,22 @@ addCommandListener("walk", (command, playerTile, commandList) => {
 
 addCommandListener("mine", (command, playerTile, commandList) => {
     let tempPos = createPosFromJson(command.pos);
-    playerTile.mine(tempPos);
+    let tempResult = playerTile.mine(tempPos);
+    processInventoryUpdates(command, playerTile.spirit, commandList, !tempResult);
 });
 
 addCommandListener("placeWorldTile", (command, playerTile, commandList) => {
     let tempPos = createPosFromJson(command.pos);
     let tempReference = convertJsonToSpiritReference(command.spiritReference);
-    playerTile.placeWorldTile(tempPos, tempReference);
+    let tempResult = playerTile.placeWorldTile(tempPos, tempReference);
+    processInventoryUpdates(command, playerTile.spirit, commandList, !tempResult);
 });
 
 addCommandListener("craft", (command, playerTile, commandList) => {
     let tempInventory = playerTile.spirit.inventory;
     let tempRecipe = getRecipeById(command.recipeId);
-    tempInventory.craftRecipe(tempRecipe);
+    let tempResult = tempInventory.craftRecipe(tempRecipe);
+    processInventoryUpdates(command, playerTile.spirit, commandList, !tempResult);
 });
 
 addCommandListener("inspect", (command, playerTile, commandList) => {
@@ -129,17 +166,7 @@ addCommandListener("transfer", (command, playerTile, commandList) => {
         command.destinationParentSpiritId,
         convertJsonToSpiritReference(command.spiritReference)
     );
-    if (tempResult !== null && !tempResult.success) {
-        // TODO: Standardize how we fix inventory items
-        // during failure condition.
-        let sourceInventory = tempResult.sourceInventory;
-        let destinationInventory = tempResult.destinationInventory;
-        let tempSpirit = tempResult.spirit;
-        let tempUpdate1 = sourceInventory.getInventoryUpdate(tempSpirit);
-        let tempUpdate2 = destinationInventory.getInventoryUpdate(tempSpirit);
-        addUpdateInventoryItemCommand(tempUpdate1, commandList);
-        addUpdateInventoryItemCommand(tempUpdate2, commandList);
-    }
+    processInventoryUpdates(command, playerTile.spirit, commandList, !tempResult);
 });
 
 class GameDelegate {
