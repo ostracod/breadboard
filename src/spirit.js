@@ -1,6 +1,7 @@
 
 import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
 import {Inventory, pushInventoryUpdate} from "./inventory.js";
+import {pushRecipeComponent} from "./recipeComponent.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 let dbUtils = ostracodMultiplayer.dbUtils;
@@ -222,6 +223,25 @@ export class InventorySpirit extends ComplexSpirit {
     
     getContainerDbJson() {
         return this.inventory.getDbJson();
+    }
+    
+    destroy() {
+        for (let item of this.inventory.items) {
+            item.spirit.destroy();
+        }
+        super.destroy();
+    }
+    
+    getRecycleProducts() {
+        let output = super.getRecycleProducts();
+        for (let item of this.inventory.items) {
+            let tempProductList = item.spirit.getRecycleProducts();
+            for (let recipeComponent of tempProductList) {
+                recipeComponent.scale(item.count);
+                pushRecipeComponent(output, recipeComponent);
+            }
+        }
+        return output;
     }
 }
 
