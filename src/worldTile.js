@@ -9,15 +9,11 @@ export let simpleWorldTileMap = {};
 
 class WorldTile extends Tile {
     
-    addEvent(world, pos) {
+    addToWorldEvent(world) {
         // Do nothing.
     }
     
-    removeEvent() {
-        // Do nothing.
-    }
-    
-    moveEvent(pos) {
+    removeFromWorldEvent() {
         // Do nothing.
     }
     
@@ -82,16 +78,24 @@ class ComplexWorldTile extends WorldTile {
         };
     }
     
-    addEvent(world, pos) {
-        super.addEvent(world, pos);
-        this.world = world;
+    addToGridEvent(world, pos) {
+        super.addToGridEvent(world, pos);
         this.pos = pos.copy();
     }
     
-    removeEvent() {
-        super.removeEvent();
-        this.world = null;
+    removeFromGridEvent() {
+        super.removeFromGridEvent();
         this.pos = null;
+    }
+    
+    addToWorldEvent(world) {
+        super.addToWorldEvent(world);
+        this.world = world;
+    }
+    
+    removeFromWorldEvent() {
+        super.removeFromWorldEvent();
+        this.world = null;
     }
     
     moveEvent(pos) {
@@ -163,15 +167,15 @@ export class PlayerWorldTile extends ComplexWorldTile {
         return output;
     }
     
-    addEvent(world, pos) {
-        super.addEvent(world, pos);
+    addToWorldEvent(world) {
+        super.addToWorldEvent(world);
         this.world.playerTileList.push(this);
     }
     
-    removeEvent() {
+    removeFromWorldEvent() {
         let index = this.world.findPlayerTile(this.spirit.player);
         this.world.playerTileList.splice(index, 1);
-        super.removeEvent();
+        super.removeFromWorldEvent();
     }
     
     walk(offset) {

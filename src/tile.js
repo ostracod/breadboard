@@ -7,6 +7,18 @@ export class Tile {
     constructor(spirit) {
         this.spirit = spirit;
     }
+    
+    addToGridEvent(tileGrid, pos) {
+        this.spirit.setTile(this);
+    }
+    
+    removeFromGridEvent() {
+        this.spirit.setTile(null);
+    }
+    
+    moveEvent(pos) {
+        // Do nothing.
+    }
 }
 
 

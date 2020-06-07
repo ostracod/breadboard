@@ -67,17 +67,12 @@ class World {
     setTile(pos, tile) {
         let tempOldTile = this.tileGrid.getTile(pos);
         this.tileGrid.setTile(pos, tile);
-        tempOldTile.removeEvent();
-        tile.addEvent(this, pos);
+        tempOldTile.removeFromWorldEvent();
+        tile.addToWorldEvent(this);
     }
     
     swapTiles(pos1, pos2) {
-        let tempTile1 = this.tileGrid.getTile(pos1);
-        let tempTile2 = this.tileGrid.getTile(pos2);
-        this.tileGrid.setTile(pos2, tempTile1);
-        this.tileGrid.setTile(pos1, tempTile2);
-        tempTile1.moveEvent(pos2);
-        tempTile2.moveEvent(pos1);
+        this.tileGrid.swapTiles(pos1, pos2);
     }
     
     getClientJson(pos, width, height) {

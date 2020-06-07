@@ -46,6 +46,10 @@ class Spirit {
         // Do nothing.
     }
     
+    setTile(tile) {
+        // Do nothing.
+    }
+    
     destroy() {
         // Do nothing.
     }
@@ -83,6 +87,7 @@ export class ComplexSpirit extends Spirit {
         super(spiritType);
         this.classId = this.spiritType.spiritClassId;
         this.parentSpirit = null;
+        this.tile = null;
         if (id === null) {
             this.id = nextComplexSpiritId;
             nextComplexSpiritId += 1;
@@ -144,6 +149,10 @@ export class ComplexSpirit extends Spirit {
     changeParentSpirit(spirit) {
         this.parentSpirit = spirit;
         this.markAsDirty();
+    }
+    
+    setTile(tile) {
+        this.tile = tile;
     }
     
     // Spirit must be removed from parent before invoking destroy method.
