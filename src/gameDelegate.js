@@ -169,6 +169,14 @@ addCommandListener("transfer", (command, playerTile, commandList) => {
     processInventoryUpdates(command, playerTile.spirit, commandList, !tempResult);
 });
 
+addCommandListener("recycle", (command, playerTile, commandList) => {
+    let tempResult = playerTile.spirit.recycleInventoryItem(
+        command.parentSpiritId,
+        convertJsonToSpiritReference(command.spiritReference)
+    );
+    processInventoryUpdates(command, playerTile.spirit, commandList, !tempResult);
+});
+
 class GameDelegate {
     
     constructor() {

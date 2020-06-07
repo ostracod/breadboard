@@ -1,6 +1,6 @@
 
 import {niceUtils} from "./niceUtils.js";
-import {convertDbJsonToSpirit} from "./spiritType.js";
+import {SimpleSpiritType, convertDbJsonToSpirit} from "./spiritType.js";
 import {complexSpiritSet} from "./spirit.js";
 
 export class InventoryItem {
@@ -48,6 +48,10 @@ export class InventoryItem {
             this.setCount(0);
             return output;
         }
+    }
+    
+    decrementCount() {
+        this.decreaseCount(1);
     }
     
     getInventoryUpdate() {
@@ -144,14 +148,30 @@ export class Inventory {
         }
     }
     
-    increaseItemCountBySpirit(spirit, count) {
+    getItemCountBySpirit(spirit) {
         let tempItem = this.getItemBySpirit(spirit);
         if (tempItem === null) {
-            new InventoryItem(this, spirit, count);
-            spirit.changeParentSpirit(this.parentSpirit);
+            return 0;
         } else {
-            tempItem.setCount(tempItem.count + count);
+            return tempItem.count;
         }
+    }
+    
+    setItemCountBySpirit(spirit, count) {
+        let tempItem = this.getItemBySpirit(spirit);
+        if (tempItem === null) {
+            if (count > 0) {
+                new InventoryItem(this, spirit, count);
+                spirit.changeParentSpirit(this.parentSpirit);
+            }
+        } else {
+            tempItem.setCount(count);
+        }
+    }
+    
+    increaseItemCountBySpirit(spirit, count) {
+        let tempCount = this.getItemCountBySpirit(spirit);
+        this.setItemCountBySpirit(spirit, tempCount + count);
     }
     
     incrementItemCountBySpirit(spirit) {
@@ -197,9 +217,14 @@ export class Inventory {
     }
     
     addRecipeComponent(recipeComponent) {
-        for (let count = 0; count < recipeComponent.count; count++) {
+        if (recipeComponent.spiritType instanceof SimpleSpiritType) {
             let tempSpirit = recipeComponent.spiritType.craft();
-            this.incrementItemCountBySpirit(tempSpirit);
+            this.increaseItemCountBySpirit(tempSpirit, recipeComponent.count);
+        } else {
+            for (let count = 0; count < recipeComponent.count; count++) {
+                let tempSpirit = recipeComponent.spiritType.craft();
+                this.incrementItemCountBySpirit(tempSpirit);
+            }
         }
     }
     

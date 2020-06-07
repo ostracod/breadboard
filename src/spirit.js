@@ -44,6 +44,14 @@ class Spirit {
     changeParentSpirit(spirit) {
         // Do nothing.
     }
+    
+    destroy() {
+        // Do nothing.
+    }
+    
+    getRecycleProducts() {
+        return this.spiritType.getBaseRecycleProducts();
+    }
 }
 
 export class SimpleSpirit extends Spirit {
@@ -293,6 +301,25 @@ export class PlayerSpirit extends InventorySpirit {
         }
         let tempCount = tempItem.decreaseCount(1);
         destinationInventory.increaseItemCountBySpirit(tempSpirit, tempCount);
+        return true;
+    }
+    
+    recycleInventoryItem(parentSpiritId, spiritReference) {
+        let tempInventory = this.getInventoryByParentSpiritId(parentSpiritId);
+        if (tempInventory === null) {
+            return false;
+        }
+        let tempItem = tempInventory.getItemBySpiritReference(spiritReference);
+        if (tempItem === null || tempItem.count < 1) {
+            return false;
+        }
+        tempItem.decrementCount();
+        // TODO: Destroy item if count is zero.
+        
+        let tempProductList = tempItem.spirit.getRecycleProducts();
+        for (let product of tempProductList) {
+            this.inventory.addRecipeComponent(product);
+        }
         return true;
     }
 }

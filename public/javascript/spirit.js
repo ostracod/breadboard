@@ -36,6 +36,10 @@ class Spirit {
     addToCache() {
         // Do nothing.
     }
+    
+    getRecycleProducts() {
+        return this.spiritType.getBaseRecycleProducts();
+    }
 }
 
 class SimpleSpirit extends Spirit {

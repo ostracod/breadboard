@@ -237,6 +237,15 @@ function addTransferCommand(sourceInventory, destinationInventory, spirit) {
     ]);
 }
 
+function addRecycleCommand(inventoryItem, inventoryUpdateList) {
+    let tempReference = inventoryItem.spirit.getReference();
+    addInventoryCommand({
+        commandName: "recycle",
+        parentSpiritId: inventoryItem.inventory.parentSpiritId,
+        spiritReference: tempReference.getJson()
+    }, inventoryUpdateList);
+}
+
 function addInventoryCommandRepeater(commandName, handler = null) {
     addCommandRepeater(commandName, command => {
         for (let updateData of command.inventoryUpdates) {
@@ -272,6 +281,7 @@ addInventoryCommandRepeater("placeWorldTile", command => {
 
 addInventoryCommandRepeater("craft");
 addInventoryCommandRepeater("transfer");
+addInventoryCommandRepeater("recycle");
 
 addCommandListener("setWorldTileGrid", command => {
     worldTileGrid.windowOffset = createPosFromJson(command.pos);

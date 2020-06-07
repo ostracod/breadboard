@@ -1,24 +1,10 @@
 
 import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, spiritColorAmount, simpleSpiritTypeMap, complexSpiritTypeMap} from "./spiritType.js";
+import {RecipeComponent} from "./recipeComponent.js";
 
 export let recipeList = [];
 export let recipeDataList = [];
 let nextRecipeId = 0;
-
-class RecipeComponent {
-    
-    constructor(spiritType, count) {
-        this.spiritType = spiritType;
-        this.count = count;
-    }
-    
-    getJson() {
-        return {
-            spiritType: this.spiritType.getJson(),
-            count: this.count
-        };
-    }
-}
 
 class Recipe {
     

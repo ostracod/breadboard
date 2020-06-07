@@ -21,6 +21,11 @@ class SpiritType {
     canBeMined() {
         return false;
     }
+    
+    // Returns a list of RecipeComponent.
+    getBaseRecycleProducts() {
+        return [];
+    }
 }
 
 class SimpleSpiritType extends SpiritType {
@@ -108,6 +113,10 @@ class ResourceSpiritType extends SimpleSpiritType {
     canBeMined() {
         return true;
     }
+    
+    getBaseRecycleProducts() {
+        return [new RecipeComponent(this, 1)];
+    }
 }
 
 class MatteriteSpiritType extends ResourceSpiritType {
@@ -152,6 +161,10 @@ class BlockSpiritType extends SimpleSpiritType {
     canBeMined() {
         return true;
     }
+    
+    getBaseRecycleProducts() {
+        return [new RecipeComponent(matteriteSpiritType, 1.5)];
+    }
 }
 
 let loadingSpiritType = new LoadingSpiritType();
@@ -159,7 +172,7 @@ let loadingSpirit = loadingSpiritType.spirit;
 let emptySpiritType = new EmptySpiritType();
 let emptySpirit = emptySpiritType.spirit;
 new BarrierSpiritType();
-new MatteriteSpiritType();
+let matteriteSpiritType = new MatteriteSpiritType();
 new EnergiteSpiritType();
 for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new BlockSpiritType(colorIndex);
@@ -243,6 +256,10 @@ class MachineSpiritType extends ComplexSpiritType {
     
     canBeMined() {
         return true;
+    }
+    
+    getBaseRecycleProducts() {
+        return [new RecipeComponent(matteriteSpiritType, 2.25)];
     }
 }
 

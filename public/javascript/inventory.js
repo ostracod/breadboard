@@ -64,8 +64,27 @@ class InventoryItem {
         }
     }
     
+    decrementCount() {
+        this.decreaseCount(1);
+    }
+    
     getInventoryUpdate() {
         return new InventoryUpdate(this.inventory, this.spirit, this.count);
+    }
+    
+    recycle() {
+        if (this.count < 1) {
+            return;
+        }
+        let inventoryUpdateList = [];
+        this.decrementCount();
+        inventoryUpdateList.push(this.getInventoryUpdate());
+        let tempProductList = this.spirit.getRecycleProducts();
+        for (let product of tempProductList) {
+            let tempUpdateList = localPlayerInventory.addRecipeComponent(product);
+            pushInventoryUpdates(inventoryUpdateList, tempUpdateList);
+        }
+        addRecycleCommand(this, inventoryUpdateList);
     }
 }
 
@@ -135,17 +154,14 @@ class Inventory {
         }
     }
     
-    increaseItemCountBySpirit(spirit, count) {
+    
+    getItemCountBySpirit(spirit) {
         let tempItem = this.getItemBySpirit(spirit);
         if (tempItem === null) {
-            new InventoryItem(this, spirit, count);
+            return 0;
         } else {
-            tempItem.setCount(tempItem.count + count);
+            return tempItem.count;
         }
-    }
-    
-    incrementItemCountBySpirit(spirit) {
-        this.increaseItemCountBySpirit(spirit, 1);
     }
     
     setItemCountBySpirit(spirit, count) {
@@ -157,6 +173,15 @@ class Inventory {
         } else {
             tempItem.setCount(count);
         }
+    }
+    
+    increaseItemCountBySpirit(spirit, count) {
+        let tempCount = this.getItemCountBySpirit(spirit);
+        this.setItemCountBySpirit(spirit, tempCount + count);
+    }
+    
+    incrementItemCountBySpirit(spirit) {
+        this.increaseItemCountBySpirit(spirit, 1);
     }
     
     removeItem(item) {
@@ -229,14 +254,20 @@ class Inventory {
     }
     
     addRecipeComponent(recipeComponent) {
-        let output = [];
-        for (let count = 0; count < recipeComponent.count; count++) {
+        if (recipeComponent.spiritType instanceof SimpleSpiritType) {
             let tempSpirit = recipeComponent.spiritType.craft();
-            this.incrementItemCountBySpirit(tempSpirit);
-            let tempUpdate = this.getInventoryUpdate(tempSpirit);
-            output.push(tempUpdate);
+            this.increaseItemCountBySpirit(tempSpirit, recipeComponent.count);
+            return [this.getInventoryUpdate(tempSpirit)];
+        } else {
+            let output = [];
+            for (let count = 0; count < recipeComponent.count; count++) {
+                let tempSpirit = recipeComponent.spiritType.craft();
+                this.incrementItemCountBySpirit(tempSpirit);
+                let tempUpdate = this.getInventoryUpdate(tempSpirit);
+                output.push(tempUpdate);
+            }
+            return output;
         }
-        return output;
     }
     
     craftRecipe(recipe) {
@@ -281,6 +312,13 @@ class Inventory {
         let tempCount = tempItem.decreaseCount(1);
         destinationInventory.increaseItemCountBySpirit(tempSpirit, tempCount);
         addTransferCommand(this, destinationInventory, tempSpirit);
+    }
+    
+    recycleSelectedItem() {
+        if (this.selectedItem === null) {
+            return;
+        }
+        this.selectedItem.recycle();
     }
 }
 

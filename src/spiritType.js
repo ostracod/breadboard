@@ -1,6 +1,7 @@
 
 import {dirtyComplexSpiritSet, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit} from "./spirit.js";
 import {convertJsonToInventory} from "./inventory.js";
+import {RecipeComponent} from "./recipeComponent.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 let gameUtils = ostracodMultiplayer.gameUtils;
@@ -46,6 +47,11 @@ class SpiritType {
     
     canBeMined() {
         return false;
+    }
+    
+    // Returns a list of RecipeComponent.
+    getBaseRecycleProducts() {
+        return [];
     }
 }
 
@@ -97,6 +103,10 @@ class ResourceSpiritType extends SimpleSpiritType {
     canBeMined() {
         return true;
     }
+    
+    getBaseRecycleProducts() {
+        return [new RecipeComponent(this, 1)];
+    }
 }
 
 export class MatteriteSpiritType extends ResourceSpiritType {
@@ -122,12 +132,16 @@ export class BlockSpiritType extends SimpleSpiritType {
     canBeMined() {
         return true;
     }
+    
+    getBaseRecycleProducts() {
+        return [new RecipeComponent(matteriteSpiritType, 1.5)];
+    }
 }
 
 export let emptySpiritType = new EmptySpiritType();
 export let emptySpirit = emptySpiritType.spirit;
 new BarrierSpiritType();
-new MatteriteSpiritType();
+let matteriteSpiritType = new MatteriteSpiritType();
 new EnergiteSpiritType();
 for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new BlockSpiritType(colorIndex);
@@ -210,6 +224,10 @@ class MachineSpiritType extends ComplexSpiritType {
     
     canBeMined() {
         return true;
+    }
+    
+    getBaseRecycleProducts() {
+        return [new RecipeComponent(matteriteSpiritType, 2.25)];
     }
 }
 
