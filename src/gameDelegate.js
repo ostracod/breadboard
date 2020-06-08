@@ -46,6 +46,13 @@ function addUpdateInventoryItemCommands(inventory, commandList) {
     }
 }
 
+function addStopInspectingCommand(spiritId, commandList) {
+    commandList.push({
+        commandName: "stopInspecting",
+        spiritId: spiritId
+    });
+}
+
 function processInventoryUpdates(command, playerSpirit, commandList, shouldRevert) {
     for (let updateData of command.inventoryUpdates) {
         let tempReference = convertJsonToSpiritReference(updateData.spiritReference);
@@ -124,6 +131,11 @@ addCommandListener("getState", (command, playerTile, commandList) => {
         addUpdateInventoryItemCommand(update, commandList);
     }
     playerSpirit.inventoryUpdates = [];
+    playerSpirit.verifyInspectionState();
+    for (let spiritId of playerSpirit.inspectionStateUpdates) {
+        addStopInspectingCommand(spiritId, commandList);
+    }
+    playerSpirit.inspectionStateUpdates = [];
 });
 
 addCommandListener("walk", (command, playerTile, commandList) => {
@@ -154,7 +166,7 @@ addCommandListener("craft", (command, playerTile, commandList) => {
 addCommandListener("inspect", (command, playerTile, commandList) => {
     let tempReference = convertJsonToSpiritReference(command.spiritReference);
     let tempSpirit = tempReference.getSpirit();
-    playerTile.inspect(tempSpirit);
+    playerTile.spirit.inspect(tempSpirit);
     if (tempSpirit instanceof MachineSpirit) {
         addUpdateInventoryItemCommands(tempSpirit.inventory, commandList);
     }

@@ -7,7 +7,7 @@ import {getWorldTileWithSpirit} from "./worldTileFactory.js";
 // Map from spirit serial integer to WorldTile.
 export let simpleWorldTileMap = {};
 
-class WorldTile extends Tile {
+export class WorldTile extends Tile {
     
     addToWorldEvent(world) {
         // Do nothing.
@@ -216,10 +216,6 @@ export class PlayerWorldTile extends ComplexWorldTile {
         tempTile = getWorldTileWithSpirit(tempItem.spirit);
         this.world.setTile(pos, tempTile);
         return true;
-    }
-    
-    inspect(spirit) {
-        return this.spirit.inspect(spirit);
     }
 }
 

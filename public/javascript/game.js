@@ -324,6 +324,17 @@ addCommandListener("updateInventoryItem", command => {
     tempUpdate.applyToInventory();
 });
 
+addCommandListener("stopInspecting", command => {
+    if (inspectedMachineInventory !== null
+            && command.spiritId === inspectedMachineInventory.parentSpiritId) {
+        document.getElementById("machineInfoPlaceholder").style.display = "block";
+        document.getElementById("machineInfo").style.display = "none";
+        hideModuleByName("machine");
+        inspectedMachineInventory.cleanUp();
+        inspectedMachineInventory = null;
+    }
+});
+
 class ClientDelegate {
     
     constructor() {

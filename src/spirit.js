@@ -2,6 +2,7 @@
 import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
 import {Inventory, pushInventoryUpdate} from "./inventory.js";
 import {pushRecipeComponent} from "./recipeComponent.js";
+import {WorldTile} from "./worldTile.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 let dbUtils = ostracodMultiplayer.dbUtils;
@@ -36,6 +37,10 @@ class Spirit {
     
     canBeMined() {
         return this.spiritType.canBeMined();
+    }
+    
+    canBeInspected() {
+        return this.spiritType.canBeInspected();
     }
     
     populateParentSpirit(spirit) {
@@ -149,6 +154,18 @@ export class ComplexSpirit extends Spirit {
     changeParentSpirit(spirit) {
         this.parentSpirit = spirit;
         this.markAsDirty();
+    }
+    
+    // Parent may be any number of steps removed.
+    hasParentSpirit(spirit) {
+        let tempSpirit = this.parentSpirit;
+        while (tempSpirit !== null) {
+            if (spirit.hasSameIdentity(tempSpirit)) {
+                return true;
+            }
+            tempSpirit = tempSpirit.parentSpirit;
+        }
+        return false;
     }
     
     setTile(tile) {
@@ -265,6 +282,8 @@ export class PlayerSpirit extends InventorySpirit {
         this.player = player;
         this.inspectedMachine = null;
         this.inventoryUpdates = [];
+        // List of spirit IDs we have stopped inspecting.
+        this.inspectionStateUpdates = [];
     }
     
     inventoryChangeEvent(inventory, item) {
@@ -290,17 +309,45 @@ export class PlayerSpirit extends InventorySpirit {
         return null;
     }
     
-    inspect(spirit) {
-        // TODO: Verify that the player is able to inspect the given spirit.
-        if (spirit instanceof MachineSpirit) {
-            if (this.inspectedMachine !== null) {
-                this.inspectedMachine.inventory.removeObserver(this);
-            }
-            this.inspectedMachine = spirit;
-            this.inspectedMachine.inventory.addObserver(this);
+    canInspect(spirit) {
+        if (!spirit.canBeInspected()) {
+            return false;
+        }
+        if (spirit.hasParentSpirit(this)) {
             return true;
         }
-        return false;
+        if (!(spirit.tile instanceof WorldTile)) {
+            return false;
+        }
+        let tempPos1 = this.tile.pos;
+        let tempPos2 = spirit.tile.pos;
+        return tempPos1.isAdjacentTo(tempPos2);
+    }
+    
+    inspect(spirit) {
+        if (!this.canInspect(spirit)) {
+            return;
+        }
+        if (spirit instanceof MachineSpirit) {
+            this.stopInspectingMachine();
+            this.inspectedMachine = spirit;
+            this.inspectedMachine.inventory.addObserver(this);
+        }
+    }
+    
+    stopInspectingMachine() {
+        if (this.inspectedMachine === null) {
+            return;
+        }
+        this.inspectedMachine.inventory.removeObserver(this);
+        this.inspectionStateUpdates.push(this.inspectedMachine.id);
+        this.inspectedMachine = null;
+    }
+    
+    verifyInspectionState() {
+        if (this.inspectedMachine !== null && !this.canInspect(this.inspectedMachine)) {
+            this.stopInspectingMachine();
+        }
     }
     
     getInventoryByParentSpiritId(parentSpiritId) {
@@ -308,6 +355,7 @@ export class PlayerSpirit extends InventorySpirit {
         if (typeof tempSpirit === "undefined") {
             return null;
         }
+        this.verifyInspectionState();
         if (tempSpirit !== this && tempSpirit !== this.inspectedMachine) {
             return null;
         }

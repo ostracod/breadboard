@@ -29,6 +29,10 @@ export class Pos {
         return (this.x == pos.x && this.y == pos.y);
     }
     
+    isAdjacentTo(pos) {
+        return (Math.abs(this.x - pos.x) + Math.abs(this.y - pos.y) <= 1);
+    }
+    
     toString() {
         return "(" + this.x + ", " + this.y + ")";
     }

@@ -241,14 +241,10 @@ export class Inventory {
     
     // Parent may be any number of steps removed.
     hasParentSpirit(spirit) {
-        let tempSpirit = this.parentSpirit;
-        while (tempSpirit !== null) {
-            if (spirit.hasSameIdentity(tempSpirit)) {
-                return true;
-            }
-            tempSpirit = tempSpirit.parentSpirit;
+        if (this.parentSpirit.hasSameIdentity(spirit)) {
+            return true;
         }
-        return false;
+        return this.parentSpirit.hasParentSpirit(spirit);
     }
 }
 
