@@ -271,10 +271,43 @@ class MachineSpiritType extends ComplexSpiritType {
     }
 }
 
+class CircuitSpiritType extends ComplexSpiritType {
+    
+    constructor() {
+        super(complexSpiritClassIdSet.circuit);
+        this.sprite = new Sprite(circuitSpriteSet, 0, 0);
+    }
+    
+    convertClientJsonToSpirit(data) {
+        return new CircuitSpirit(this, data.id);
+    }
+    
+    craft() {
+        return new CircuitSpirit(this, null);
+    }
+    
+    getSprite() {
+        return this.sprite;
+    }
+    
+    getDisplayName() {
+        return "Circuit";
+    }
+    
+    canBeMined() {
+        return true;
+    }
+    
+    getBaseRecycleProducts() {
+        return [new RecipeComponent(matteriteSpiritType, 0.75)];
+    }
+}
+
 new PlayerSpiritType();
 for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new MachineSpiritType(colorIndex);
 }
+new CircuitSpiritType();
 
 function convertClientJsonToSpirit(data) {
     let tempType;

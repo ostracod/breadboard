@@ -1,18 +1,23 @@
 
 import {complexSpiritClassIdSet, convertNestedDbJsonToSpirit} from "./spiritType.js";
 import {SimpleSpirit, ComplexSpirit} from "./spirit.js";
-import {simpleWorldTileMap, PlayerWorldTile, MachineWorldTile} from "./worldTile.js";
+import {simpleWorldTileMap, ComplexWorldTile, PlayerWorldTile, MachineWorldTile} from "./worldTile.js";
 
 // Map from spirit class ID to ComplexWorldTileFactory.
 let complexWorldTileFactoryMap = {};
 
 class ComplexWorldTileFactory {
     
-    // Concrete subclasses of ComplexWorldTileFactory must implement these methods:
-    // convertDbJsonToTile, createTileWithSpirit
-    
     constructor(spiritClassId) {
         complexWorldTileFactoryMap[spiritClassId] = this;
+    }
+    
+    convertDbJsonToTile(data, spirit) {
+        return new ComplexWorldTile(spirit);
+    }
+    
+    createTileWithSpirit(spirit) {
+        return new ComplexWorldTile(spirit);
     }
 }
 
@@ -48,6 +53,7 @@ class MachineWorldTileFactory extends ComplexWorldTileFactory {
 
 new PlayerWorldTileFactory();
 new MachineWorldTileFactory();
+new ComplexWorldTileFactory(complexSpiritClassIdSet.circuit);
 
 export function getWorldTileWithSpirit(spirit) {
     if (spirit instanceof SimpleSpirit) {

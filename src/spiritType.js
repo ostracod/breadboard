@@ -1,5 +1,5 @@
 
-import {dirtyComplexSpiritSet, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit} from "./spirit.js";
+import {dirtyComplexSpiritSet, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit, CircuitSpirit} from "./spirit.js";
 import {convertJsonToInventory} from "./inventory.js";
 import {RecipeComponent} from "./recipeComponent.js";
 
@@ -18,7 +18,8 @@ export const simpleSpiritSerialIntegerSet = {
 
 export const complexSpiritClassIdSet = {
     player: 0,
-    machine: 1
+    machine: 1,
+    circuit: 2
 };
 
 export const spiritColorAmount = 16;
@@ -239,10 +240,34 @@ class MachineSpiritType extends ComplexSpiritType {
     }
 }
 
+class CircuitSpiritType extends ComplexSpiritType {
+    
+    constructor() {
+        super(complexSpiritClassIdSet.circuit);
+    }
+    
+    convertDbJsonToSpirit(data) {
+        return new CircuitSpirit(this, data.id);
+    }
+    
+    craft() {
+        return new CircuitSpirit(this, null);
+    }
+    
+    canBeMined() {
+        return true;
+    }
+    
+    getBaseRecycleProducts() {
+        return [new RecipeComponent(matteriteSpiritType, 0.75)];
+    }
+}
+
 export let playerSpiritType = new PlayerSpiritType();
 for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new MachineSpiritType(colorIndex);
 }
+export let circuitSpiritType = new CircuitSpiritType();
 
 export function convertDbJsonToSpirit(data) {
     let tempType;

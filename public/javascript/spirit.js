@@ -121,6 +121,9 @@ class MachineSpirit extends ComplexSpirit {
     
 }
 
+class CircuitSpirit extends ComplexSpirit {
+    
+}
 
 function findComplexSpiritInCache(spiritId) {
     for (let index = 0; index < complexSpiritCache.length; index++) {

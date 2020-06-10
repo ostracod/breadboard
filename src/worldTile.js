@@ -54,7 +54,7 @@ export let barrierWorldTile = getSimpleWorldTile("barrier");
 export let matteriteWorldTile = getSimpleWorldTile("matterite");
 export let energiteWorldTile = getSimpleWorldTile("energite");
 
-class ComplexWorldTile extends WorldTile {
+export class ComplexWorldTile extends WorldTile {
     
     constructor(spirit) {
         super(spirit);

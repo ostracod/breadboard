@@ -428,6 +428,10 @@ export class MachineSpirit extends InventorySpirit {
     }
 }
 
+export class CircuitSpirit extends ComplexSpirit {
+    
+}
+
 export function getNextComplexSpiritId() {
     return nextComplexSpiritId;
 }

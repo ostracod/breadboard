@@ -4,11 +4,16 @@ let complexWorldTileFactoryMap = {};
 
 class ComplexWorldTileFactory {
     
-    // Concrete subclasses of ComplexWorldTileFactory must implement these methods:
-    // convertJsonToTile, createTileWithSpirit
-    
     constructor(spiritClassId) {
         complexWorldTileFactoryMap[spiritClassId] = this;
+    }
+    
+    convertClientJsonToTile(data, spirit) {
+        return new ComplexWorldTile(spirit);
+    }
+    
+    createTileWithSpirit(spirit) {
+        return new ComplexWorldTile(spirit);
     }
 }
 
@@ -46,6 +51,7 @@ class MachineWorldTileFactory extends ComplexWorldTileFactory {
 
 new PlayerWorldTileFactory();
 new MachineWorldTileFactory();
+new ComplexWorldTileFactory(complexSpiritClassIdSet.circuit);
 
 function getWorldTileWithSpirit(spirit) {
     if (spirit instanceof SimpleSpirit) {
