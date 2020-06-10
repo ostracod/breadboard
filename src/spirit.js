@@ -282,8 +282,7 @@ export class PlayerSpirit extends InventorySpirit {
         this.player = player;
         this.inspectedMachine = null;
         this.inventoryUpdates = [];
-        // List of spirit IDs we have stopped inspecting.
-        this.inspectionStateUpdates = [];
+        this.stopInspectionSpiritIds = [];
     }
     
     inventoryChangeEvent(inventory, item) {
@@ -326,13 +325,18 @@ export class PlayerSpirit extends InventorySpirit {
     
     inspect(spirit) {
         if (!this.canInspect(spirit)) {
-            return;
+            return false;
         }
         if (spirit instanceof MachineSpirit) {
             this.stopInspectingMachine();
             this.inspectedMachine = spirit;
             this.inspectedMachine.inventory.addObserver(this);
+            let index = this.stopInspectionSpiritIds.indexOf(this.inspectedMachine.id);
+            if (index >= 0) {
+                this.stopInspectionSpiritIds.splice(index);
+            }
         }
+        return true;
     }
     
     stopInspectingMachine() {
@@ -340,7 +344,11 @@ export class PlayerSpirit extends InventorySpirit {
             return;
         }
         this.inspectedMachine.inventory.removeObserver(this);
-        this.inspectionStateUpdates.push(this.inspectedMachine.id);
+        let tempId = this.inspectedMachine.id;
+        let index = this.stopInspectionSpiritIds.indexOf(tempId);
+        if (index < 0) {
+            this.stopInspectionSpiritIds.push(tempId);
+        }
         this.inspectedMachine = null;
     }
     
@@ -366,29 +374,28 @@ export class PlayerSpirit extends InventorySpirit {
         let sourceInventory = this.getInventoryByParentSpiritId(sourceParentSpiritId);
         let destinationInventory = this.getInventoryByParentSpiritId(destinationParentSpiritId);
         if (sourceInventory === null || destinationInventory === null) {
-            return false;
+            return;
         }
         let tempItem = sourceInventory.getItemBySpiritReference(spiritReference);
         if (tempItem === null) {
-            return false;
+            return;
         }
         let tempSpirit = tempItem.spirit;
         if (destinationInventory.hasParentSpirit(tempSpirit)) {
-            return false;
+            return;
         }
         let tempCount = tempItem.decreaseCount(1);
         destinationInventory.increaseItemCountBySpirit(tempSpirit, tempCount);
-        return true;
     }
     
     recycleInventoryItem(parentSpiritId, spiritReference) {
         let tempInventory = this.getInventoryByParentSpiritId(parentSpiritId);
         if (tempInventory === null) {
-            return false;
+            return;
         }
         let tempItem = tempInventory.getItemBySpiritReference(spiritReference);
         if (tempItem === null || tempItem.count < 1) {
-            return false;
+            return;
         }
         tempItem.decrementCount();
         if (tempItem.count <= 0) {
@@ -398,7 +405,6 @@ export class PlayerSpirit extends InventorySpirit {
         for (let product of tempProductList) {
             this.inventory.addRecipeComponent(product);
         }
-        return true;
     }
 }
 

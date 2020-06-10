@@ -189,33 +189,31 @@ export class PlayerWorldTile extends ComplexWorldTile {
     mine(pos) {
         let tempResult = this.mineTimeBudget.spendTime(1.44);
         if (!tempResult) {
-            return false;
+            return;
         }
         let tempTile = this.world.getTile(pos);
         if (!tempTile.canBeMined()) {
-            return false;
+            return;
         }
         this.world.setTile(pos, emptyWorldTile);
         this.spirit.inventory.incrementItemCountBySpirit(tempTile.spirit);
-        return true;
     }
     
     placeWorldTile(pos, spiritReference) {
         let tempTile = this.world.getTile(pos);
         if (tempTile.spirit.spiritType !== emptySpiritType) {
-            return false;
+            return;
         }
         let tempItem = this.spirit.inventory.getItemBySpiritReference(spiritReference);
         if (tempItem === null) {
-            return false;
+            return;
         }
         if (tempItem.count < 1) {
-            return false;
+            return;
         }
         tempItem.setCount(tempItem.count - 1);
         tempTile = getWorldTileWithSpirit(tempItem.spirit);
         this.world.setTile(pos, tempTile);
-        return true;
     }
 }
 

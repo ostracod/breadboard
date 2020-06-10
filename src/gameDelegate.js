@@ -53,15 +53,12 @@ function addStopInspectingCommand(spiritId, commandList) {
     });
 }
 
-function processInventoryUpdates(command, playerSpirit, commandList, shouldRevert) {
+function processInventoryUpdates(command, playerSpirit, commandList) {
     for (let updateData of command.inventoryUpdates) {
         let tempReference = convertJsonToSpiritReference(updateData.spiritReference);
         if (tempReference instanceof ComplexSpiritReference && tempReference.id < 0) {
             updateData.count = 0;
             addUpdateInventoryItemCommandHelper(updateData, commandList);
-            continue;
-        }
-        if (!shouldRevert) {
             continue;
         }
         let tempInventory = playerSpirit.getInventoryByParentSpiritId(
@@ -70,13 +67,11 @@ function processInventoryUpdates(command, playerSpirit, commandList, shouldRever
         if (tempInventory === null) {
             continue;
         }
-        let tempItem = tempInventory.getItemBySpiritReference(tempReference);
-        if (tempItem === null) {
-            updateData.count = 0;
-        } else {
-            updateData.count = tempItem.count;
+        let tempCount = tempInventory.getItemCountBySpiritReference(tempReference);
+        if (updateData.count !== tempCount) {
+            updateData.count = tempCount;
+            addUpdateInventoryItemCommandHelper(updateData, commandList);
         }
-        addUpdateInventoryItemCommandHelper(updateData, commandList);
     }
 }
 
@@ -132,10 +127,10 @@ addCommandListener("getState", (command, playerTile, commandList) => {
     }
     playerSpirit.inventoryUpdates = [];
     playerSpirit.verifyInspectionState();
-    for (let spiritId of playerSpirit.inspectionStateUpdates) {
+    for (let spiritId of playerSpirit.stopInspectionSpiritIds) {
         addStopInspectingCommand(spiritId, commandList);
     }
-    playerSpirit.inspectionStateUpdates = [];
+    playerSpirit.stopInspectionSpiritIds = [];
 });
 
 addCommandListener("walk", (command, playerTile, commandList) => {
@@ -145,48 +140,48 @@ addCommandListener("walk", (command, playerTile, commandList) => {
 
 addCommandListener("mine", (command, playerTile, commandList) => {
     let tempPos = createPosFromJson(command.pos);
-    let tempResult = playerTile.mine(tempPos);
-    processInventoryUpdates(command, playerTile.spirit, commandList, !tempResult);
+    playerTile.mine(tempPos);
+    processInventoryUpdates(command, playerTile.spirit, commandList);
 });
 
 addCommandListener("placeWorldTile", (command, playerTile, commandList) => {
     let tempPos = createPosFromJson(command.pos);
     let tempReference = convertJsonToSpiritReference(command.spiritReference);
-    let tempResult = playerTile.placeWorldTile(tempPos, tempReference);
-    processInventoryUpdates(command, playerTile.spirit, commandList, !tempResult);
+    playerTile.placeWorldTile(tempPos, tempReference);
+    processInventoryUpdates(command, playerTile.spirit, commandList);
 });
 
 addCommandListener("craft", (command, playerTile, commandList) => {
     let tempInventory = playerTile.spirit.inventory;
     let tempRecipe = getRecipeById(command.recipeId);
-    let tempResult = tempInventory.craftRecipe(tempRecipe);
-    processInventoryUpdates(command, playerTile.spirit, commandList, !tempResult);
+    tempInventory.craftRecipe(tempRecipe);
+    processInventoryUpdates(command, playerTile.spirit, commandList);
 });
 
 addCommandListener("inspect", (command, playerTile, commandList) => {
     let tempReference = convertJsonToSpiritReference(command.spiritReference);
     let tempSpirit = tempReference.getSpirit();
-    playerTile.spirit.inspect(tempSpirit);
-    if (tempSpirit instanceof MachineSpirit) {
+    let tempResult = playerTile.spirit.inspect(tempSpirit);
+    if (tempResult && tempSpirit instanceof MachineSpirit) {
         addUpdateInventoryItemCommands(tempSpirit.inventory, commandList);
     }
 });
 
 addCommandListener("transfer", (command, playerTile, commandList) => {
-    let tempResult = playerTile.spirit.transferInventoryItem(
+    playerTile.spirit.transferInventoryItem(
         command.sourceParentSpiritId,
         command.destinationParentSpiritId,
         convertJsonToSpiritReference(command.spiritReference)
     );
-    processInventoryUpdates(command, playerTile.spirit, commandList, !tempResult);
+    processInventoryUpdates(command, playerTile.spirit, commandList);
 });
 
 addCommandListener("recycle", (command, playerTile, commandList) => {
-    let tempResult = playerTile.spirit.recycleInventoryItem(
+    playerTile.spirit.recycleInventoryItem(
         command.parentSpiritId,
         convertJsonToSpiritReference(command.spiritReference)
     );
-    processInventoryUpdates(command, playerTile.spirit, commandList, !tempResult);
+    processInventoryUpdates(command, playerTile.spirit, commandList);
 });
 
 class GameDelegate {

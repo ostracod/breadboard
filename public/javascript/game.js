@@ -110,7 +110,6 @@ function placeWorldTile(pos) {
     tempTile = getWorldTileWithSpirit(tempSpirit);
     worldTileGrid.setTile(pos, tempTile);
     addPlaceWorldTileCommand(pos, tempSpirit);
-    tempSpirit.addToCache();
 }
 
 function inspectWorldTile(pos) {
@@ -149,6 +148,11 @@ function inspectSpirit(spirit) {
     if (!spirit.canBeInspected()) {
         return;
     }
+    inspectSpiritHelper(spirit);
+    addInspectCommand(spirit);
+}
+
+function inspectSpiritHelper(spirit) {
     if (spirit instanceof MachineSpirit) {
         inspectMachine(spirit);
     }
@@ -156,6 +160,9 @@ function inspectSpirit(spirit) {
 
 function inspectMachine(spirit) {
     if (inspectedMachineInventory !== null) {
+        if (inspectedMachineInventory.parentSpiritId === spirit.id) {
+            return;
+        }
         inspectedMachineInventory.cleanUp();
     }
     inspectedMachineInventory = new Inventory("machine", spirit.id);
@@ -163,7 +170,6 @@ function inspectMachine(spirit) {
     document.getElementById("machineInfoPlaceholder").style.display = "none";
     document.getElementById("machineInfo").style.display = "block";
     showModuleByName("machine");
-    addInspectCommand(spirit);
 }
 
 function addInventoryCommand(command, inventoryUpdateList) {
@@ -220,6 +226,7 @@ function addPlaceWorldTileCommand(pos, spirit) {
     }, [
         localPlayerInventory.getInventoryUpdate(spirit)
     ]);
+    spirit.addToCache();
 }
 
 function addCraftCommand(recipe, inventoryUpdateList) {
@@ -234,6 +241,7 @@ function addInspectCommand(spirit) {
         commandName: "inspect",
         spiritReference: spirit.getReference().getJson()
     });
+    spirit.addToCache();
 }
 
 function addTransferCommand(sourceInventory, destinationInventory, spirit) {
@@ -293,6 +301,15 @@ addInventoryCommandRepeater("placeWorldTile", command => {
 addInventoryCommandRepeater("craft");
 addInventoryCommandRepeater("transfer");
 addInventoryCommandRepeater("recycle");
+
+addCommandRepeater("inspect", command => {
+    let tempReference = convertJsonToSpiritReference(command.spiritReference);
+    tempSpirit = tempReference.getCachedSpirit();
+    if (tempSpirit === null) {
+        return;
+    }
+    inspectSpiritHelper(tempSpirit);
+});
 
 addCommandListener("setWorldTileGrid", command => {
     worldTileGrid.windowOffset = createPosFromJson(command.pos);

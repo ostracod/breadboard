@@ -169,6 +169,15 @@ export class Inventory {
         }
     }
     
+    getItemCountBySpiritReference(spiritReference) {
+        let tempItem = this.getItemBySpiritReference(spiritReference);
+        if (tempItem === null) {
+            return 0;
+        } else {
+            return tempItem.count;
+        }
+    }
+    
     increaseItemCountBySpirit(spirit, count) {
         let tempCount = this.getItemCountBySpirit(spirit);
         this.setItemCountBySpirit(spirit, tempCount + count);
@@ -230,13 +239,12 @@ export class Inventory {
     
     craftRecipe(recipe) {
         if (!this.canCraftRecipe(recipe)) {
-            return false;
+            return;
         }
         for (let component of recipe.ingredients) {
             this.removeRecipeComponent(component);
         }
         this.addRecipeComponent(recipe.product);
-        return true;
     }
     
     // Parent may be any number of steps removed.
