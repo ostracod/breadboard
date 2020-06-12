@@ -10,12 +10,6 @@ class WorldTile extends Tile {
         // Do nothing.
     }
     
-    draw(pos, layer) {
-        if (layer == 0) {
-            drawTileSprite(pos, this.spirit.getSprite());
-        }
-    }
-    
     canBeMined() {
         return this.spirit.canBeMined();
     }
@@ -93,7 +87,7 @@ class PlayerWorldTile extends ComplexWorldTile {
     
     draw(pos, layer) {
         super.draw(pos, layer);
-        if (layer == 1) {
+        if (layer === 1) {
             let tempPos = pos.copy();
             tempPos.scale(pixelSize);
             tempPos.x += spritePixelSize / 2;

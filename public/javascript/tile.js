@@ -7,13 +7,15 @@ class Tile {
     constructor(spirit) {
         this.spirit = spirit;
     }
-}
-
-function drawTileSprite(pos, sprite) {
-    if (sprite === null) {
-        return;
+    
+    draw(pos, layer) {
+        if (layer === 0) {
+            for (let sprite of this.spirit.getSprites()) {
+                sprite.draw(context, pos, pixelSize);
+            }
+        }
     }
-    sprite.draw(context, pos, pixelSize);
+    
 }
 
 

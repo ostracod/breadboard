@@ -4,14 +4,16 @@ let simpleSpiritTypeMap = {};
 // Map from class ID to list of ComplexSpiritType.
 let complexSpiritTypeMap = {};
 
+let wireArrangementAmount = 12;
+
 class SpiritType {
     
     // Concrete subclasses of SpiritType must implement these methods:
     // matchesSpiritClientJson, matchesJson, convertClientJsonToSpirit, craft,
-    // getSprite, getDisplayName
+    // getDisplayName
     
-    constructor() {
-    
+    constructor(spriteList) {
+        this.spriteList = spriteList
     }
     
     matchesSpirit(spirit) {
@@ -34,8 +36,8 @@ class SpiritType {
 
 class SimpleSpiritType extends SpiritType {
     
-    constructor(serialInteger) {
-        super();
+    constructor(spriteList, serialInteger) {
+        super(spriteList);
         this.serialInteger = serialInteger;
         this.spirit = new SimpleSpirit(this);
         simpleSpiritTypeMap[this.spirit.serialInteger] = this;
@@ -61,11 +63,7 @@ class SimpleSpiritType extends SpiritType {
 class LoadingSpiritType extends SimpleSpiritType {
     
     constructor() {
-        super(simpleSpiritSerialIntegerSet.loading);
-    }
-    
-    getSprite() {
-        return loadingSprite;
+        super([loadingSprite], simpleSpiritSerialIntegerSet.loading);
     }
     
     getDisplayName() {
@@ -76,11 +74,7 @@ class LoadingSpiritType extends SimpleSpiritType {
 class EmptySpiritType extends SimpleSpiritType {
     
     constructor() {
-        super(simpleSpiritSerialIntegerSet.empty);
-    }
-    
-    getSprite() {
-        return null;
+        super([], simpleSpiritSerialIntegerSet.empty);
     }
     
     getDisplayName() {
@@ -91,11 +85,7 @@ class EmptySpiritType extends SimpleSpiritType {
 class BarrierSpiritType extends SimpleSpiritType {
     
     constructor() {
-        super(simpleSpiritSerialIntegerSet.barrier);
-    }
-    
-    getSprite() {
-        return barrierSprite;
+        super([barrierSprite], simpleSpiritSerialIntegerSet.barrier);
     }
     
     getDisplayName() {
@@ -106,12 +96,8 @@ class BarrierSpiritType extends SimpleSpiritType {
 class ResourceSpiritType extends SimpleSpiritType {
     
     constructor(serialInteger, paletteIndex) {
-        super(serialInteger);
-        this.sprite = new Sprite(resourceSpriteSet, 0, paletteIndex);
-    }
-    
-    getSprite() {
-        return this.sprite;
+        let tempSprite = new Sprite(resourceSpriteSet, 0, paletteIndex);
+        super([tempSprite], serialInteger);
     }
     
     canBeMined() {
@@ -148,14 +134,10 @@ class EnergiteSpiritType extends ResourceSpiritType {
 class BlockSpiritType extends SimpleSpiritType {
     
     constructor(colorIndex) {
-        super(simpleSpiritSerialIntegerSet.block + colorIndex);
+        let tempSprite = new Sprite(blockSpriteSet, 0, colorIndex);
+        super([tempSprite], simpleSpiritSerialIntegerSet.block + colorIndex);
         this.colorIndex = colorIndex;
-        this.sprite = new Sprite(blockSpriteSet, 0, this.colorIndex);
         this.color = spiritColorSet[this.colorIndex];
-    }
-    
-    getSprite() {
-        return this.sprite;
     }
     
     getDisplayName() {
@@ -171,6 +153,27 @@ class BlockSpiritType extends SimpleSpiritType {
     }
 }
 
+class WireSpiritType extends SimpleSpiritType {
+    
+    constructor(arrangement) {
+        let tempSpriteList;
+        if (arrangement < 11) {
+            tempSpriteList = [new Sprite(wireSpriteSet, arrangement, 0)];
+        } else {
+            tempSpriteList = [
+                new Sprite(wireSpriteSet, 0, 0),
+                new Sprite(wireSpriteSet, 1, 0)
+            ];
+        }
+        super(tempSpriteList, simpleSpiritSerialIntegerSet.wire + arrangement);
+        this.arrangement = arrangement;
+    }
+    
+    getDisplayName() {
+        return "Wire";
+    }
+}
+
 let loadingSpiritType = new LoadingSpiritType();
 let loadingSpirit = loadingSpiritType.spirit;
 let emptySpiritType = new EmptySpiritType();
@@ -181,11 +184,14 @@ new EnergiteSpiritType();
 for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new BlockSpiritType(colorIndex);
 }
+for (let arrangement = 0; arrangement < wireArrangementAmount; arrangement++) {
+    new WireSpiritType(arrangement);
+}
 
 class ComplexSpiritType extends SpiritType {
     
-    constructor(spiritClassId) {
-        super();
+    constructor(spriteList, spiritClassId) {
+        super(spriteList);
         this.spiritClassId = spiritClassId;
         if (!(this.spiritClassId in complexSpiritTypeMap)) {
             complexSpiritTypeMap[this.spiritClassId] = [];
@@ -205,7 +211,7 @@ class ComplexSpiritType extends SpiritType {
 class PlayerSpiritType extends ComplexSpiritType {
     
     constructor() {
-        super(complexSpiritClassIdSet.player);
+        super([playerSprite], complexSpiritClassIdSet.player);
     }
     
     convertClientJsonToSpirit(data) {
@@ -216,10 +222,6 @@ class PlayerSpiritType extends ComplexSpiritType {
         throw new Error("Cannot craft player.");
     }
     
-    getSprite() {
-        return playerSprite;
-    }
-    
     getDisplayName() {
         return "Player";
     }
@@ -228,9 +230,9 @@ class PlayerSpiritType extends ComplexSpiritType {
 class MachineSpiritType extends ComplexSpiritType {
     
     constructor(colorIndex) {
-        super(complexSpiritClassIdSet.machine);
+        let tempSprite = new Sprite(machineSpriteSet, 0, colorIndex);
+        super([tempSprite], complexSpiritClassIdSet.machine);
         this.colorIndex = colorIndex;
-        this.sprite = new Sprite(machineSpriteSet, 0, this.colorIndex);
         this.color = spiritColorSet[this.colorIndex];
     }
     
@@ -248,10 +250,6 @@ class MachineSpiritType extends ComplexSpiritType {
     
     craft() {
         return new MachineSpirit(this, null);
-    }
-    
-    getSprite() {
-        return this.sprite;
     }
     
     getDisplayName() {
@@ -274,8 +272,8 @@ class MachineSpiritType extends ComplexSpiritType {
 class CircuitSpiritType extends ComplexSpiritType {
     
     constructor() {
-        super(complexSpiritClassIdSet.circuit);
-        this.sprite = new Sprite(circuitSpriteSet, 0, 0);
+        let tempSprite = new Sprite(circuitSpriteSet, 0, 0);
+        super([tempSprite], complexSpiritClassIdSet.circuit);
     }
     
     convertClientJsonToSpirit(data) {
@@ -284,10 +282,6 @@ class CircuitSpiritType extends ComplexSpiritType {
     
     craft() {
         return new CircuitSpirit(this, null);
-    }
-    
-    getSprite() {
-        return this.sprite;
     }
     
     getDisplayName() {

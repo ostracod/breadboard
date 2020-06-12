@@ -11,7 +11,7 @@ let complexSpiritCache = [];
 class Spirit {
     
     // Concrete subclasses of Spirit must implement these methods:
-    // getReference, getSprite, getDisplayName
+    // getReference, getDisplayName
     
     constructor(spiritType) {
         this.spiritType = spiritType;
@@ -21,8 +21,8 @@ class Spirit {
         return this.getReference().equals(spirit.getReference());
     }
     
-    getSprite() {
-        return this.spiritType.getSprite();
+    getSprites() {
+        return this.spiritType.spriteList;
     }
     
     getDisplayName() {

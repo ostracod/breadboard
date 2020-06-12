@@ -13,7 +13,8 @@ export const simpleSpiritSerialIntegerSet = {
     matterite: 2,
     energite: 3,
     block: 4,
-    loading: 30
+    loading: 30,
+    wire: 31
 };
 
 export const complexSpiritClassIdSet = {
@@ -23,6 +24,7 @@ export const complexSpiritClassIdSet = {
 };
 
 export const spiritColorAmount = 16;
+export const wireArrangementAmount = 12;
 
 // Map from serial integer to SimpleSpiritType.
 export let simpleSpiritTypeMap = {};
@@ -143,6 +145,14 @@ export class BlockSpiritType extends SimpleSpiritType {
     }
 }
 
+export class WireSpiritType extends SimpleSpiritType {
+    
+    constructor(arrangement) {
+        super(simpleSpiritSerialIntegerSet.wire + arrangement);
+        this.arrangement = arrangement;
+    }
+}
+
 export let emptySpiritType = new EmptySpiritType();
 export let emptySpirit = emptySpiritType.spirit;
 new BarrierSpiritType();
@@ -150,6 +160,9 @@ let matteriteSpiritType = new MatteriteSpiritType();
 new EnergiteSpiritType();
 for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new BlockSpiritType(colorIndex);
+}
+for (let arrangement = 0; arrangement < wireArrangementAmount; arrangement++) {
+    new WireSpiritType(arrangement);
 }
 
 class ComplexSpiritType extends SpiritType {

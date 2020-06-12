@@ -173,24 +173,26 @@ class Sprite {
     draw(context, pos, scale) {
         this.spriteSet.draw(context, pos, this.spriteOffset, this.paletteIndex, scale);
     }
-    
-    createCanvas(parentTag, inputPixelSize) {
-        let output = document.createElement("canvas");
-        let tempSize = spriteSize * inputPixelSize;
-        output.width = tempSize;
-        output.height = tempSize;
-        output.style.width = tempSize / 2;
-        output.style.height = tempSize / 2;
-        parentTag.appendChild(output);
-        let tempContext = output.getContext("2d");
-        this.draw(tempContext, new Pos(0, 0), inputPixelSize);
-        return output;
-    }
 }
 
 let loadingSprite = new Sprite(loadingSpriteSet, 0, 0);
 let barrierSprite = new Sprite(barrierSpriteSet, 0, 0);
 let playerSprite = new Sprite(playerSpriteSet, 0, 0);
+
+function createCanvasWithSprites(parentTag, spriteList, inputPixelSize) {
+    let output = document.createElement("canvas");
+    let tempSize = spriteSize * inputPixelSize;
+    output.width = tempSize;
+    output.height = tempSize;
+    output.style.width = tempSize / 2;
+    output.style.height = tempSize / 2;
+    parentTag.appendChild(output);
+    let tempContext = output.getContext("2d");
+    for (let sprite of spriteList) {
+        sprite.draw(tempContext, new Pos(0, 0), inputPixelSize);
+    }
+    return output;
+}
 
 function initializeSpriteSheet(done) {
     

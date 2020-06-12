@@ -1,7 +1,7 @@
 
 class OptionRow {
     
-    constructor(parentTag, text, sprite) {
+    constructor(parentTag, text, spriteList) {
         this.parentTag = parentTag;
         this.tag = document.createElement("div");
         this.tag.style.padding = "3px";
@@ -11,8 +11,8 @@ class OptionRow {
             this.clickEvent();
         }
         
-        if (typeof sprite !== "undefined") {
-            let tempCanvas = sprite.createCanvas(this.tag, 4);
+        if (typeof spriteList !== "undefined") {
+            let tempCanvas = createCanvasWithSprites(this.tag, spriteList, 4);
             tempCanvas.style.marginRight = "8px";
         }
         
@@ -62,8 +62,8 @@ class OptionRow {
 
 class CountOptionRow extends OptionRow {
     
-    constructor(parentTag, text, count, sprite) {
-        super(parentTag, text, sprite);
+    constructor(parentTag, text, count, spriteList) {
+        super(parentTag, text, spriteList);
         this.countTag = document.createElement("span");
         this.countTag.style.marginLeft = "5px";
         this.countTag.style.verticalAlign = "4px";
@@ -80,7 +80,7 @@ class InventoryOptionRow extends CountOptionRow {
     
     constructor(inventoryItem) {
         let tempSpirit = inventoryItem.spirit;
-        super(inventoryItem.inventory.tag, "", 0, tempSpirit.getSprite());
+        super(inventoryItem.inventory.tag, "", 0, tempSpirit.getSprites());
         this.inventoryItem = inventoryItem;
         this.spirit = tempSpirit;
         this.draw();
@@ -103,7 +103,7 @@ class RecipeOptionRow extends OptionRow {
         super(
             document.getElementById("recipes"),
             tempSpiritType.getDisplayName(),
-            tempSpiritType.getSprite()
+            tempSpiritType.spriteList
         );
         this.recipe = recipe;
     }
