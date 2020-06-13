@@ -6,8 +6,10 @@ import {ComplexWorldTile, PlayerWorldTile, MachineWorldTile} from "./worldTile.j
 
 export class ComplexWorldTileFactory {
     
-    constructor(spiritClassId) {
-        complexWorldTileFactoryMap[spiritClassId] = this;
+    constructor(baseName) {
+        this.baseName = baseName;
+        let tempClassId = complexSpiritClassIdSet[this.baseName];
+        complexWorldTileFactoryMap[tempClassId] = this;
     }
     
     convertDbJsonToTile(data, spirit) {
@@ -22,7 +24,7 @@ export class ComplexWorldTileFactory {
 export class PlayerWorldTileFactory extends ComplexWorldTileFactory {
     
     constructor() {
-        super(complexSpiritClassIdSet.player);
+        super("player");
     }
     
     convertDbJsonToTile(data, spirit) {
@@ -37,7 +39,7 @@ export class PlayerWorldTileFactory extends ComplexWorldTileFactory {
 export class MachineWorldTileFactory extends ComplexWorldTileFactory {
     
     constructor() {
-        super(complexSpiritClassIdSet.machine);
+        super("machine");
     }
     
     convertDbJsonToTile(data, spirit) {

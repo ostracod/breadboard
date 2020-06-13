@@ -1,5 +1,5 @@
 
-import {simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap} from "./globalData.js";
+import {simpleSpiritSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap} from "./globalData.js";
 import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
 import {Inventory, pushInventoryUpdate} from "./inventory.js";
 import {pushRecipeComponent} from "./recipe.js";
@@ -61,6 +61,7 @@ export class SimpleSpirit extends Spirit {
         super(spiritType);
         this.serialInteger = this.spiritType.serialInteger;
         this.reference = new SimpleSpiritReference(this.serialInteger);
+        simpleSpiritSet[this.spiritType.baseName] = this;
         simpleSpiritMap[this.serialInteger] = this;
     }
     

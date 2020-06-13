@@ -1,5 +1,5 @@
 
-import {emptyWorldTile, barrierWorldTile, matteriteWorldTile, energiteWorldTile, emptySpiritType, playerSpiritType} from "./globalData.js";
+import {simpleSpiritTypeSet, complexSpiritTypeSet, simpleWorldTileSet} from "./globalData.js";
 import {Pos} from "./pos.js";
 import {TileGrid, convertDbJsonToTileGrid} from "./tileGrid.js";
 import {PlayerWorldTile} from "./worldTile.js";
@@ -11,8 +11,8 @@ import * as fs from "fs";
 
 const worldFilePath = "./world.json";
 const defaultWorldSize = 100;
-const worldFillTile = emptyWorldTile;
-const worldOutsideTile = barrierWorldTile;
+const worldFillTile = simpleWorldTileSet.empty;
+const worldOutsideTile = simpleWorldTileSet.barrier;
 
 class World {
     
@@ -49,9 +49,9 @@ class World {
         for (let count = 0; count < 1000; count++) {
             let tempTile;
             if (Math.random() < 0.5) {
-                tempTile = matteriteWorldTile;
+                tempTile = simpleWorldTileSet.matterite;
             } else {
-                tempTile = energiteWorldTile;
+                tempTile = simpleWorldTileSet.energite;
             }
             let tempPos = new Pos(
                 Math.floor(Math.random() * this.tileGrid.width),
@@ -115,7 +115,7 @@ class World {
         let tempPromise;
         let tempId = player.extraFields.complexSpiritId;
         if (tempId === null) {
-            let tempSpirit = playerSpiritType.createPlayerSpirit(player);
+            let tempSpirit = complexSpiritTypeSet.player.createPlayerSpirit(player);
             tempPromise = Promise.resolve(tempSpirit);
         } else {
             tempPromise = loadComplexSpirit(tempId);
@@ -126,7 +126,7 @@ class World {
             let tempPos = new Pos(3, 3);
             while (true) {
                 let tempOldTile = world.getTile(tempPos);
-                if (tempOldTile.spirit.spiritType === emptySpiritType) {
+                if (tempOldTile.spirit.spiritType === simpleSpiritTypeSet.empty) {
                     break;
                 }
                 tempPos.x += 1;

@@ -1,5 +1,5 @@
 
-import {emptySpiritType, simpleWorldTileMap, emptyWorldTile} from "./globalData.js";
+import {simpleSpiritTypeSet, simpleWorldTileSet, simpleWorldTileMap} from "./globalData.js";
 import {Tile} from "./tile.js";
 import {getWorldTileWithSpirit} from "./worldTileFactory.js";
 
@@ -22,7 +22,9 @@ export class SimpleWorldTile extends WorldTile {
     
     constructor(simpleSpirit) {
         super(simpleSpirit);
+        let tempSpiritType = this.spirit.spiritType;
         let tempSerialInteger = this.spirit.serialInteger;
+        simpleWorldTileSet[tempSpiritType.baseName] = this;
         simpleWorldTileMap[tempSerialInteger] = this;
     }
     
@@ -52,7 +54,7 @@ export class ComplexWorldTile extends WorldTile {
     getDbJson() {
         let tempSpiritData = this.spirit.getNestedDbJson();
         if (tempSpiritData === null) {
-            return emptyWorldTile.getDbJson();
+            return simpleWorldTileSet.empty.getDbJson();
         }
         return {
             spirit: tempSpiritData
@@ -89,14 +91,14 @@ export class ComplexWorldTile extends WorldTile {
     }
     
     removeFromWorld() {
-        this.world.setTile(this.pos, emptyWorldTile);
+        this.world.setTile(this.pos, simpleWorldTileSet.empty);
     }
     
     move(offset) {
         let tempNextPos = this.pos.copy();
         tempNextPos.add(offset);
         let tempTile = this.world.getTile(tempNextPos);
-        if (tempTile.spirit.spiritType !== emptySpiritType) {
+        if (tempTile.spirit.spiritType !== simpleSpiritTypeSet.empty) {
             return false;
         }
         this.world.swapTiles(this.pos, tempNextPos);
@@ -176,13 +178,13 @@ export class PlayerWorldTile extends ComplexWorldTile {
         if (!tempTile.canBeMined()) {
             return;
         }
-        this.world.setTile(pos, emptyWorldTile);
+        this.world.setTile(pos, simpleWorldTileSet.empty);
         this.spirit.inventory.incrementItemCountBySpirit(tempTile.spirit);
     }
     
     placeWorldTile(pos, spiritReference) {
         let tempTile = this.world.getTile(pos);
-        if (tempTile.spirit.spiritType !== emptySpiritType) {
+        if (tempTile.spirit.spiritType !== simpleSpiritTypeSet.empty) {
             return;
         }
         let tempItem = this.spirit.inventory.getItemBySpiritReference(spiritReference);

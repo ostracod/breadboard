@@ -52,12 +52,9 @@ import {SimpleWorldTile} from "./worldTile.js";
 import {ComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory} from "./worldTileFactory.js";
 import {Recipe, RecipeComponent} from "./recipe.js";
 
-// TODO: Rework all of this code down here.
-
-export let emptySpiritType = new EmptySpiritType();
-export let emptySpirit = emptySpiritType.spirit;
+new EmptySpiritType();
 new BarrierSpiritType();
-export let matteriteSpiritType = new MatteriteSpiritType();
+new MatteriteSpiritType();
 new EnergiteSpiritType();
 for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new BlockSpiritType(colorIndex);
@@ -66,28 +63,20 @@ for (let arrangement = 0; arrangement < wireArrangementAmount; arrangement++) {
     new WireSpiritType(arrangement);
 }
 
-export let playerSpiritType = new PlayerSpiritType();
+new PlayerSpiritType();
 for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new MachineSpiritType(colorIndex);
 }
-export let circuitSpiritType = new CircuitSpiritType();
+new CircuitSpiritType();
 
 for (let serialInteger in simpleSpiritMap) {
     let tempSpirit = simpleSpiritMap[serialInteger];
     new SimpleWorldTile(tempSpirit);
 }
-function getSimpleWorldTile(spiritKey) {
-    let tempInteger = simpleSpiritSerialIntegerSet[spiritKey];
-    return simpleWorldTileMap[tempInteger];
-}
-export let emptyWorldTile = getSimpleWorldTile("empty");
-export let barrierWorldTile = getSimpleWorldTile("barrier");
-export let matteriteWorldTile = getSimpleWorldTile("matterite");
-export let energiteWorldTile = getSimpleWorldTile("energite");
 
 new PlayerWorldTileFactory();
 new MachineWorldTileFactory();
-new ComplexWorldTileFactory(complexSpiritClassIdSet.circuit);
+new ComplexWorldTileFactory("circuit");
 
 function createSimpleRecipeComponent(spiritKey, count, offset) {
     let tempInteger = simpleSpiritSerialIntegerSet[spiritKey];
@@ -97,6 +86,7 @@ function createSimpleRecipeComponent(spiritKey, count, offset) {
     let tempType = simpleSpiritTypeMap[tempInteger];
     return new RecipeComponent(tempType, count);
 }
+
 function createMachineRecipeComponent(colorIndex) {
     let tempTypeList = complexSpiritTypesMap[complexSpiritClassIdSet.machine];
     for (let spiritType of tempTypeList) {
@@ -106,12 +96,13 @@ function createMachineRecipeComponent(colorIndex) {
     }
     return null;
 }
+
 new Recipe(
     [
         createSimpleRecipeComponent("matterite", 1),
         createSimpleRecipeComponent("energite", 1)
     ],
-    new RecipeComponent(circuitSpiritType, 1)
+    new RecipeComponent(complexSpiritTypeSet.circuit, 1)
 );
 for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new Recipe(

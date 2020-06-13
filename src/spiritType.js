@@ -1,5 +1,5 @@
 
-import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, dirtyComplexSpiritMap, simpleSpiritTypeMap, complexSpiritTypesMap, matteriteSpiritType} from "./globalData.js";
+import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, simpleSpiritTypeSet, complexSpiritTypeSet, dirtyComplexSpiritMap, simpleSpiritTypeMap, complexSpiritTypesMap} from "./globalData.js";
 import {SimpleSpirit, PlayerSpirit, MachineSpirit, CircuitSpirit} from "./spirit.js";
 import {convertJsonToInventory} from "./inventory.js";
 import {RecipeComponent} from "./recipe.js";
@@ -17,8 +17,8 @@ class SpiritType {
     // Concrete subclasses of SpiritType must implement these methods:
     // matchesSpiritDbJson, getJson, convertDbJsonToSpirit, craft
     
-    constructor() {
-    
+    constructor(baseName) {
+        this.baseName = baseName;
     }
     
     matchesSpirit(spirit) {
@@ -41,10 +41,11 @@ class SpiritType {
 
 export class SimpleSpiritType extends SpiritType {
     
-    constructor(serialInteger) {
-        super();
-        this.serialInteger = serialInteger;
+    constructor(baseName, offset = 0) {
+        super(baseName);
+        this.serialInteger = simpleSpiritSerialIntegerSet[this.baseName] + offset;
         this.spirit = new SimpleSpirit(this);
+        simpleSpiritTypeSet[this.baseName] = this;
         simpleSpiritTypeMap[this.serialInteger] = this;
     }
     
@@ -71,14 +72,14 @@ export class SimpleSpiritType extends SpiritType {
 export class EmptySpiritType extends SimpleSpiritType {
     
     constructor() {
-        super(simpleSpiritSerialIntegerSet.empty);
+        super("empty");
     }
 }
 
 export class BarrierSpiritType extends SimpleSpiritType {
     
     constructor() {
-        super(simpleSpiritSerialIntegerSet.barrier);
+        super("barrier");
     }
 }
 
@@ -96,21 +97,21 @@ class ResourceSpiritType extends SimpleSpiritType {
 export class MatteriteSpiritType extends ResourceSpiritType {
     
     constructor() {
-        super(simpleSpiritSerialIntegerSet.matterite);
+        super("matterite");
     }
 }
 
 export class EnergiteSpiritType extends ResourceSpiritType {
     
     constructor() {
-        super(simpleSpiritSerialIntegerSet.energite);
+        super("energite");
     }
 }
 
 export class BlockSpiritType extends SimpleSpiritType {
     
     constructor(colorIndex) {
-        super(simpleSpiritSerialIntegerSet.block + colorIndex);
+        super("block", colorIndex);
     }
     
     canBeMined() {
@@ -118,23 +119,24 @@ export class BlockSpiritType extends SimpleSpiritType {
     }
     
     getBaseRecycleProducts() {
-        return [new RecipeComponent(matteriteSpiritType, 1.5)];
+        return [new RecipeComponent(simpleSpiritTypeSet.matterite, 1.5)];
     }
 }
 
 export class WireSpiritType extends SimpleSpiritType {
     
     constructor(arrangement) {
-        super(simpleSpiritSerialIntegerSet.wire + arrangement);
+        super("wire", arrangement);
         this.arrangement = arrangement;
     }
 }
 
 class ComplexSpiritType extends SpiritType {
     
-    constructor(spiritClassId) {
-        super();
-        this.spiritClassId = spiritClassId;
+    constructor(baseName) {
+        super(baseName);
+        this.spiritClassId = complexSpiritClassIdSet[this.baseName];
+        complexSpiritTypeSet[this.baseName] = this;
         if (!(this.spiritClassId in complexSpiritTypesMap)) {
             complexSpiritTypesMap[this.spiritClassId] = [];
         }
@@ -156,7 +158,7 @@ class ComplexSpiritType extends SpiritType {
 export class PlayerSpiritType extends ComplexSpiritType {
     
     constructor() {
-        super(complexSpiritClassIdSet.player);
+        super("player");
     }
     
     convertDbJsonToSpirit(data) {
@@ -181,7 +183,7 @@ export class PlayerSpiritType extends ComplexSpiritType {
 export class MachineSpiritType extends ComplexSpiritType {
     
     constructor(colorIndex) {
-        super(complexSpiritClassIdSet.machine);
+        super("machine");
         this.colorIndex = colorIndex;
     }
     
@@ -214,14 +216,14 @@ export class MachineSpiritType extends ComplexSpiritType {
     }
     
     getBaseRecycleProducts() {
-        return [new RecipeComponent(matteriteSpiritType, 2.25)];
+        return [new RecipeComponent(simpleSpiritTypeSet.matterite, 2.25)];
     }
 }
 
 export class CircuitSpiritType extends ComplexSpiritType {
     
     constructor() {
-        super(complexSpiritClassIdSet.circuit);
+        super("circuit");
     }
     
     convertDbJsonToSpirit(data) {
@@ -241,7 +243,7 @@ export class CircuitSpiritType extends ComplexSpiritType {
     }
     
     getBaseRecycleProducts() {
-        return [new RecipeComponent(matteriteSpiritType, 0.75)];
+        return [new RecipeComponent(simpleSpiritTypeSet.matterite, 0.75)];
     }
 }
 
