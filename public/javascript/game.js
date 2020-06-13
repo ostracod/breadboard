@@ -37,6 +37,20 @@ function drawMineCrack() {
     crackSpriteSet.draw(context, tempPos, tempIndex, 0, pixelSize);
 }
 
+function drawWorld() {
+    cameraPos.set(localPlayerWorldTile.pos);
+    cameraPos.x -= Math.floor(canvasTileWidth / 2);
+    cameraPos.y -= Math.floor(canvasTileHeight / 2);
+    worldTileGrid.drawLayer(cameraPos, 0);
+    drawMineCrack();
+    worldTileGrid.drawLayer(cameraPos, 1);
+}
+
+function drawInspectedCircuit() {
+    // TODO: Draw the circuit tiles.
+    
+}
+
 function drawEverything() {
     clearCanvas();
     if (!spritesHaveLoaded) {
@@ -45,12 +59,11 @@ function drawEverything() {
     if (localPlayerWorldTile === null) {
         return;
     }
-    cameraPos.set(localPlayerWorldTile.pos);
-    cameraPos.x -= Math.floor(canvasTileWidth / 2);
-    cameraPos.y -= Math.floor(canvasTileHeight / 2);
-    worldTileGrid.drawLayer(cameraPos, 0);
-    drawMineCrack();
-    worldTileGrid.drawLayer(cameraPos, 1);
+    if (inspectedCircuitSpiritId === null) {
+        drawWorld();
+    } else {
+        drawInspectedCircuit();
+    }
 }
 
 function startMining(pos) {
@@ -156,6 +169,9 @@ function inspectSpiritHelper(spirit) {
     if (spirit instanceof MachineSpirit) {
         inspectMachine(spirit);
     }
+    if (spirit instanceof CircuitSpirit) {
+        inspectCircuit(spirit);
+    }
 }
 
 function inspectMachine(spirit) {
@@ -170,6 +186,31 @@ function inspectMachine(spirit) {
     document.getElementById("machineInfoPlaceholder").style.display = "none";
     document.getElementById("machineInfo").style.display = "block";
     showModuleByName("machine");
+}
+
+function inspectCircuit(spirit) {
+    if (inspectedCircuitSpiritId === spirit.id) {
+        return;
+    }
+    inspectedCircuitSpiritId = spirit.id;
+    document.getElementById("circuitInfoPlaceholder").style.display = "none";
+    document.getElementById("circuitInfo").style.display = "block";
+    showModuleByName("circuit");
+}
+
+function stopInspectingMachine() {
+    document.getElementById("machineInfoPlaceholder").style.display = "block";
+    document.getElementById("machineInfo").style.display = "none";
+    hideModuleByName("machine");
+    inspectedMachineInventory.cleanUp();
+    inspectedMachineInventory = null;
+}
+
+function stopInspectingCircuit() {
+    document.getElementById("circuitInfoPlaceholder").style.display = "block";
+    document.getElementById("circuitInfo").style.display = "none";
+    hideModuleByName("circuit");
+    inspectedCircuitSpiritId = null;
 }
 
 function addInventoryCommand(command, inventoryUpdateList) {
@@ -344,11 +385,11 @@ addCommandListener("updateInventoryItem", command => {
 addCommandListener("stopInspecting", command => {
     if (inspectedMachineInventory !== null
             && command.spiritId === inspectedMachineInventory.parentSpiritId) {
-        document.getElementById("machineInfoPlaceholder").style.display = "block";
-        document.getElementById("machineInfo").style.display = "none";
-        hideModuleByName("machine");
-        inspectedMachineInventory.cleanUp();
-        inspectedMachineInventory = null;
+        stopInspectingMachine();
+    }
+    if (inspectedCircuitSpiritId !== null
+            && command.spiritId === inspectedCircuitSpiritId) {
+        stopInspectingCircuit();
     }
 });
 

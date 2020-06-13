@@ -271,6 +271,10 @@ class CircuitSpiritType extends ComplexSpiritType {
         return true;
     }
     
+    canBeInspected() {
+        return true;
+    }
+    
     getBaseRecycleProducts() {
         return [new RecipeComponent(matteriteSpiritType, 0.75)];
     }

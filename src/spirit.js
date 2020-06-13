@@ -281,6 +281,7 @@ export class PlayerSpirit extends InventorySpirit {
         }
         this.player = player;
         this.inspectedMachine = null;
+        this.inspectedCircuit = null;
         this.inventoryUpdates = [];
         this.stopInspectionSpiritIds = [];
     }
@@ -323,6 +324,20 @@ export class PlayerSpirit extends InventorySpirit {
         return tempPos1.isAdjacentTo(tempPos2);
     }
     
+    registerStartInspectingSpirit(spirit) {
+        let index = this.stopInspectionSpiritIds.indexOf(spirit.id);
+        if (index >= 0) {
+            this.stopInspectionSpiritIds.splice(index);
+        }
+    }
+    
+    registerStopInspectingSpirit(spirit) {
+        let index = this.stopInspectionSpiritIds.indexOf(spirit.id);
+        if (index < 0) {
+            this.stopInspectionSpiritIds.push(spirit.id);
+        }
+    }
+    
     inspect(spirit) {
         if (!this.canInspect(spirit)) {
             return false;
@@ -336,6 +351,11 @@ export class PlayerSpirit extends InventorySpirit {
                 this.stopInspectionSpiritIds.splice(index);
             }
         }
+        if (spirit instanceof CircuitSpirit) {
+            this.stopInspectingCircuit();
+            this.inspectedCircuit = spirit;
+        }
+        this.registerStartInspectingSpirit(spirit);
         return true;
     }
     
@@ -344,17 +364,24 @@ export class PlayerSpirit extends InventorySpirit {
             return;
         }
         this.inspectedMachine.inventory.removeObserver(this);
-        let tempId = this.inspectedMachine.id;
-        let index = this.stopInspectionSpiritIds.indexOf(tempId);
-        if (index < 0) {
-            this.stopInspectionSpiritIds.push(tempId);
-        }
+        this.registerStopInspectingSpirit(this.inspectedMachine);
         this.inspectedMachine = null;
+    }
+    
+    stopInspectingCircuit() {
+        if (this.inspectedCircuit === null) {
+            return;
+        }
+        this.registerStopInspectingSpirit(this.inspectedCircuit);
+        this.inspectedCircuit = null;
     }
     
     verifyInspectionState() {
         if (this.inspectedMachine !== null && !this.canInspect(this.inspectedMachine)) {
             this.stopInspectingMachine();
+        }
+        if (this.inspectedCircuit !== null && !this.canInspect(this.inspectedCircuit)) {
+            this.stopInspectingCircuit();
         }
     }
     

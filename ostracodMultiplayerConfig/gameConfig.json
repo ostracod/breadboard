@@ -27,6 +27,13 @@
             "title": "Inspect Machine",
             "viewFile": "machineModule.html",
             "shouldShowOnLoad": false
+        },
+        {
+            "name": "circuit",
+            "buttonLabel": "Circuit",
+            "title": "Inspect Circuit",
+            "viewFile": "circuitModule.html",
+            "shouldShowOnLoad": false
         }
     ],
     "instructionsViewFile": "instructions.html",

@@ -1,5 +1,6 @@
 
 let worldTileGrid;
+let inspectedCircuitSpiritId = null;
 
 class TileGrid {
     
