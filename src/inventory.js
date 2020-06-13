@@ -99,7 +99,7 @@ export class Inventory {
     findItemBySpirit(spirit) {
         for (let index = 0; index < this.items.length; index++) {
             let tempItem = this.items[index];
-            if (tempItem.spirit.hasSameIdentity(spirit)) {
+            if (tempItem.spirit === spirit) {
                 return index;
             }
         }
@@ -249,7 +249,7 @@ export class Inventory {
     
     // Parent may be any number of steps removed.
     hasParentSpirit(spirit) {
-        if (this.parentSpirit.hasSameIdentity(spirit)) {
+        if (this.parentSpirit === spirit) {
             return true;
         }
         return this.parentSpirit.hasParentSpirit(spirit);
@@ -314,7 +314,7 @@ export function pushInventoryUpdate(destination, update) {
     for (let index = destination.length - 1; index >= 0; index--) {
         let tempUpdate = destination[index];
         if (tempUpdate.inventory === update.inventory
-                && tempUpdate.spirit.hasSameIdentity(update.spirit)) {
+                && tempUpdate.spirit === update.spirit) {
             destination.splice(index, 1);
         }
     }

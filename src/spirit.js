@@ -31,10 +31,6 @@ class Spirit {
         this.spiritType = spiritType;
     }
     
-    hasSameIdentity(spirit) {
-        return this.getReference().equals(spirit.getReference());
-    }
-    
     canBeMined() {
         return this.spiritType.canBeMined();
     }
@@ -160,7 +156,7 @@ export class ComplexSpirit extends Spirit {
     hasParentSpirit(spirit) {
         let tempSpirit = this.parentSpirit;
         while (tempSpirit !== null) {
-            if (spirit.hasSameIdentity(tempSpirit)) {
+            if (spirit === tempSpirit) {
                 return true;
             }
             tempSpirit = tempSpirit.parentSpirit;
@@ -346,10 +342,6 @@ export class PlayerSpirit extends InventorySpirit {
             this.stopInspectingMachine();
             this.inspectedMachine = spirit;
             this.inspectedMachine.inventory.addObserver(this);
-            let index = this.stopInspectionSpiritIds.indexOf(this.inspectedMachine.id);
-            if (index >= 0) {
-                this.stopInspectionSpiritIds.splice(index);
-            }
         }
         if (spirit instanceof CircuitSpirit) {
             this.stopInspectingCircuit();
@@ -374,6 +366,15 @@ export class PlayerSpirit extends InventorySpirit {
         }
         this.registerStopInspectingSpirit(this.inspectedCircuit);
         this.inspectedCircuit = null;
+    }
+    
+    stopInspecting(spirit) {
+        if (spirit === this.inspectedMachine) {
+            this.stopInspectingMachine();
+        }
+        if (spirit === this.inspectedCircuit) {
+            this.stopInspectingCircuit();
+        }
     }
     
     verifyInspectionState() {

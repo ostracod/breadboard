@@ -17,6 +17,9 @@ class Spirit {
         this.spiritType = spiritType;
     }
     
+    // Server-side we can afford to use === between spirits because
+    // the server maintains more strict instances of spirits.
+    // Client-side we should favor using hasSameIdentity.
     hasSameIdentity(spirit) {
         return this.getReference().equals(spirit.getReference());
     }

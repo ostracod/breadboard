@@ -157,20 +157,18 @@ function setUpWorldActionTags(name) {
     }
 }
 
-function inspectSpirit(spirit) {
-    if (!spirit.canBeInspected()) {
+function inspectSpirit(spirit, shouldAddCommand = true) {
+    if (spirit === null || !spirit.canBeInspected()) {
         return;
     }
-    inspectSpiritHelper(spirit);
-    addInspectCommand(spirit);
-}
-
-function inspectSpiritHelper(spirit) {
     if (spirit instanceof MachineSpirit) {
         inspectMachine(spirit);
     }
     if (spirit instanceof CircuitSpirit) {
         inspectCircuit(spirit);
+    }
+    if (shouldAddCommand) {
+        addInspectCommand(spirit);
     }
 }
 
@@ -196,6 +194,22 @@ function inspectCircuit(spirit) {
     document.getElementById("circuitInfoPlaceholder").style.display = "none";
     document.getElementById("circuitInfo").style.display = "block";
     showModuleByName("circuit");
+}
+
+function stopInspectingSpirit(spiritId, shouldAddCommand = true) {
+    if (spiritId === null) {
+        return;
+    }
+    if (inspectedMachineInventory !== null
+            && inspectedMachineInventory.parentSpiritId === spiritId) {
+        stopInspectingMachine();
+    }
+    if (inspectedCircuitSpiritId === spiritId) {
+        stopInspectingCircuit();
+    }
+    if (shouldAddCommand) {
+        addStopInspectingCommand(spiritId);
+    }
 }
 
 function stopInspectingMachine() {
@@ -306,6 +320,13 @@ function addRecycleCommand(inventoryItem, inventoryUpdateList) {
     }, inventoryUpdateList);
 }
 
+function addStopInspectingCommand(spiritId) {
+    gameUpdateCommandList.push({
+        commandName: "stopInspecting",
+        spiritId: spiritId
+    });
+}
+
 function addInventoryCommandRepeater(commandName, handler = null) {
     addCommandRepeater(commandName, command => {
         for (let updateData of command.inventoryUpdates) {
@@ -346,10 +367,11 @@ addInventoryCommandRepeater("recycle");
 addCommandRepeater("inspect", command => {
     let tempReference = convertJsonToSpiritReference(command.spiritReference);
     tempSpirit = tempReference.getCachedSpirit();
-    if (tempSpirit === null) {
-        return;
-    }
-    inspectSpiritHelper(tempSpirit);
+    inspectSpirit(tempSpirit, false);
+});
+
+addCommandRepeater("stopInspecting", command => {
+    stopInspectingSpirit(command.spiritId, false);
 });
 
 addCommandListener("setWorldTileGrid", command => {
@@ -383,14 +405,7 @@ addCommandListener("updateInventoryItem", command => {
 });
 
 addCommandListener("stopInspecting", command => {
-    if (inspectedMachineInventory !== null
-            && command.spiritId === inspectedMachineInventory.parentSpiritId) {
-        stopInspectingMachine();
-    }
-    if (inspectedCircuitSpiritId !== null
-            && command.spiritId === inspectedCircuitSpiritId) {
-        stopInspectingCircuit();
-    }
+    stopInspectingSpirit(command.spiritId, false);
 });
 
 class ClientDelegate {
@@ -436,54 +451,58 @@ class ClientDelegate {
         if (focusedTextInput !== null) {
             return true;
         }
-        if (keyCode == 37 || keyCode == 65) {
+        if (keyCode === 37 || keyCode === 65) {
             startLocalPlayerAction(0);
             return false;
         }
-        if (keyCode == 39 || keyCode == 68) {
+        if (keyCode === 39 || keyCode === 68) {
             startLocalPlayerAction(1);
             return false;
         }
-        if (keyCode == 38 || keyCode == 87) {
+        if (keyCode === 38 || keyCode === 87) {
             startLocalPlayerAction(2);
             return false;
         }
-        if (keyCode == 40 || keyCode == 83) {
+        if (keyCode === 40 || keyCode === 83) {
             startLocalPlayerAction(3);
             return false;
         }
-        if (keyCode == 49) {
+        if (keyCode === 49) {
             selectWorldActionByIndex(0);
         }
-        if (keyCode == 50) {
+        if (keyCode === 50) {
             selectWorldActionByIndex(1);
         }
-        if (keyCode == 51) {
+        if (keyCode === 51) {
             selectWorldActionByIndex(2);
         }
-        if (keyCode == 52) {
+        if (keyCode === 52) {
             selectWorldActionByIndex(3);
         }
-        if (keyCode == 82) {
+        if (keyCode === 82) {
             localPlayerInventory.selectPreviousItem();
         }
-        if (keyCode == 70) {
+        if (keyCode === 70) {
             localPlayerInventory.selectNextItem();
+        }
+        if (keyCode === 27) {
+            stopInspectingSpirit(inspectedCircuitSpiritId);
+            return false;
         }
         return true;
     }
     
     keyUpEvent(keyCode) {
-        if (keyCode == 37 || keyCode == 65) {
+        if (keyCode === 37 || keyCode === 65) {
             stopLocalPlayerAction(0);
         }
-        if (keyCode == 39 || keyCode == 68) {
+        if (keyCode === 39 || keyCode === 68) {
             stopLocalPlayerAction(1);
         }
-        if (keyCode == 38 || keyCode == 87) {
+        if (keyCode === 38 || keyCode === 87) {
             stopLocalPlayerAction(2);
         }
-        if (keyCode == 40 || keyCode == 83) {
+        if (keyCode === 40 || keyCode === 83) {
             stopLocalPlayerAction(3);
         }
         return true;

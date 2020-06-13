@@ -167,6 +167,12 @@ addCommandListener("inspect", (command, playerTile, commandList) => {
     }
 });
 
+addCommandListener("stopInspecting", (command, playerTile, commandList) => {
+    let tempReference = new ComplexSpiritReference(command.spiritId);
+    let tempSpirit = tempReference.getSpirit();
+    playerTile.spirit.stopInspecting(tempSpirit);
+});
+
 addCommandListener("transfer", (command, playerTile, commandList) => {
     playerTile.spirit.transferInventoryItem(
         command.sourceParentSpiritId,
