@@ -34,7 +34,7 @@ class SimpleSpiritReference extends SpiritReference {
     }
     
     getCachedSpirit() {
-        return simpleSpiritSet[this.serialInteger];
+        return simpleSpiritMap[this.serialInteger];
     }
 }
 

@@ -51,6 +51,7 @@
         "javascript/tileGrid.js",
         "javascript/inventory.js",
         "javascript/recipe.js",
+        "javascript/globalData.js",
         "javascript/game.js"
     ],
     "stylesheets": ["stylesheets/game.css"],

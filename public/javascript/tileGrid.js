@@ -1,5 +1,4 @@
 
-let worldTileGrid;
 let inspectedCircuitSpiritId = null;
 
 class TileGrid {
@@ -66,7 +65,5 @@ class TileGrid {
         }
     }
 }
-
-worldTileGrid = new TileGrid(loadingWorldTile);
 
 

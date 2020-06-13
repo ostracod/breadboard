@@ -7,8 +7,7 @@ import {ComplexWorldTile, PlayerWorldTile, MachineWorldTile} from "./worldTile.j
 export class ComplexWorldTileFactory {
     
     constructor(baseName) {
-        this.baseName = baseName;
-        let tempClassId = complexSpiritClassIdSet[this.baseName];
+        let tempClassId = complexSpiritClassIdSet[baseName];
         complexWorldTileFactoryMap[tempClassId] = this;
     }
     

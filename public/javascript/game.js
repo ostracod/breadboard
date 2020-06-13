@@ -96,7 +96,7 @@ function processMineTick() {
     if (mineDelay > 0) {
         return;
     }
-    worldTileGrid.setTile(mineTargetPos, emptyWorldTile);
+    worldTileGrid.setTile(mineTargetPos, simpleWorldTileSet.empty);
     let tempSpirit = tempTile.spirit;
     localPlayerInventory.incrementItemCountBySpirit(tempSpirit);
     addMineCommand(mineTargetPos, tempSpirit);
@@ -105,7 +105,7 @@ function processMineTick() {
 
 function placeWorldTile(pos) {
     let tempTile = worldTileGrid.getTile(pos);
-    if (tempTile.spirit.spiritType !== emptySpiritType) {
+    if (tempTile.spirit.spiritType !== simpleSpiritTypeSet.empty) {
         return
     }
     let tempItem = localPlayerInventory.selectedItem;
@@ -349,7 +349,7 @@ addCommandRepeater("walk", command => {
 
 addInventoryCommandRepeater("mine", command => {
     let tempPos = createPosFromJson(command.pos);
-    worldTileGrid.setTile(tempPos, emptyWorldTile);
+    worldTileGrid.setTile(tempPos, simpleWorldTileSet.empty);
 });
 
 addInventoryCommandRepeater("placeWorldTile", command => {
@@ -420,6 +420,7 @@ class ClientDelegate {
         initializeSpriteSheet(() => {
             drawAllRecipes();
         });
+        
         addEnterWorldCommand();
         for (let name of worldActionNameSet) {
             setUpWorldActionTags(name);

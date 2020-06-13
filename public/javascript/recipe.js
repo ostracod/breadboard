@@ -1,5 +1,4 @@
 
-let recipeList;
 let selectedRecipe = null;
 
 class RecipeComponent {
@@ -96,12 +95,6 @@ function convertJsonToRecipe(data) {
         tempComponentList,
         convertJsonToRecipeComponent(data.product)
     );
-}
-
-recipeList = [];
-for (let data of recipeDataList) {
-    let tempRecipe = convertJsonToRecipe(data);
-    recipeList.push(tempRecipe);
 }
 
 function drawAllRecipes() {

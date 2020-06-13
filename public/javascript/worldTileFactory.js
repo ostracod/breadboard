@@ -1,11 +1,9 @@
 
-// Map from spirit class ID to ComplexWorldTileFactory.
-let complexWorldTileFactoryMap = {};
-
 class ComplexWorldTileFactory {
     
-    constructor(spiritClassId) {
-        complexWorldTileFactoryMap[spiritClassId] = this;
+    constructor(baseName) {
+        let tempClassId = complexSpiritClassIdSet[baseName];
+        complexWorldTileFactoryMap[tempClassId] = this;
     }
     
     convertClientJsonToTile(data, spirit) {
@@ -20,7 +18,7 @@ class ComplexWorldTileFactory {
 class PlayerWorldTileFactory extends ComplexWorldTileFactory {
     
     constructor() {
-        super(complexSpiritClassIdSet.player);
+        super("player");
     }
     
     convertClientJsonToTile(data, spirit) {
@@ -37,7 +35,7 @@ class PlayerWorldTileFactory extends ComplexWorldTileFactory {
 class MachineWorldTileFactory extends ComplexWorldTileFactory {
     
     constructor() {
-        super(complexSpiritClassIdSet.machine);
+        super("machine");
     }
     
     convertClientJsonToTile(data, spirit) {
@@ -48,10 +46,6 @@ class MachineWorldTileFactory extends ComplexWorldTileFactory {
         return new MachineWorldTile(spirit);
     }
 }
-
-new PlayerWorldTileFactory();
-new MachineWorldTileFactory();
-new ComplexWorldTileFactory(complexSpiritClassIdSet.circuit);
 
 function getWorldTileWithSpirit(spirit) {
     if (spirit instanceof SimpleSpirit) {

@@ -1,8 +1,6 @@
 
 let localPlayerWorldTile = null;
 let playerWorldTileList = [];
-// Map from spirit serial integer to WorldTile.
-let simpleWorldTileMap = {};
 
 class WorldTile extends Tile {
     
@@ -15,35 +13,16 @@ class WorldTile extends Tile {
     }
 }
 
-class LoadingWorldTile extends WorldTile {
-    
-    constructor() {
-        super(loadingSpirit);
-    }
-}
-
-let loadingWorldTile = new LoadingWorldTile();
-
 class SimpleWorldTile extends WorldTile {
     
     constructor(spirit) {
         super(spirit);
+        let tempSpiritType = this.spirit.spiritType;
         let tempSerialInteger = this.spirit.serialInteger;
+        simpleWorldTileSet[tempSpiritType.baseName] = this;
         simpleWorldTileMap[tempSerialInteger] = this;
     }
 }
-
-for (let serialInteger in simpleSpiritSet) {
-    let tempSpirit = simpleSpiritSet[serialInteger];
-    new SimpleWorldTile(tempSpirit);
-}
-
-function getSimpleWorldTile(spiritKey) {
-    let tempInteger = simpleSpiritSerialIntegerSet[spiritKey];
-    return simpleWorldTileMap[tempInteger];
-}
-
-let emptyWorldTile = getSimpleWorldTile("empty");
 
 class ComplexWorldTile extends WorldTile {
     
@@ -60,10 +39,10 @@ class ComplexWorldTile extends WorldTile {
         let tempNextPos = this.pos.copy();
         tempNextPos.add(offset);
         let tempTile = worldTileGrid.getTile(tempNextPos);
-        if (tempTile.spirit.spiritType !== emptySpiritType) {
+        if (tempTile.spirit.spiritType !== simpleSpiritTypeSet.empty) {
             return false;
         }
-        worldTileGrid.setTile(this.pos, emptyWorldTile);
+        worldTileGrid.setTile(this.pos, simpleWorldTileSet.empty);
         this.pos.set(tempNextPos);
         worldTileGrid.setTile(this.pos, this);
         return true;
