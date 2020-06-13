@@ -27,8 +27,6 @@ let complexWorldTileFactoryMap = {};
 
 let recipeList = [];
 
-let worldTileGrid;
-
 new LoadingSpiritType();
 new EmptySpiritType();
 new BarrierSpiritType();
@@ -61,6 +59,16 @@ for (let data of recipeDataList) {
     recipeList.push(tempRecipe);
 }
 
-worldTileGrid = new TileGrid(simpleWorldTileSet.loading);
+let localPlayerUsername;
+let localPlayerSpiritId;
+let localPlayerWorldTile = null;
+let playerWorldTileList = [];
+let worldTileGrid = new TileGrid(simpleWorldTileSet.loading);
+// Map from parent spirit ID to inventory.
+let parentSpiritInventoryMap = {};
+let localPlayerInventory = null;
+let inspectedMachineInventory = null;
+let inspectedCircuitSpiritId = null;
+let selectedRecipe = null;
 
 

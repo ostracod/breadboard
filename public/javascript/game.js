@@ -1,22 +1,21 @@
 
 const pixelSize = 6;
 const spritePixelSize = spriteSize * pixelSize;
-let canvasTileWidth;
-let canvasTileHeight;
-let cameraPos = new Pos(0, 0);
-let localPlayerUsername;
-let localPlayerSpiritId;
 const playerActionOffsetSet = [
     new Pos(-1, 0),
     new Pos(1, 0),
     new Pos(0, -1),
     new Pos(0, 1)
 ];
+const worldActionNameSet = ["mine", "place", "inspect", "attack"];
+
+let canvasTileWidth;
+let canvasTileHeight;
+let cameraPos = new Pos(0, 0);
 let isMining = false;
 let minePlayerPos;
 let mineTargetPos;
 let mineDelay;
-const worldActionNameSet = ["mine", "place", "inspect", "attack"];
 let selectedWorldAction = worldActionNameSet[0];
 let updateRequestCount = 0;
 

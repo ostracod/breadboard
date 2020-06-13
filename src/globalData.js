@@ -119,4 +119,8 @@ for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     );
 }
 
+import {World} from "./world.js";
+
+export let world = new World();
+
 

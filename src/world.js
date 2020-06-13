@@ -11,10 +11,8 @@ import * as fs from "fs";
 
 const worldFilePath = "./world.json";
 const defaultWorldSize = 100;
-const worldFillTile = simpleWorldTileSet.empty;
-const worldOutsideTile = simpleWorldTileSet.barrier;
 
-class World {
+export class World {
     
     constructor(width, height) {
         this.tileGrid = null;
@@ -22,6 +20,8 @@ class World {
     }
     
     loadTileGrid() {
+        let worldFillTile = simpleWorldTileSet.empty;
+        let worldOutsideTile = simpleWorldTileSet.barrier;
         if (fs.existsSync(worldFilePath)) {
             let tempData = JSON.parse(fs.readFileSync(worldFilePath, "utf8"));
             setNextComplexSpiritId(tempData.nextComplexSpiritId);
@@ -125,13 +125,13 @@ class World {
             // TODO: Make player tile placement more robust.
             let tempPos = new Pos(3, 3);
             while (true) {
-                let tempOldTile = world.getTile(tempPos);
+                let tempOldTile = this.getTile(tempPos);
                 if (tempOldTile.spirit.spiritType === simpleSpiritTypeSet.empty) {
                     break;
                 }
                 tempPos.x += 1;
             }
-            tempTile.addToWorld(world, tempPos);
+            tempTile.addToWorld(this, tempPos);
             return spirit;
         });
     }
@@ -153,7 +153,5 @@ class World {
         fs.writeFileSync(worldFilePath, JSON.stringify(this.getDbJson()));
     }
 }
-
-export let world = new World();
 
 

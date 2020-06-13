@@ -1,11 +1,6 @@
 
 const inventoryButtonTagIdPrefixSet = ["inspect", "transfer", "recycle", "install"];
 
-// Map from parent spirit ID to inventory.
-let parentSpiritInventoryMap = {};
-let localPlayerInventory = null;
-let inspectedMachineInventory = null;
-
 class InventoryItem {
     
     constructor(inventory, spirit, count) {

@@ -1,6 +1,4 @@
 
-let inspectedCircuitSpiritId = null;
-
 class TileGrid {
     
     constructor(outsideTile) {

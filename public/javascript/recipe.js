@@ -1,6 +1,4 @@
 
-let selectedRecipe = null;
-
 class RecipeComponent {
     
     constructor(spiritType, count) {

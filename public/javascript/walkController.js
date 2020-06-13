@@ -1,19 +1,4 @@
 
-function createDefaultWalkController() {
-    return new WalkController(new Pos(0, 0), 0, 0);
-}
-
-function convertJsonToWalkController(data) {
-    if (data === null) {
-        return createDefaultWalkController();
-    }
-    return new WalkController(
-        createPosFromJson(data.offset),
-        data.delay,
-        data.repeatDelay
-    );
-}
-
 class WalkController {
     
     constructor(offset, delay, repeatDelay) {
@@ -71,6 +56,21 @@ class WalkController {
             }
         }
     }
+}
+
+function createDefaultWalkController() {
+    return new WalkController(new Pos(0, 0), 0, 0);
+}
+
+function convertJsonToWalkController(data) {
+    if (data === null) {
+        return createDefaultWalkController();
+    }
+    return new WalkController(
+        createPosFromJson(data.offset),
+        data.delay,
+        data.repeatDelay
+    );
 }
 
 

@@ -1,8 +1,7 @@
 
 import ostracodMultiplayer from "ostracod-multiplayer";
-import {complexSpiritMap} from "./globalData.js";
+import {complexSpiritMap, world} from "./globalData.js";
 import {createPosFromJson} from "./pos.js";
-import {world} from "./world.js";
 import {MachineSpirit, persistAllComplexSpirits} from "./spirit.js";
 import {ComplexSpiritReference, convertJsonToSpiritReference} from "./spiritReference.js";
 import {getRecipeById} from "./recipe.js";

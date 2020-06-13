@@ -1,7 +1,4 @@
 
-let localPlayerWorldTile = null;
-let playerWorldTileList = [];
-
 class WorldTile extends Tile {
     
     addEvent(pos) {
