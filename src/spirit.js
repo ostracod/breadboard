@@ -1,19 +1,14 @@
 
+import {simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap} from "./globalData.js";
 import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
 import {Inventory, pushInventoryUpdate} from "./inventory.js";
-import {pushRecipeComponent} from "./recipeComponent.js";
+import {pushRecipeComponent} from "./recipe.js";
 import {WorldTile} from "./worldTile.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 let dbUtils = ostracodMultiplayer.dbUtils;
 
-// Map from serial integer to SimpleSpirit.
-export let simpleSpiritSet = {};
 let nextComplexSpiritId = 0;
-// Map from complex spirit ID to ComplexSpirit.
-export let complexSpiritSet = {};
-// Map from complex spirit ID to ComplexSpirit.
-export let dirtyComplexSpiritSet = {};
 
 // The idea is that a Spirit is something which may
 // exist as a Tile or Item.
@@ -66,7 +61,7 @@ export class SimpleSpirit extends Spirit {
         super(spiritType);
         this.serialInteger = this.spiritType.serialInteger;
         this.reference = new SimpleSpiritReference(this.serialInteger);
-        simpleSpiritSet[this.serialInteger] = this;
+        simpleSpiritMap[this.serialInteger] = this;
     }
     
     getClientJson() {
@@ -96,14 +91,14 @@ export class ComplexSpirit extends Spirit {
         } else {
             this.id = id;
         }
-        complexSpiritSet[this.id] = this;
+        complexSpiritMap[this.id] = this;
         this.reference = new ComplexSpiritReference(this.id);
         this.hasDbRow = false;
         this.isDestroyed = false;
     }
     
     markAsDirty() {
-        dirtyComplexSpiritSet[this.id] = this;
+        dirtyComplexSpiritMap[this.id] = this;
         if (!this.hasDbRow && this.parentSpirit !== null) {
             this.parentSpirit.markAsDirty();
         }
@@ -170,7 +165,7 @@ export class ComplexSpirit extends Spirit {
     
     // Spirit must be removed from parent before invoking destroy method.
     destroy() {
-        delete complexSpiritSet[this.id];
+        delete complexSpiritMap[this.id];
         this.isDestroyed = true;
         this.markAsDirty();
     }
@@ -387,7 +382,7 @@ export class PlayerSpirit extends InventorySpirit {
     }
     
     getInventoryByParentSpiritId(parentSpiritId) {
-        let tempSpirit = complexSpiritSet[parentSpiritId];
+        let tempSpirit = complexSpiritMap[parentSpiritId];
         if (typeof tempSpirit === "undefined") {
             return null;
         }
@@ -470,11 +465,11 @@ export function setNextComplexSpiritId(id) {
 
 export function persistAllComplexSpirits() {
     let operationList = [];
-    for (let id in dirtyComplexSpiritSet) {
-        let tempSpirit = dirtyComplexSpiritSet[id];
+    for (let id in dirtyComplexSpiritMap) {
+        let tempSpirit = dirtyComplexSpiritMap[id];
         operationList.push(() => tempSpirit.persist());
+        delete dirtyComplexSpiritMap[id];
     }
-    dirtyComplexSpiritSet = {};
     if (operationList.length <= 0) {
         return Promise.resolve();
     }

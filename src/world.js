@@ -1,10 +1,11 @@
 
+import {emptyWorldTile, barrierWorldTile, matteriteWorldTile, energiteWorldTile, emptySpiritType, playerSpiritType} from "./globalData.js";
 import {Pos} from "./pos.js";
 import {TileGrid, convertDbJsonToTileGrid} from "./tileGrid.js";
-import {emptyWorldTile, barrierWorldTile, matteriteWorldTile, energiteWorldTile, PlayerWorldTile} from "./worldTile.js";
+import {PlayerWorldTile} from "./worldTile.js";
 import {convertDbJsonToWorldTile} from "./worldTileFactory.js";
 import {getNextComplexSpiritId, setNextComplexSpiritId} from "./spirit.js";
-import {emptySpiritType, playerSpiritType, loadComplexSpirit} from "./spiritType.js";
+import {loadComplexSpirit} from "./spiritType.js";
 
 import * as fs from "fs";
 

@@ -1,35 +1,12 @@
 
-import {dirtyComplexSpiritSet, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit, CircuitSpirit} from "./spirit.js";
+import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, dirtyComplexSpiritMap, simpleSpiritTypeMap, complexSpiritTypesMap, matteriteSpiritType} from "./globalData.js";
+import {SimpleSpirit, PlayerSpirit, MachineSpirit, CircuitSpirit} from "./spirit.js";
 import {convertJsonToInventory} from "./inventory.js";
-import {RecipeComponent} from "./recipeComponent.js";
+import {RecipeComponent} from "./recipe.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 let gameUtils = ostracodMultiplayer.gameUtils;
 let dbUtils = ostracodMultiplayer.dbUtils;
-
-export const simpleSpiritSerialIntegerSet = {
-    empty: 0,
-    barrier: 1,
-    matterite: 2,
-    energite: 3,
-    block: 4,
-    loading: 30,
-    wire: 31
-};
-
-export const complexSpiritClassIdSet = {
-    player: 0,
-    machine: 1,
-    circuit: 2
-};
-
-export const spiritColorAmount = 16;
-export const wireArrangementAmount = 12;
-
-// Map from serial integer to SimpleSpiritType.
-export let simpleSpiritTypeMap = {};
-// Map from spirit class ID to list of ComplexSpiritType.
-export let complexSpiritTypeMap = {};
 
 // A SpiritType serves the following purposes:
 // > Identify whether a spirit instance matches particular criteria
@@ -153,27 +130,15 @@ export class WireSpiritType extends SimpleSpiritType {
     }
 }
 
-export let emptySpiritType = new EmptySpiritType();
-export let emptySpirit = emptySpiritType.spirit;
-new BarrierSpiritType();
-let matteriteSpiritType = new MatteriteSpiritType();
-new EnergiteSpiritType();
-for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
-    new BlockSpiritType(colorIndex);
-}
-for (let arrangement = 0; arrangement < wireArrangementAmount; arrangement++) {
-    new WireSpiritType(arrangement);
-}
-
 class ComplexSpiritType extends SpiritType {
     
     constructor(spiritClassId) {
         super();
         this.spiritClassId = spiritClassId;
-        if (!(this.spiritClassId in complexSpiritTypeMap)) {
-            complexSpiritTypeMap[this.spiritClassId] = [];
+        if (!(this.spiritClassId in complexSpiritTypesMap)) {
+            complexSpiritTypesMap[this.spiritClassId] = [];
         }
-        complexSpiritTypeMap[this.spiritClassId].push(this);
+        complexSpiritTypesMap[this.spiritClassId].push(this);
     }
     
     matchesSpiritDbJson(data) {
@@ -188,7 +153,7 @@ class ComplexSpiritType extends SpiritType {
     }
 }
 
-class PlayerSpiritType extends ComplexSpiritType {
+export class PlayerSpiritType extends ComplexSpiritType {
     
     constructor() {
         super(complexSpiritClassIdSet.player);
@@ -213,7 +178,7 @@ class PlayerSpiritType extends ComplexSpiritType {
     }
 }
 
-class MachineSpiritType extends ComplexSpiritType {
+export class MachineSpiritType extends ComplexSpiritType {
     
     constructor(colorIndex) {
         super(complexSpiritClassIdSet.machine);
@@ -253,7 +218,7 @@ class MachineSpiritType extends ComplexSpiritType {
     }
 }
 
-class CircuitSpiritType extends ComplexSpiritType {
+export class CircuitSpiritType extends ComplexSpiritType {
     
     constructor() {
         super(complexSpiritClassIdSet.circuit);
@@ -280,18 +245,12 @@ class CircuitSpiritType extends ComplexSpiritType {
     }
 }
 
-export let playerSpiritType = new PlayerSpiritType();
-for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
-    new MachineSpiritType(colorIndex);
-}
-export let circuitSpiritType = new CircuitSpiritType();
-
 export function convertDbJsonToSpirit(data) {
     let tempType;
     if (typeof data === "number") {
         tempType = simpleSpiritTypeMap[data];
     } else {
-        let tempTypeList = complexSpiritTypeMap[data.classId];
+        let tempTypeList = complexSpiritTypesMap[data.classId];
         for (let spiritType of tempTypeList) {
             if (spiritType.matchesSpiritDbJson(data)) {
                 tempType = spiritType;
@@ -303,8 +262,8 @@ export function convertDbJsonToSpirit(data) {
 }
 
 export function loadComplexSpirit(id, shouldPerformTransaction = true) {
-    if (id in dirtyComplexSpiritSet) {
-        return Promise.resolve(dirtyComplexSpiritSet[id]);
+    if (id in dirtyComplexSpiritMap) {
+        return Promise.resolve(dirtyComplexSpiritMap[id]);
     }
     
     let dbError;

@@ -1,11 +1,7 @@
 
+import {emptySpiritType, simpleWorldTileMap, emptyWorldTile} from "./globalData.js";
 import {Tile} from "./tile.js";
-import {simpleSpiritSerialIntegerSet, emptySpiritType} from "./spiritType.js";
-import {simpleSpiritSet} from "./spirit.js";
 import {getWorldTileWithSpirit} from "./worldTileFactory.js";
-
-// Map from spirit serial integer to WorldTile.
-export let simpleWorldTileMap = {};
 
 export class WorldTile extends Tile {
     
@@ -22,7 +18,7 @@ export class WorldTile extends Tile {
     }
 }
 
-class SimpleWorldTile extends WorldTile {
+export class SimpleWorldTile extends WorldTile {
     
     constructor(simpleSpirit) {
         super(simpleSpirit);
@@ -38,21 +34,6 @@ class SimpleWorldTile extends WorldTile {
         return this.spirit.getNestedDbJson();
     }
 }
-
-for (let serialInteger in simpleSpiritSet) {
-    let tempSpirit = simpleSpiritSet[serialInteger];
-    new SimpleWorldTile(tempSpirit);
-}
-
-function getSimpleWorldTile(spiritKey) {
-    let tempInteger = simpleSpiritSerialIntegerSet[spiritKey];
-    return simpleWorldTileMap[tempInteger];
-}
-
-export let emptyWorldTile = getSimpleWorldTile("empty");
-export let barrierWorldTile = getSimpleWorldTile("barrier");
-export let matteriteWorldTile = getSimpleWorldTile("matterite");
-export let energiteWorldTile = getSimpleWorldTile("energite");
 
 export class ComplexWorldTile extends WorldTile {
     

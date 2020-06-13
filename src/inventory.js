@@ -1,7 +1,6 @@
 
-import {niceUtils} from "./niceUtils.js";
+import {complexSpiritMap} from "./globalData.js";
 import {SimpleSpiritType, convertDbJsonToSpirit} from "./spiritType.js";
-import {complexSpiritSet} from "./spirit.js";
 
 export class InventoryItem {
     
@@ -293,7 +292,7 @@ export function convertJsonToInventory(data) {
 }
 
 function convertClientJsonToInventoryUpdate(data) {
-    let parentSpirit = complexSpiritSet[data.parentSpiritId];
+    let parentSpirit = complexSpiritMap[data.parentSpiritId];
     if (typeof parentSpirit === "undefined") {
         return null;
     }

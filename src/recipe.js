@@ -1,12 +1,28 @@
 
-import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, spiritColorAmount, simpleSpiritTypeMap, complexSpiritTypeMap, circuitSpiritType} from "./spiritType.js";
-import {RecipeComponent} from "./recipeComponent.js";
+import {recipeList, recipeDataList} from "./globalData.js";
 
-export let recipeList = [];
-export let recipeDataList = [];
 let nextRecipeId = 0;
 
-class Recipe {
+export class RecipeComponent {
+    
+    constructor(spiritType, count) {
+        this.spiritType = spiritType;
+        this.count = count;
+    }
+    
+    getJson() {
+        return {
+            spiritType: this.spiritType.getJson(),
+            count: this.count
+        };
+    }
+    
+    scale(value) {
+        this.count *= value;
+    }
+}
+
+export class Recipe {
     
     constructor(ingredients, product) {
         this.ingredients = ingredients;
@@ -30,45 +46,14 @@ class Recipe {
     }
 }
 
-function createSimpleRecipeComponent(spiritKey, count, offset) {
-    let tempInteger = simpleSpiritSerialIntegerSet[spiritKey];
-    if (typeof offset !== "undefined") {
-        tempInteger += offset;
-    }
-    let tempType = simpleSpiritTypeMap[tempInteger];
-    return new RecipeComponent(tempType, count);
-}
-
-function createMachineRecipeComponent(colorIndex) {
-    let tempTypeList = complexSpiritTypeMap[complexSpiritClassIdSet.machine];
-    for (let spiritType of tempTypeList) {
-        if (spiritType.colorIndex === colorIndex) {
-            return new RecipeComponent(spiritType, 1);
+export function pushRecipeComponent(destination, recipeComponent) {
+    for (let tempComponent of destination) {
+        if (tempComponent.spiritType === recipeComponent.spiritType) {
+            tempComponent.count += recipeComponent.count;
+            return;
         }
     }
-    return null;
-}
-
-new Recipe(
-    [
-        createSimpleRecipeComponent("matterite", 1),
-        createSimpleRecipeComponent("energite", 1)
-    ],
-    new RecipeComponent(circuitSpiritType, 1)
-);
-for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
-    new Recipe(
-        [createSimpleRecipeComponent("matterite", 2)],
-        createSimpleRecipeComponent("block", 1, colorIndex)
-    );
-    new Recipe(
-        [
-            createSimpleRecipeComponent("block", 1, colorIndex),
-            createSimpleRecipeComponent("matterite", 1),
-            createSimpleRecipeComponent("energite", 1)
-        ],
-        createMachineRecipeComponent(colorIndex)
-    );
+    destination.push(recipeComponent);
 }
 
 export function getRecipeById(id) {

@@ -1,5 +1,5 @@
 
-import {simpleSpiritSet, complexSpiritSet} from "./spirit.js";
+import {simpleSpiritMap, complexSpiritMap} from "./globalData.js";
 
 // A SpiritReference is used to identify unique
 // instances of Spirits.
@@ -29,7 +29,7 @@ export class SimpleSpiritReference extends SpiritReference {
     }
     
     getSpirit() {
-        return simpleSpiritSet[this.serialInteger];
+        return simpleSpiritMap[this.serialInteger];
     }
 }
 
@@ -48,8 +48,8 @@ export class ComplexSpiritReference extends SpiritReference {
     }
     
     getSpirit() {
-        if (this.id in simpleSpiritSet) {
-            return complexSpiritSet[this.id];
+        if (this.id in simpleSpiritMap) {
+            return complexSpiritMap[this.id];
         } else {
             return null;
         }

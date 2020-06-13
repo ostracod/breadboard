@@ -1,12 +1,10 @@
 
-import {complexSpiritClassIdSet, convertNestedDbJsonToSpirit} from "./spiritType.js";
+import {complexSpiritClassIdSet, simpleWorldTileMap, complexWorldTileFactoryMap} from "./globalData.js";
+import {convertNestedDbJsonToSpirit} from "./spiritType.js";
 import {SimpleSpirit, ComplexSpirit} from "./spirit.js";
-import {simpleWorldTileMap, ComplexWorldTile, PlayerWorldTile, MachineWorldTile} from "./worldTile.js";
+import {ComplexWorldTile, PlayerWorldTile, MachineWorldTile} from "./worldTile.js";
 
-// Map from spirit class ID to ComplexWorldTileFactory.
-let complexWorldTileFactoryMap = {};
-
-class ComplexWorldTileFactory {
+export class ComplexWorldTileFactory {
     
     constructor(spiritClassId) {
         complexWorldTileFactoryMap[spiritClassId] = this;
@@ -21,7 +19,7 @@ class ComplexWorldTileFactory {
     }
 }
 
-class PlayerWorldTileFactory extends ComplexWorldTileFactory {
+export class PlayerWorldTileFactory extends ComplexWorldTileFactory {
     
     constructor() {
         super(complexSpiritClassIdSet.player);
@@ -36,7 +34,7 @@ class PlayerWorldTileFactory extends ComplexWorldTileFactory {
     }
 }
 
-class MachineWorldTileFactory extends ComplexWorldTileFactory {
+export class MachineWorldTileFactory extends ComplexWorldTileFactory {
     
     constructor() {
         super(complexSpiritClassIdSet.machine);
@@ -50,10 +48,6 @@ class MachineWorldTileFactory extends ComplexWorldTileFactory {
         return new MachineWorldTile(spirit);
     }
 }
-
-new PlayerWorldTileFactory();
-new MachineWorldTileFactory();
-new ComplexWorldTileFactory(complexSpiritClassIdSet.circuit);
 
 export function getWorldTileWithSpirit(spirit) {
     if (spirit instanceof SimpleSpirit) {
