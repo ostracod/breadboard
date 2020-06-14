@@ -1,17 +1,21 @@
 
 export class Tile {
     
-    constructor(spirit, tileConverter) {
+    // Concrete subclasses of Tile must implement these methods:
+    // convertToClientJson, convertToDbJson, getSimpleTileSet, getSimpleTileMap
+    
+    constructor(spirit, tileComplexity) {
         this.spirit = spirit;
-        this.tileConverter = tileConverter;
+        this.tileComplexity = tileComplexity;
+        this.tileComplexity.registerTile(this);
     }
     
     getClientJson() {
-        return this.tileConverter.convertToClientJson(this);
+        return this.tileComplexity.convertToClientJson(this);
     }
     
     getDbJson() {
-        return this.tileConverter.convertToDbJson(this);
+        return this.tileComplexity.convertToDbJson(this);
     }
     
     addToGridEvent(tileGrid, pos) {
@@ -27,14 +31,26 @@ export class Tile {
     }
 }
 
-class TileConverter {
+class TileComplexity {
     
-    // Concrete subclasses of TileConverter must implement these methods:
+    // Concrete subclasses of TileComplexity must implement these methods:
     // convertToClientJson, convertToDbJson
     
+    registerTile(tile) {
+        // Do nothing.
+    }
 }
 
-class SimpleTileConverter extends TileConverter {
+class SimpleTileComplexity extends TileComplexity {
+    
+    registerTile(tile) {
+        let tempTileSet = tile.getSimpleTileSet();
+        let tempTileMap = tile.getSimpleTileMap();
+        let tempSpiritType = tile.spirit.spiritType;
+        let tempSerialInteger = tile.spirit.serialInteger;
+        tempTileSet[tempSpiritType.baseName] = tile;
+        tempTileMap[tempSerialInteger] = tile;
+    }
     
     convertToClientJson(tile) {
         return tile.spirit.serialInteger;
@@ -45,7 +61,7 @@ class SimpleTileConverter extends TileConverter {
     }
 }
 
-class ComplexTileConverter extends TileConverter {
+class ComplexTileComplexity extends TileComplexity {
     
     convertToClientJson(tile) {
         return {
@@ -60,7 +76,7 @@ class ComplexTileConverter extends TileConverter {
     }
 }
 
-export let simpleTileConverter = new SimpleTileConverter();
-export let complexTileConverter = new ComplexTileConverter();
+export let simpleTileComplexity = new SimpleTileComplexity();
+export let complexTileComplexity = new ComplexTileComplexity();
 
 

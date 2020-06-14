@@ -1,9 +1,17 @@
 
 import {simpleSpiritTypeSet, simpleWorldTileSet, simpleWorldTileMap} from "./globalData.js";
-import {Tile, simpleTileConverter, complexTileConverter} from "./tile.js";
+import {Tile, simpleTileComplexity, complexTileComplexity} from "./tile.js";
 import {getWorldTileWithSpirit} from "./tileFactory.js";
 
 export class WorldTile extends Tile {
+    
+    getSimpleTileSet() {
+        return simpleWorldTileSet;
+    }
+    
+    getSimpleTileMap() {
+        return simpleWorldTileMap;
+    }
     
     addToWorldEvent(world) {
         // Do nothing.
@@ -21,18 +29,14 @@ export class WorldTile extends Tile {
 export class SimpleWorldTile extends WorldTile {
     
     constructor(spirit) {
-        super(spirit, simpleTileConverter);
-        let tempSpiritType = this.spirit.spiritType;
-        let tempSerialInteger = this.spirit.serialInteger;
-        simpleWorldTileSet[tempSpiritType.baseName] = this;
-        simpleWorldTileMap[tempSerialInteger] = this;
+        super(spirit, simpleTileComplexity);
     }
 }
 
 export class ComplexWorldTile extends WorldTile {
     
     constructor(spirit) {
-        super(spirit, complexTileConverter);
+        super(spirit, complexTileComplexity);
         this.world = null;
         this.pos = null;
     }
