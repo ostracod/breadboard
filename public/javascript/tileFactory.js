@@ -1,8 +1,19 @@
 
-class ComplexWorldTileFactory {
+class ComplexTileFactory {
+    
+    // Concrete subclasses of ComplexTileFactory must implement these methods:
+    // convertClientJsonToTile, createTileWithSpirit
     
     constructor(baseName) {
-        let tempClassId = complexSpiritClassIdSet[baseName];
+        this.baseName = baseName;
+    }
+}
+
+class ComplexWorldTileFactory extends ComplexTileFactory {
+    
+    constructor(baseName) {
+        super(baseName);
+        let tempClassId = complexSpiritClassIdSet[this.baseName];
         complexWorldTileFactoryMap[tempClassId] = this;
     }
     
@@ -47,25 +58,41 @@ class MachineWorldTileFactory extends ComplexWorldTileFactory {
     }
 }
 
-function getWorldTileWithSpirit(spirit) {
+function getTileWithSpirit(simpleTileMap, complexTileFactoryMap, spirit) {
     if (spirit instanceof SimpleSpirit) {
-        return simpleWorldTileMap[spirit.serialInteger];
+        return simpleTileMap[spirit.serialInteger];
     }
     if (spirit instanceof ComplexSpirit) {
-        let tempFactory = complexWorldTileFactoryMap[spirit.classId];
+        let tempFactory = complexTileFactoryMap[spirit.classId];
         return tempFactory.createTileWithSpirit(spirit);
     }
     return null;
 }
 
-function convertClientJsonToWorldTile(data) {
+function getWorldTileWithSpirit(spirit) {
+    return getTileWithSpirit(simpleWorldTileMap, complexWorldTileFactoryMap, spirit);
+}
+
+function getCircuitTileWithSpirit(spirit) {
+    return getTileWithSpirit(simpleCircuitTileMap, complexCircuitTileFactoryMap, spirit);
+}
+
+function convertClientJsonToTile(simpleTileMap, complexTileFactoryMap, data) {
     if (typeof data === "number") {
-        return simpleWorldTileMap[data];
+        return simpleTileMap[data];
     } else {
         let tempSpirit = convertClientJsonToSpirit(data.spirit);
-        let tempFactory = complexWorldTileFactoryMap[tempSpirit.classId];
+        let tempFactory = complexTileFactoryMap[tempSpirit.classId];
         return tempFactory.convertClientJsonToTile(data, tempSpirit);
     }
+}
+
+function convertClientJsonToWorldTile(data) {
+    return convertClientJsonToTile(simpleWorldTileMap, complexWorldTileFactoryMap, data);
+}
+
+function convertClientJsonToCircuitTile(data, shouldPerformTransaction = true) {
+    return convertClientJsonToTile(simpleCircuitTileMap, complexCircuitTileFactoryMap, data);
 }
 
 

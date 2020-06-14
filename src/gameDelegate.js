@@ -24,6 +24,14 @@ function addSetWorldTileGridCommand(playerTile, commandList) {
     });
 }
 
+function addSetCircuitTileGridCommand(circuitSpirit, commandList) {
+    let tempTileList = circuitSpirit.tileGrid.tileList;
+    commandList.push({
+        commandName: "setCircuitTileGrid",
+        tiles: tempTileList.map(tile => tile.getClientJson())
+    });
+}
+
 function addUpdateInventoryItemCommandHelper(inventoryUpdateData, commandList) {
     commandList.push({
         commandName: "updateInventoryItem",
@@ -119,8 +127,12 @@ addCommandListener("setWalkController", (command, playerTile, commandList) => {
 });
 
 addCommandListener("getState", (command, playerTile, commandList) => {
-    addSetWorldTileGridCommand(playerTile, commandList);
     let playerSpirit = playerTile.spirit;
+    if (playerSpirit.inspectedCircuit === null) {
+        addSetWorldTileGridCommand(playerTile, commandList);
+    } else {
+        addSetCircuitTileGridCommand(playerSpirit.inspectedCircuit, commandList);
+    }
     for (let update of playerSpirit.inventoryUpdates) {
         addUpdateInventoryItemCommand(update, commandList);
     }

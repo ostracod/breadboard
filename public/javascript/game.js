@@ -394,6 +394,11 @@ addCommandListener("setWorldTileGrid", command => {
     worldTileGrid.setTiles(tempTileList, command.width, command.height);
 });
 
+addCommandListener("setCircuitTileGrid", command => {
+    // TODO: Handle this command.
+    
+});
+
 addCommandListener("updateInventoryItem", command => {
     let tempUpdateData = command.inventoryUpdate;
     let tempUpdate = convertClientJsonToInventoryUpdate(tempUpdateData);

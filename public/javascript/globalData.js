@@ -6,8 +6,9 @@ let simpleSpiritSet = {};
 // Maps from name to SpiritType.
 let simpleSpiritTypeSet = {};
 let complexSpiritTypeSet = {};
-// Map from name to SimpleWorldTile.
+// Maps from name to Tile.
 let simpleWorldTileSet = {};
+let simpleCircuitTileSet = {};
 
 // Map from serial integer to SimpleSpirit.
 let simpleSpiritMap = {};
@@ -19,10 +20,12 @@ let simpleSpiritTypeMap = {};
 // Map from spirit class ID to list of ComplexSpiritType.
 let complexSpiritTypeMap = {};
 
-// Map from serial integer to SimpleWorldTile.
+// Maps from spirit serial integer to Tile.
 let simpleWorldTileMap = {};
-// Map from spirit class ID to ComplexWorldTileFactory.
+let simpleCircuitTileMap = {};
+// Maps from spirit class ID to ComplexTileFactory.
 let complexWorldTileFactoryMap = {};
+let complexCircuitTileFactoryMap = {};
 
 let recipeList = [];
 
@@ -47,6 +50,7 @@ new CircuitSpiritType();
 for (let serialInteger in simpleSpiritMap) {
     let tempSpirit = simpleSpiritMap[serialInteger];
     new SimpleWorldTile(tempSpirit);
+    new SimpleCircuitTile(tempSpirit);
 }
 
 new PlayerWorldTileFactory();

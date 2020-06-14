@@ -1,5 +1,6 @@
 
-import {simpleSpiritSet, simpleCircuitTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap} from "./globalData.js";
+import {simpleSpiritSerialIntegerSet, wireArrangementAmount, simpleSpiritSet, simpleCircuitTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap, simpleCircuitTileMap} from "./globalData.js";
+import {Pos} from "./pos.js";
 import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
 import {Inventory, pushInventoryUpdate} from "./inventory.js";
 import {pushRecipeComponent} from "./recipe.js";
@@ -457,7 +458,6 @@ export class CircuitSpirit extends ComplexSpirit {
     
     constructor(spiritType, id, tileGrid = null) {
         super(spiritType, id);
-        console.log(tileGrid);
         if (tileGrid === null) {
             tileGrid = new TileGrid(
                 17,
@@ -465,6 +465,15 @@ export class CircuitSpirit extends ComplexSpirit {
                 simpleCircuitTileSet.empty,
                 simpleCircuitTileSet.barrier
             );
+            // Generate some garbage tiles for testing purposes.
+            let tempPos = new Pos(0, 0);
+            while (tempPos.y < tileGrid.height) {
+                if (Math.random() < 0.3) {
+                    let tempTile = simpleCircuitTileMap[simpleSpiritSerialIntegerSet.wire + Math.floor(Math.random() * wireArrangementAmount)];
+                    tileGrid.setTile(tempPos, tempTile);
+                }
+                tileGrid.advancePos(tempPos);
+            }
         }
         this.tileGrid = tileGrid;
     }

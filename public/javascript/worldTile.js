@@ -1,6 +1,14 @@
 
 class WorldTile extends Tile {
     
+    getSimpleTileSet() {
+        return simpleWorldTileSet;
+    }
+    
+    getSimpleTileMap() {
+        return simpleWorldTileMap;
+    }
+    
     addEvent(pos) {
         // Do nothing.
     }
@@ -13,18 +21,14 @@ class WorldTile extends Tile {
 class SimpleWorldTile extends WorldTile {
     
     constructor(spirit) {
-        super(spirit);
-        let tempSpiritType = this.spirit.spiritType;
-        let tempSerialInteger = this.spirit.serialInteger;
-        simpleWorldTileSet[tempSpiritType.baseName] = this;
-        simpleWorldTileMap[tempSerialInteger] = this;
+        super(spirit, simpleTileComplexity);
     }
 }
 
 class ComplexWorldTile extends WorldTile {
     
     constructor(spirit) {
-        super(spirit);
+        super(spirit, complexTileComplexity);
         this.pos = null;
     }
     
