@@ -3,7 +3,7 @@ import {simpleSpiritTypeSet, complexSpiritTypeSet, simpleWorldTileSet} from "./g
 import {Pos} from "./pos.js";
 import {TileGrid, convertDbJsonToTileGrid} from "./tileGrid.js";
 import {PlayerWorldTile} from "./worldTile.js";
-import {convertDbJsonToWorldTile} from "./worldTileFactory.js";
+import {convertDbJsonToWorldTile} from "./tileFactory.js";
 import {getNextComplexSpiritId, setNextComplexSpiritId} from "./spirit.js";
 import {loadComplexSpirit} from "./spiritType.js";
 

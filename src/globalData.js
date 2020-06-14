@@ -20,18 +20,17 @@ export const wireArrangementAmount = 12;
 
 // Map from name to SimpleSpirit.
 export let simpleSpiritSet = {};
-// Map from name to SimpleSpiritType.
+// Maps from name to SpiritType.
 export let simpleSpiritTypeSet = {};
-// Map from name to ComplexSpiritType.
 export let complexSpiritTypeSet = {};
-// Map from name to SimpleWorldTile.
+// Maps from name to Tile.
 export let simpleWorldTileSet = {};
+export let simpleCircuitTileSet = {};
 
 // Map from serial integer to SimpleSpirit.
 export let simpleSpiritMap = {};
-// Map from complex spirit ID to ComplexSpirit.
+// Maps from complex spirit ID to ComplexSpirit.
 export let complexSpiritMap = {};
-// Map from complex spirit ID to ComplexSpirit.
 export let dirtyComplexSpiritMap = {};
 
 // Map from serial integer to SimpleSpiritType.
@@ -39,17 +38,20 @@ export let simpleSpiritTypeMap = {};
 // Map from spirit class ID to list of ComplexSpiritType.
 export let complexSpiritTypesMap = {};
 
-// Map from spirit serial integer to WorldTile.
+// Maps from spirit serial integer to Tile.
 export let simpleWorldTileMap = {};
-// Map from spirit class ID to ComplexWorldTileFactory.
+export let simpleCircuitTileMap = {};
+// Maps from spirit class ID to ComplexWorldTileFactory.
 export let complexWorldTileFactoryMap = {};
+export let complexCircuitTileFactoryMap = {};
 
 export let recipeList = [];
 export let recipeDataList = [];
 
 import {EmptySpiritType, BarrierSpiritType, MatteriteSpiritType, EnergiteSpiritType, BlockSpiritType, WireSpiritType, PlayerSpiritType, MachineSpiritType, CircuitSpiritType} from "./spiritType.js";
 import {SimpleWorldTile} from "./worldTile.js";
-import {ComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory} from "./worldTileFactory.js";
+import {SimpleCircuitTile} from "./circuitTile.js";
+import {ComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory} from "./tileFactory.js";
 import {Recipe, RecipeComponent} from "./recipe.js";
 
 new EmptySpiritType();
@@ -72,6 +74,7 @@ new CircuitSpiritType();
 for (let serialInteger in simpleSpiritMap) {
     let tempSpirit = simpleSpiritMap[serialInteger];
     new SimpleWorldTile(tempSpirit);
+    new SimpleCircuitTile(tempSpirit);
 }
 
 new PlayerWorldTileFactory();

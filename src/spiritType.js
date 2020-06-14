@@ -227,6 +227,7 @@ export class CircuitSpiritType extends ComplexSpiritType {
     }
     
     convertDbJsonToSpirit(data) {
+        // TODO: Load tile grid.
         return new CircuitSpirit(this, data.id);
     }
     

@@ -1,9 +1,10 @@
 
-import {simpleSpiritSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap} from "./globalData.js";
+import {simpleSpiritSet, simpleCircuitTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap} from "./globalData.js";
 import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
 import {Inventory, pushInventoryUpdate} from "./inventory.js";
 import {pushRecipeComponent} from "./recipe.js";
 import {WorldTile} from "./worldTile.js";
+import {TileGrid} from "./tileGrid.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 let dbUtils = ostracodMultiplayer.dbUtils;
@@ -454,6 +455,40 @@ export class MachineSpirit extends InventorySpirit {
 
 export class CircuitSpirit extends ComplexSpirit {
     
+    constructor(spiritType, id, tileGrid = null) {
+        super(spiritType, id);
+        if (tileGrid === null) {
+            tileGrid = new TileGrid(
+                17,
+                17,
+                simpleCircuitTileSet.empty,
+                simpleCircuitTileSet.barrier
+            );
+        }
+        this.tileGrid = tileGrid;
+    }
+    
+    getContainerDbJson() {
+        return this.tileGrid.getDbJson();
+    }
+    
+    destroy() {
+        for (let tile of this.tileGrid.tileList) {
+            tile.spirit.destroy();
+        }
+        super.destroy();
+    }
+    
+    getRecycleProducts() {
+        let output = super.getRecycleProducts();
+        for (let tile of this.tileGrid.tileList) {
+            let tempProductList = tile.spirit.getRecycleProducts();
+            for (let recipeComponent of tempProductList) {
+                pushRecipeComponent(output, recipeComponent);
+            }
+        }
+        return output;
+    }
 }
 
 export function getNextComplexSpiritId() {

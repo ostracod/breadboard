@@ -1,7 +1,7 @@
 
 import {simpleSpiritTypeSet, simpleWorldTileSet, simpleWorldTileMap} from "./globalData.js";
-import {Tile} from "./tile.js";
-import {getWorldTileWithSpirit} from "./worldTileFactory.js";
+import {Tile, simpleTileConverter, complexTileConverter} from "./tile.js";
+import {getWorldTileWithSpirit} from "./tileFactory.js";
 
 export class WorldTile extends Tile {
     
@@ -20,45 +20,21 @@ export class WorldTile extends Tile {
 
 export class SimpleWorldTile extends WorldTile {
     
-    constructor(simpleSpirit) {
-        super(simpleSpirit);
+    constructor(spirit) {
+        super(spirit, simpleTileConverter);
         let tempSpiritType = this.spirit.spiritType;
         let tempSerialInteger = this.spirit.serialInteger;
         simpleWorldTileSet[tempSpiritType.baseName] = this;
         simpleWorldTileMap[tempSerialInteger] = this;
-    }
-    
-    getClientJson() {
-        return this.spirit.getClientJson();
-    }
-    
-    getDbJson() {
-        return this.spirit.getNestedDbJson();
     }
 }
 
 export class ComplexWorldTile extends WorldTile {
     
     constructor(spirit) {
-        super(spirit);
+        super(spirit, complexTileConverter);
         this.world = null;
         this.pos = null;
-    }
-    
-    getClientJson() {
-        return {
-            spirit: this.spirit.getClientJson()
-        };
-    }
-    
-    getDbJson() {
-        let tempSpiritData = this.spirit.getNestedDbJson();
-        if (tempSpiritData === null) {
-            return simpleWorldTileSet.empty.getDbJson();
-        }
-        return {
-            spirit: tempSpiritData
-        };
     }
     
     addToGridEvent(world, pos) {
@@ -148,6 +124,10 @@ export class PlayerWorldTile extends ComplexWorldTile {
         let output = super.getClientJson();
         output.walkController = this.walkControllerData;
         return output;
+    }
+    
+    getDbJson() {
+        return simpleWorldTileSet.empty.getDbJson();
     }
     
     addToWorldEvent(world) {

@@ -3,9 +3,8 @@ const wireArrangementAmount = 12;
 
 // Map from name to SimpleSpirit.
 let simpleSpiritSet = {};
-// Map from name to SimpleSpiritType.
+// Maps from name to SpiritType.
 let simpleSpiritTypeSet = {};
-// Map from name to ComplexSpiritType.
 let complexSpiritTypeSet = {};
 // Map from name to SimpleWorldTile.
 let simpleWorldTileSet = {};

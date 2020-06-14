@@ -47,7 +47,7 @@
         "javascript/walkController.js",
         "javascript/tile.js",
         "javascript/worldTile.js",
-        "javascript/worldTileFactory.js",
+        "javascript/tileFactory.js",
         "javascript/tileGrid.js",
         "javascript/inventory.js",
         "javascript/recipe.js",
