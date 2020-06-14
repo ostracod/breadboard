@@ -36,6 +36,31 @@ function drawMineCrack() {
     crackSpriteSet.draw(context, tempPos, tempIndex, 0, pixelSize);
 }
 
+function drawTileBorder(pos, color) {
+    if (pos === null) {
+        return;
+    }
+    let tempPosX = pos.x * spritePixelSize;
+    let tempPosY = pos.y * spritePixelSize;
+    context.fillStyle = color;
+    context.fillRect(
+        tempPosX - pixelSize, tempPosY - pixelSize,
+        spritePixelSize + pixelSize * 2, pixelSize
+    );
+    context.fillRect(
+        tempPosX - pixelSize, tempPosY + spritePixelSize,
+        spritePixelSize + pixelSize * 2, pixelSize
+    );
+    context.fillRect(
+        tempPosX - pixelSize, tempPosY,
+        pixelSize, spritePixelSize
+    );
+    context.fillRect(
+        tempPosX + spritePixelSize, tempPosY,
+        pixelSize, spritePixelSize
+    );
+}
+
 function drawWorld() {
     cameraPos.set(localPlayerWorldTile.pos);
     cameraPos.x -= Math.floor(canvasTileWidth / 2);
@@ -49,6 +74,8 @@ function drawInspectedCircuit() {
     cameraPos.x = 0;
     cameraPos.y = 0;
     circuitTileGrid.drawLayer(cameraPos, 0);
+    drawTileBorder(cursorCircuitTilePos, "#A0A0A0");
+    drawTileBorder(inspectedCircuitTilePos, "#000000");
 }
 
 function drawEverything() {
@@ -194,6 +221,9 @@ function inspectCircuit(spirit) {
     document.getElementById("circuitInfoPlaceholder").style.display = "none";
     document.getElementById("circuitInfo").style.display = "block";
     showModuleByName("circuit");
+    circuitTileGrid.clear();
+    cursorCircuitTilePos = null;
+    inspectedCircuitTilePos = null;
 }
 
 function stopInspectingSpirit(spiritId, shouldAddCommand = true) {
@@ -225,6 +255,7 @@ function stopInspectingCircuit() {
     document.getElementById("circuitInfo").style.display = "none";
     hideModuleByName("circuit");
     inspectedCircuitSpiritId = null;
+    worldTileGrid.clear();
 }
 
 function addInventoryCommand(command, inventoryUpdateList) {
@@ -393,13 +424,11 @@ addCommandListener("setWorldTileGrid", command => {
         }
     }
     worldTileGrid.setTiles(tempTileList, command.width, command.height);
-    circuitTileGrid.clear();
 });
 
 addCommandListener("setCircuitTileGrid", command => {
     tempTileList = command.tiles.map(data => convertClientJsonToCircuitTile(data));
     circuitTileGrid.setTiles(tempTileList, circuitSize, circuitSize);
-    worldTileGrid.clear();
 });
 
 addCommandListener("updateInventoryItem", command => {
@@ -431,6 +460,25 @@ class ClientDelegate {
         addEnterWorldCommand();
         for (let name of worldActionNameSet) {
             setUpWorldActionTags(name);
+        }
+        
+        canvas.onmousemove = event => {
+            let tempPos = convertMouseEventToPos(event);
+            if (tempPos !== null) {
+                mouseMoveEvent(tempPos);
+            }
+        };
+        
+        canvas.onmousedown = event => {
+            let tempPos = convertMouseEventToPos(event);
+            if (tempPos !== null) {
+                mouseDownEvent(tempPos);
+            }
+            return false;
+        };
+        
+        canvas.onmouseleave = () => {
+            cursorCircuitTilePos = null;
         }
     }
     
@@ -545,6 +593,28 @@ function stopLocalPlayerAction(offsetIndex) {
     }
     let offset = playerActionOffsetSet[offsetIndex];
     localPlayerWorldTile.walkController.stopWalk(offset);
+}
+
+function convertMouseEventToPos(event) {
+    let tempX = Math.floor((event.offsetX - 3) / (spritePixelSize / 2));
+    let tempY = Math.floor((event.offsetY - 3) / (spritePixelSize / 2));
+    if (tempX < 0 || tempX >= canvasTileWidth || tempY < 0 || tempY >= canvasTileHeight) {
+        return null;
+    }
+    return new Pos(tempX, tempY);
+}
+
+function mouseMoveEvent(pos) {
+    cursorCircuitTilePos = pos;
+}
+
+function mouseDownEvent(pos) {
+    if (inspectedCircuitSpiritId === null) {
+        return;
+    }
+    if (selectedWorldAction === "inspect") {
+        inspectedCircuitTilePos = pos;
+    }
 }
 
 

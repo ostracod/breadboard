@@ -74,6 +74,8 @@ let parentSpiritInventoryMap = {};
 let localPlayerInventory = null;
 let inspectedMachineInventory = null;
 let inspectedCircuitSpiritId = null;
+let inspectedCircuitTilePos = null;
+let cursorCircuitTilePos = null;
 let selectedRecipe = null;
 
 
