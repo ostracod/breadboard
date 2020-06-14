@@ -20,15 +20,11 @@ export class World {
     }
     
     loadTileGrid() {
-        let worldFillTile = simpleWorldTileSet.empty;
-        let worldOutsideTile = simpleWorldTileSet.barrier;
         if (fs.existsSync(worldFilePath)) {
             let tempData = JSON.parse(fs.readFileSync(worldFilePath, "utf8"));
             setNextComplexSpiritId(tempData.nextComplexSpiritId);
             return convertDbJsonToTileGrid(
                 tempData.tileGrid,
-                worldFillTile,
-                worldOutsideTile,
                 convertDbJsonToWorldTile
             ).then(tileGrid => {
                 this.tileGrid = tileGrid
@@ -37,8 +33,8 @@ export class World {
             this.tileGrid = new TileGrid(
                 defaultWorldSize,
                 defaultWorldSize,
-                worldFillTile,
-                worldOutsideTile
+                simpleWorldTileSet.empty,
+                simpleWorldTileSet.barrier
             );
             this.generateTerrain();
             return Promise.resolve();

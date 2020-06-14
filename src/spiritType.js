@@ -1,8 +1,10 @@
 
 import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, simpleSpiritTypeSet, complexSpiritTypeSet, dirtyComplexSpiritMap, simpleSpiritTypeMap, complexSpiritTypesMap} from "./globalData.js";
 import {SimpleSpirit, PlayerSpirit, MachineSpirit, CircuitSpirit} from "./spirit.js";
-import {convertJsonToInventory} from "./inventory.js";
+import {convertDbJsonToInventory} from "./inventory.js";
 import {RecipeComponent} from "./recipe.js";
+import {convertDbJsonToCircuitTile} from "./tileFactory.js";
+import {convertDbJsonToTileGrid} from "./tileGrid.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 let gameUtils = ostracodMultiplayer.gameUtils;
@@ -61,7 +63,7 @@ export class SimpleSpiritType extends SpiritType {
     }
     
     convertDbJsonToSpirit(data) {
-        return this.spirit;
+        return Promise.resolve(this.spirit);
     }
     
     craft() {
@@ -164,10 +166,11 @@ export class PlayerSpiritType extends ComplexSpiritType {
     convertDbJsonToSpirit(data) {
         let tempPlayer = gameUtils.getPlayerByUsername(data.attributeData.username);
         if (tempPlayer === null) {
-            return null;
+            return Promise.resolve(null);
         } else {
-            let tempInventory = convertJsonToInventory(data.containerData);
-            return new PlayerSpirit(this, tempPlayer, tempInventory);
+            return convertDbJsonToInventory(data.containerData).then(inventory => {
+                return new PlayerSpirit(this, tempPlayer, inventory);
+            });
         }
     }
     
@@ -199,8 +202,9 @@ export class MachineSpiritType extends ComplexSpiritType {
     }
     
     convertDbJsonToSpirit(data) {
-        let tempInventory = convertJsonToInventory(data.containerData);
-        return new MachineSpirit(this, data.id, tempInventory);
+        return convertDbJsonToInventory(data.containerData).then(inventory => {;
+            return new MachineSpirit(this, data.id, inventory);
+        });
     }
     
     craft() {
@@ -227,8 +231,12 @@ export class CircuitSpiritType extends ComplexSpiritType {
     }
     
     convertDbJsonToSpirit(data) {
-        // TODO: Load tile grid.
-        return new CircuitSpirit(this, data.id);
+        return convertDbJsonToTileGrid(
+            data.containerData,
+            convertDbJsonToCircuitTile
+        ).then(tileGrid => {
+            return new CircuitSpirit(this, data.id, tileGrid);
+        });
     }
     
     craft() {
@@ -296,14 +304,15 @@ export function loadComplexSpirit(id, shouldPerformTransaction = true) {
                 return;
             }
             let tempRow = dbResults[0];
-            let output = convertDbJsonToSpirit({
+            convertDbJsonToSpirit({
                 id: tempRow.id,
                 classId: tempRow.classId,
                 attributeData: JSON.parse(tempRow.attributeData),
                 containerData: JSON.parse(tempRow.containerData)
+            }).then(spirit => {
+                spirit.hasDbRow = true;
+                resolve(spirit);
             });
-            output.hasDbRow = true;
-            resolve(output);
         }
         
         if (shouldPerformTransaction) {

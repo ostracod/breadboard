@@ -282,13 +282,15 @@ class InventoryUpdate {
     }
 }
 
-export function convertJsonToInventory(data) {
+export function convertDbJsonToInventory(data) {
     let output = new Inventory();
-    for (let itemData of data) {
-        let tempSpirit = convertDbJsonToSpirit(itemData.spirit);
-        new InventoryItem(output, tempSpirit, itemData.count);
-    }
-    return output;
+    return data.reduce((accumulator, itemData) => {
+        return accumulator.then(() => {
+            return convertDbJsonToSpirit(itemData.spirit)
+        }).then(spirit => {
+            new InventoryItem(output, spirit, itemData.count);
+        });
+    }, Promise.resolve()).then(() => output);
 }
 
 function convertClientJsonToInventoryUpdate(data) {

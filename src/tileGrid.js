@@ -9,6 +9,7 @@ export class TileGrid {
     constructor(width, height, fillTile, outsideTile) {
         this.width = width;
         this.height = height;
+        this.fillTile = fillTile;
         this.outsideTile = outsideTile;
         this.length = this.width * this.height;
         this.tileList = [];
@@ -17,7 +18,7 @@ export class TileGrid {
         }
         let tempPos = new Pos(0, 0);
         while (tempPos.y < this.height) {
-            this.setTile(tempPos, fillTile);
+            this.setTile(tempPos, this.fillTile);
             this.advancePos(tempPos);
         }
     }
@@ -92,6 +93,8 @@ export class TileGrid {
         return {
             width: this.width,
             height: this.height,
+            fillTile: getTileJson(this.fillTile),
+            outsideTile: getTileJson(this.outsideTile),
             tiles: this.tileList.map(tile => getTileJson(tile))
         };
     }
@@ -105,10 +108,11 @@ export class TileGrid {
     }
 }
 
-export function convertDbJsonToTileGrid(data, fillTile, outsideTile, convertDbJsonToTile) {
+export function convertDbJsonToTileGrid(data, convertDbJsonToTile) {
     return new Promise((resolve, reject) => {
-        let output = new TileGrid(data.width, data.height, fillTile, outsideTile);
+        let output;
         dbUtils.performTransaction(callback => {
+            
             let tempPos = new Pos(0, 0);
             let index = 0;
             function convertNextTile() {
@@ -116,17 +120,24 @@ export function convertDbJsonToTileGrid(data, fillTile, outsideTile, convertDbJs
                     callback();
                     return;
                 }
-                convertDbJsonToTile(
-                    data.tiles[index],
-                    false
-                ).then(tile => {
+                convertDbJsonToTile(data.tiles[index], false).then(tile => {
                     output.setTile(tempPos, tile);
                     output.advancePos(tempPos);
                     index += 1;
                     convertNextTile();
                 });
             }
-            convertNextTile();
+            
+            let fillTile;
+            let outsideTile;
+            convertDbJsonToTile(data.fillTile, false).then(tile => {
+                fillTile = tile;
+                return convertDbJsonToTile(data.outsideTile, false);
+            }).then(tile => {
+                outsideTile = tile;
+                output = new TileGrid(data.width, data.height, fillTile, outsideTile);
+                convertNextTile();
+            });
         }, () => {
             resolve(output);
         });

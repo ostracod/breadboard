@@ -457,6 +457,7 @@ export class CircuitSpirit extends ComplexSpirit {
     
     constructor(spiritType, id, tileGrid = null) {
         super(spiritType, id);
+        console.log(tileGrid);
         if (tileGrid === null) {
             tileGrid = new TileGrid(
                 17,
@@ -512,12 +513,8 @@ export function persistAllComplexSpirits() {
     return new Promise((resolve, reject) => {
         dbUtils.performTransaction(callback => {
             operationList.reduce((accumulator, operation) => {
-                if (accumulator === null) {
-                    return operation();
-                } else {
-                    return accumulator.then(operation);
-                }
-            }, null).then(callback);
+                return accumulator.then(operation);
+            }, Promise.resolve()).then(callback);
         }, resolve);
     });
 }
