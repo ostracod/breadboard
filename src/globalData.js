@@ -17,6 +17,7 @@ export const complexSpiritClassIdSet = {
 
 export const spiritColorAmount = 16;
 export const wireArrangementAmount = 12;
+export const circuitSize = 17;
 
 // Map from name to SimpleSpirit.
 export let simpleSpiritSet = {};

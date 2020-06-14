@@ -46,8 +46,9 @@ function drawWorld() {
 }
 
 function drawInspectedCircuit() {
-    // TODO: Draw the circuit tiles.
-    
+    cameraPos.x = 0;
+    cameraPos.y = 0;
+    circuitTileGrid.drawLayer(cameraPos, 0);
 }
 
 function drawEverything() {
@@ -392,11 +393,13 @@ addCommandListener("setWorldTileGrid", command => {
         }
     }
     worldTileGrid.setTiles(tempTileList, command.width, command.height);
+    circuitTileGrid.clear();
 });
 
 addCommandListener("setCircuitTileGrid", command => {
-    // TODO: Handle this command.
-    
+    tempTileList = command.tiles.map(data => convertClientJsonToCircuitTile(data));
+    circuitTileGrid.setTiles(tempTileList, circuitSize, circuitSize);
+    worldTileGrid.clear();
 });
 
 addCommandListener("updateInventoryItem", command => {

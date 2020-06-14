@@ -2,7 +2,7 @@
 class Tile {
     
     // Concrete subclasses of Tile must implement these methods:
-    // getSimpleTileSet, getSimpleTileMap, draw
+    // getSimpleTileSet, getSimpleTileMap
     
     constructor(spirit, tileComplexity) {
         this.spirit = spirit;

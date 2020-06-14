@@ -1,5 +1,6 @@
 
 const wireArrangementAmount = 12;
+const circuitSize = 17;
 
 // Map from name to SimpleSpirit.
 let simpleSpiritSet = {};
@@ -67,6 +68,7 @@ let localPlayerSpiritId;
 let localPlayerWorldTile = null;
 let playerWorldTileList = [];
 let worldTileGrid = new TileGrid(simpleWorldTileSet.loading);
+let circuitTileGrid = new TileGrid(simpleCircuitTileSet.loading);
 // Map from parent spirit ID to inventory.
 let parentSpiritInventoryMap = {};
 let localPlayerInventory = null;

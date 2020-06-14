@@ -1,5 +1,5 @@
 
-import {simpleSpiritSerialIntegerSet, wireArrangementAmount, simpleSpiritSet, simpleCircuitTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap, simpleCircuitTileMap} from "./globalData.js";
+import {simpleSpiritSerialIntegerSet, wireArrangementAmount, circuitSize, simpleSpiritSet, simpleCircuitTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap, simpleCircuitTileMap} from "./globalData.js";
 import {Pos} from "./pos.js";
 import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
 import {Inventory, pushInventoryUpdate} from "./inventory.js";
@@ -460,8 +460,8 @@ export class CircuitSpirit extends ComplexSpirit {
         super(spiritType, id);
         if (tileGrid === null) {
             tileGrid = new TileGrid(
-                17,
-                17,
+                circuitSize,
+                circuitSize,
                 simpleCircuitTileSet.empty,
                 simpleCircuitTileSet.barrier
             );

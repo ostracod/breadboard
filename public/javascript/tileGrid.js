@@ -44,6 +44,10 @@ class TileGrid {
         this.tileList = tileList;
     }
     
+    clear() {
+        this.setTiles([], 0, 0);
+    }
+    
     // layer is a number.
     drawLayer(pos, layer) {
         let tempOffset = new Pos(0, 0);
