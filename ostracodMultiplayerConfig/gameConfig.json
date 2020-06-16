@@ -1,10 +1,10 @@
 {
     "pageModules": [
         {
-            "name": "worldActions",
+            "name": "tileActions",
             "buttonLabel": "Actions",
-            "title": "World Actions",
-            "viewFile": "worldActionsModule.html",
+            "title": "Tile Actions",
+            "viewFile": "tileActionsModule.html",
             "shouldShowOnLoad": true
         },
         {

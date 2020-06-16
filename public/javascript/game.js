@@ -7,7 +7,8 @@ const playerActionOffsetSet = [
     new Pos(0, -1),
     new Pos(0, 1)
 ];
-const worldActionNameSet = ["mine", "place", "inspect", "attack"];
+const worldTileActionNameSet = ["remove", "place", "inspect", "attack"];
+const circuitTileActionNameSet = ["remove", "place", "inspect"];
 
 let canvasTileWidth;
 let canvasTileHeight;
@@ -16,7 +17,8 @@ let isMining = false;
 let minePlayerPos;
 let mineTargetPos;
 let mineDelay;
-let selectedWorldAction = worldActionNameSet[0];
+let tileActionNameSet;
+let selectedTileAction = "remove";
 let updateRequestCount = 0;
 
 function drawMineCrack() {
@@ -158,29 +160,65 @@ function inspectWorldTile(pos) {
     inspectSpirit(tempSpirit);
 }
 
-function selectWorldAction(name) {
-    if (selectedWorldAction == name) {
+function placeCircuitTileHelper(tile) {
+    circuitTileGrid.setTile(cursorCircuitTilePos, tile);
+    // TODO: Send command to server.
+    
+}
+
+function placeCircuitTile() {
+    placeCircuitTileHelper(simpleCircuitTileSet.wire);
+}
+
+function removeCircuitTile() {
+    placeCircuitTileHelper(simpleCircuitTileSet.empty);
+}
+
+function tileActionIsAvailable(name) {
+    if (inspectedCircuitSpiritId === null) {
+        return (worldTileActionNameSet.indexOf(name) >= 0);
+    } else {
+        return (circuitTileActionNameSet.indexOf(name) >= 0);
+    }
+}
+
+function selectTileAction(name) {
+    if (selectedTileAction === name || !tileActionIsAvailable(name)) {
         return;
     }
-    let tempTag = document.getElementById(name + "WorldAction");
+    let tempTag = document.getElementById(name + "TileAction");
     tempTag.checked = true;
-    selectedWorldAction = name;
+    selectedTileAction = name;
 }
 
-function selectWorldActionByIndex(index) {
-    let tempName = worldActionNameSet[index];
-    selectWorldAction(tempName);
+function selectTileActionByIndex(index) {
+    let tempName = tileActionNameSet[index];
+    selectTileAction(tempName);
 }
 
-function setUpWorldActionTags(name) {
-    let tempTag = document.getElementById(name + "WorldActionContainer")
+function setUpTileActionTags(name) {
+    let tempTag = document.getElementById(name + "TileActionContainer")
     tempTag.style.cursor = "pointer";
     tempTag.onclick = () => {
-        selectWorldAction(name);
+        selectTileAction(name);
     }
-    tempTag = document.getElementById(name + "WorldAction");
+    tempTag = document.getElementById(name + "TileAction");
     tempTag.onchange = () => {
-        selectWorldAction(name);
+        selectTileAction(name);
+    }
+}
+
+function updateTileActionTags() {
+    for (let name of tileActionNameSet) {
+        let tempTag = document.getElementById("attackTileActionContainer");
+        if (tileActionIsAvailable(name)) {
+            tempTag.style.display = "block";
+        } else {
+            tempTag.style.display = "none";
+            if (selectedTileAction === name) {
+                selectTileAction("place");
+            }
+        }
     }
 }
 
@@ -224,6 +262,7 @@ function inspectCircuit(spirit) {
     circuitTileGrid.clear();
     cursorCircuitTilePos = null;
     inspectedCircuitTilePos = null;
+    updateTileActionTags();
 }
 
 function stopInspectingSpirit(spiritId, shouldAddCommand = true) {
@@ -256,6 +295,7 @@ function stopInspectingCircuit() {
     hideModuleByName("circuit");
     inspectedCircuitSpiritId = null;
     worldTileGrid.clear();
+    updateTileActionTags();
 }
 
 function addInventoryCommand(command, inventoryUpdateList) {
@@ -458,8 +498,14 @@ class ClientDelegate {
         });
         
         addEnterWorldCommand();
-        for (let name of worldActionNameSet) {
-            setUpWorldActionTags(name);
+        tileActionNameSet = worldTileActionNameSet.slice();
+        for (let name of circuitTileActionNameSet) {
+            if (tileActionNameSet.indexOf(name) < 0) {
+                tileActionNameSet.push(name);
+            }
+        }
+        for (let name of tileActionNameSet) {
+            setUpTileActionTags(name);
         }
         
         canvas.onmousemove = event => {
@@ -524,16 +570,16 @@ class ClientDelegate {
             return false;
         }
         if (keyCode === 49) {
-            selectWorldActionByIndex(0);
+            selectTileActionByIndex(0);
         }
         if (keyCode === 50) {
-            selectWorldActionByIndex(1);
+            selectTileActionByIndex(1);
         }
         if (keyCode === 51) {
-            selectWorldActionByIndex(2);
+            selectTileActionByIndex(2);
         }
         if (keyCode === 52) {
-            selectWorldActionByIndex(3);
+            selectTileActionByIndex(3);
         }
         if (keyCode === 82) {
             localPlayerInventory.selectPreviousItem();
@@ -575,11 +621,11 @@ function startLocalPlayerAction(offsetIndex) {
     if (shiftKeyIsHeld) {
         let tempPos = localPlayerWorldTile.pos.copy();
         tempPos.add(offset);
-        if (selectedWorldAction === "mine") {
+        if (selectedTileAction === "remove") {
             startMining(tempPos);
-        } else if (selectedWorldAction === "place") {
+        } else if (selectedTileAction === "place") {
             placeWorldTile(tempPos);
-        } else if (selectedWorldAction === "inspect") {
+        } else if (selectedTileAction === "inspect") {
             inspectWorldTile(tempPos);
         }
     } else {
@@ -612,7 +658,12 @@ function mouseDownEvent(pos) {
     if (inspectedCircuitSpiritId === null) {
         return;
     }
-    if (selectedWorldAction === "inspect") {
+    cursorCircuitTilePos = pos;
+    if (selectedTileAction === "remove") {
+        removeCircuitTile();
+    } else if (selectedTileAction === "place") {
+        placeCircuitTile();
+    } else if (selectedTileAction === "inspect") {
         inspectedCircuitTilePos = pos;
     }
 }
