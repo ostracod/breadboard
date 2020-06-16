@@ -61,60 +61,51 @@ export class MachineWorldTileFactory extends ComplexWorldTileFactory {
     }
 }
 
-function getTileWithSpirit(simpleTileMap, complexTileFactoryMap, spirit) {
-    if (spirit instanceof SimpleSpirit) {
-        return simpleTileMap[spirit.serialInteger];
+class TileFactory {
+    
+    constructor(simpleTileMap, complexTileFactoryMap) {
+        this.simpleTileMap = simpleTileMap;
+        this.complexTileFactoryMap = complexTileFactoryMap;
     }
-    if (spirit instanceof ComplexSpirit) {
-        let tempFactory = complexTileFactoryMap[spirit.classId];
-        return tempFactory.createTileWithSpirit(spirit);
+    
+    convertDbJsonToTile(data, shouldPerformTransaction) {
+        if (typeof data === "number") {
+            return Promise.resolve(this.simpleTileMap[data]);
+        } else {
+            return convertNestedDbJsonToSpirit(
+                data.spirit,
+                shouldPerformTransaction
+            ).then(spirit => {
+                let tempFactory = this.complexTileFactoryMap[spirit.classId];
+                return tempFactory.convertDbJsonToTile(data, spirit);
+            });
+        }
     }
-    return null;
-}
-
-export function getWorldTileWithSpirit(spirit) {
-    return getTileWithSpirit(simpleWorldTileMap, complexWorldTileFactoryMap, spirit);
-}
-
-export function getCircuitTileWithSpirit(spirit) {
-    return getTileWithSpirit(simpleCircuitTileMap, complexCircuitTileFactoryMap, spirit);
-}
-
-function convertDbJsonToTile(
-    simpleTileMap,
-    complexTileFactoryMap,
-    data,
-    shouldPerformTransaction
-) {
-    if (typeof data === "number") {
-        return Promise.resolve(simpleTileMap[data]);
-    } else {
-        return convertNestedDbJsonToSpirit(
-            data.spirit,
-            shouldPerformTransaction
-        ).then(spirit => {
-            let tempFactory = complexTileFactoryMap[spirit.classId];
-            return tempFactory.convertDbJsonToTile(data, spirit);
-        });
+    
+    getTileWithSpirit(spirit) {
+        if (spirit instanceof SimpleSpirit) {
+            return this.simpleTileMap[spirit.serialInteger];
+        }
+        if (spirit instanceof ComplexSpirit) {
+            let tempFactory = this.complexTileFactoryMap[spirit.classId];
+            return tempFactory.createTileWithSpirit(spirit);
+        }
+        return null;
     }
 }
 
-export function convertDbJsonToWorldTile(data, shouldPerformTransaction = true) {
-    return convertDbJsonToTile(
-        simpleWorldTileMap,
-        complexWorldTileFactoryMap,
-        data,
-        shouldPerformTransaction
-    );
+export class WorldTileFactory extends TileFactory {
+    
+    constructor() {
+        super(simpleWorldTileMap, complexWorldTileFactoryMap);
+    }
 }
 
-export function convertDbJsonToCircuitTile(data, shouldPerformTransaction = true) {
-    return convertDbJsonToTile(
-        simpleCircuitTileMap,
-        complexCircuitTileFactoryMap,
-        data,
-        shouldPerformTransaction
-    );
+export class CircuitTileFactory extends TileFactory {
+    
+    constructor() {
+        super(simpleCircuitTileMap, complexCircuitTileFactoryMap);
+    }
 }
 
 

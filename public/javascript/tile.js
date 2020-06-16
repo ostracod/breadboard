@@ -10,6 +10,10 @@ class Tile {
         this.tileComplexity.registerTile(this);
     }
     
+    addToGridEvent(tileGrid, pos) {
+        // Do nothing.
+    }
+    
     draw(pos, layer) {
         if (layer === 0) {
             for (let sprite of this.spirit.getSprites()) {

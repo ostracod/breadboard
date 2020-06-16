@@ -1,4 +1,5 @@
 
+import {simpleSpiritSet, worldTileFactory, circuitTileFactory} from "./globalData.js";
 import {Pos} from "./pos.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
@@ -6,11 +7,12 @@ let dbUtils = ostracodMultiplayer.dbUtils;
 
 export class TileGrid {
     
-    constructor(width, height, fillTile, outsideTile) {
+    constructor(width, height, tileFactory) {
         this.width = width;
         this.height = height;
-        this.fillTile = fillTile;
-        this.outsideTile = outsideTile;
+        this.tileFactory = tileFactory;
+        this.fillTile = this.tileFactory.getTileWithSpirit(simpleSpiritSet.empty);
+        this.outsideTile = this.tileFactory.getTileWithSpirit(simpleSpiritSet.barrier);
         this.length = this.width * this.height;
         this.tileList = [];
         while (this.tileList.length < this.length) {
@@ -93,8 +95,6 @@ export class TileGrid {
         return {
             width: this.width,
             height: this.height,
-            fillTile: getTileJson(this.fillTile),
-            outsideTile: getTileJson(this.outsideTile),
             tiles: this.tileList.map(tile => getTileJson(tile))
         };
     }
@@ -108,11 +108,18 @@ export class TileGrid {
     }
 }
 
-export function convertDbJsonToTileGrid(data, convertDbJsonToTile) {
+export function createWorldTileGrid(width, height) {
+    return new TileGrid(width, height, worldTileFactory);
+}
+
+export function createCircuitTileGrid(width, height) {
+    return new TileGrid(width, height, circuitTileFactory);
+}
+
+function convertDbJsonToTileGrid(data, tileFactory) {
     return new Promise((resolve, reject) => {
-        let output;
+        let output = new TileGrid(data.width, data.height, tileFactory);
         dbUtils.performTransaction(callback => {
-            
             let tempPos = new Pos(0, 0);
             let index = 0;
             function convertNextTile() {
@@ -120,28 +127,26 @@ export function convertDbJsonToTileGrid(data, convertDbJsonToTile) {
                     callback();
                     return;
                 }
-                convertDbJsonToTile(data.tiles[index], false).then(tile => {
+                tileFactory.convertDbJsonToTile(data.tiles[index], false).then(tile => {
                     output.setTile(tempPos, tile);
                     output.advancePos(tempPos);
                     index += 1;
                     convertNextTile();
                 });
             }
-            
-            let fillTile;
-            let outsideTile;
-            convertDbJsonToTile(data.fillTile, false).then(tile => {
-                fillTile = tile;
-                return convertDbJsonToTile(data.outsideTile, false);
-            }).then(tile => {
-                outsideTile = tile;
-                output = new TileGrid(data.width, data.height, fillTile, outsideTile);
-                convertNextTile();
-            });
+            convertNextTile();
         }, () => {
             resolve(output);
         });
     });
+}
+
+export function convertDbJsonToWorldTileGrid(data) {
+    return convertDbJsonToTileGrid(data, worldTileFactory);
+}
+
+export function convertDbJsonToCircuitTileGrid(data) {
+    return convertDbJsonToTileGrid(data, circuitTileFactory);
 }
 
 

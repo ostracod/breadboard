@@ -1,7 +1,6 @@
 
-import {simpleSpiritTypeSet, simpleWorldTileSet, simpleWorldTileMap} from "./globalData.js";
+import {simpleSpiritTypeSet, simpleWorldTileSet, simpleWorldTileMap, worldTileFactory} from "./globalData.js";
 import {Tile, simpleTileComplexity, complexTileComplexity} from "./tile.js";
-import {getWorldTileWithSpirit} from "./tileFactory.js";
 
 export class WorldTile extends Tile {
     
@@ -179,7 +178,7 @@ export class PlayerWorldTile extends ComplexWorldTile {
             return;
         }
         tempItem.setCount(tempItem.count - 1);
-        tempTile = getWorldTileWithSpirit(tempItem.spirit);
+        tempTile = worldTileFactory.getTileWithSpirit(tempItem.spirit);
         this.world.setTile(pos, tempTile);
     }
 }

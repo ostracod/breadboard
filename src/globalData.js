@@ -52,7 +52,7 @@ export let recipeDataList = [];
 import {EmptySpiritType, BarrierSpiritType, MatteriteSpiritType, EnergiteSpiritType, BlockSpiritType, WireSpiritType, PlayerSpiritType, MachineSpiritType, CircuitSpiritType} from "./spiritType.js";
 import {SimpleWorldTile} from "./worldTile.js";
 import {SimpleCircuitTile} from "./circuitTile.js";
-import {ComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory} from "./tileFactory.js";
+import {ComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory, WorldTileFactory, CircuitTileFactory} from "./tileFactory.js";
 import {Recipe, RecipeComponent} from "./recipe.js";
 
 new EmptySpiritType();
@@ -81,6 +81,9 @@ for (let serialInteger in simpleSpiritMap) {
 new PlayerWorldTileFactory();
 new MachineWorldTileFactory();
 new ComplexWorldTileFactory("circuit");
+
+export let worldTileFactory = new WorldTileFactory();
+export let circuitTileFactory = new CircuitTileFactory();
 
 function createSimpleRecipeComponent(spiritKey, count, offset) {
     let tempInteger = simpleSpiritSerialIntegerSet[spiritKey];

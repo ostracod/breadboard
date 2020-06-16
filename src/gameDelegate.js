@@ -155,11 +155,22 @@ addCommandListener("mine", (command, playerTile, commandList) => {
     processInventoryUpdates(command, playerTile.spirit, commandList);
 });
 
-addCommandListener("placeWorldTile", (command, playerTile, commandList) => {
-    let tempPos = createPosFromJson(command.pos);
-    let tempReference = convertJsonToSpiritReference(command.spiritReference);
-    playerTile.placeWorldTile(tempPos, tempReference);
-    processInventoryUpdates(command, playerTile.spirit, commandList);
+function addPlaceTileCommandListener(commandName, placeTile) {
+    addCommandListener(commandName, (command, playerTile, commandList) => {
+        let tempPos = createPosFromJson(command.pos);
+        let tempReference = convertJsonToSpiritReference(command.spiritReference);
+        placeTile(playerTile, tempPos, tempReference);
+        processInventoryUpdates(command, playerTile.spirit, commandList);
+    });
+}
+
+addPlaceTileCommandListener("placeWorldTile", (playerTile, pos, spiritReference) => {
+    playerTile.placeWorldTile(pos, spiritReference);
+});
+
+addPlaceTileCommandListener("placeCircuitTile", (playerTile, pos, spiritReference) => {
+    // TODO: Update circuit tile grid.
+    console.log([pos, spiritReference]);
 });
 
 addCommandListener("craft", (command, playerTile, commandList) => {

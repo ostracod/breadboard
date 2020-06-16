@@ -1,10 +1,11 @@
 
 class TileGrid {
     
-    constructor(outsideTile) {
+    constructor(tileFactory) {
+        this.tileFactory = tileFactory;
         this.width = 0;
         this.height = 0;
-        this.outsideTile = outsideTile;
+        this.outsideTile = this.tileFactory.getTileWithSpirit(simpleSpiritSet.loading);
         this.length = 0;
         this.tileList = [];
         this.windowOffset = new Pos(0, 0);
@@ -18,6 +19,14 @@ class TileGrid {
             return null;
         }
         return tempPosX + tempPosY * this.width;
+    }
+    
+    advancePos(pos) {
+        pos.x += 1;
+        if (pos.x >= this.width) {
+            pos.x = 0;
+            pos.y += 1;
+        }
     }
     
     getTile(pos) {
@@ -34,7 +43,7 @@ class TileGrid {
             return;
         }
         this.tileList[index] = tile;
-        tile.addEvent(pos);
+        tile.addToGridEvent(this, pos);
     }
     
     setTiles(tileList, width, height) {
@@ -42,6 +51,14 @@ class TileGrid {
         this.height = height;
         this.length = this.width * this.height;
         this.tileList = tileList;
+        let tempOffset = new Pos(0, 0);
+        let tempPos = new Pos(0, 0);
+        for (let tile of this.tileList) {
+            tempPos.set(this.windowOffset);
+            tempPos.add(tempOffset);
+            tile.addToGridEvent(this, tempPos);
+            this.advancePos(tempOffset);
+        }
     }
     
     clear() {

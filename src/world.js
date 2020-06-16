@@ -1,9 +1,8 @@
 
 import {simpleSpiritTypeSet, complexSpiritTypeSet, simpleWorldTileSet} from "./globalData.js";
 import {Pos} from "./pos.js";
-import {TileGrid, convertDbJsonToTileGrid} from "./tileGrid.js";
+import {createWorldTileGrid, convertDbJsonToWorldTileGrid} from "./tileGrid.js";
 import {PlayerWorldTile} from "./worldTile.js";
-import {convertDbJsonToWorldTile} from "./tileFactory.js";
 import {getNextComplexSpiritId, setNextComplexSpiritId} from "./spirit.js";
 import {loadComplexSpirit} from "./spiritType.js";
 
@@ -23,19 +22,11 @@ export class World {
         if (fs.existsSync(worldFilePath)) {
             let tempData = JSON.parse(fs.readFileSync(worldFilePath, "utf8"));
             setNextComplexSpiritId(tempData.nextComplexSpiritId);
-            return convertDbJsonToTileGrid(
-                tempData.tileGrid,
-                convertDbJsonToWorldTile
-            ).then(tileGrid => {
+            return convertDbJsonToWorldTileGrid(tempData.tileGrid).then(tileGrid => {
                 this.tileGrid = tileGrid
             });
         } else {
-            this.tileGrid = new TileGrid(
-                defaultWorldSize,
-                defaultWorldSize,
-                simpleWorldTileSet.empty,
-                simpleWorldTileSet.barrier
-            );
+            this.tileGrid = createWorldTileGrid(defaultWorldSize, defaultWorldSize);
             this.generateTerrain();
             return Promise.resolve();
         }

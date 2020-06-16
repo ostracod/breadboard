@@ -149,7 +149,7 @@ function placeWorldTile(pos) {
         return;
     }
     tempItem.setCount(tempItem.count - 1);
-    tempTile = getWorldTileWithSpirit(tempSpirit);
+    tempTile = worldTileFactory.getTileWithSpirit(tempSpirit);
     worldTileGrid.setTile(pos, tempTile);
     addPlaceWorldTileCommand(pos, tempSpirit);
 }
@@ -160,18 +160,18 @@ function inspectWorldTile(pos) {
     inspectSpirit(tempSpirit);
 }
 
-function placeCircuitTileHelper(tile) {
-    circuitTileGrid.setTile(cursorCircuitTilePos, tile);
-    // TODO: Send command to server.
-    
+function placeCircuitTileHelper(spirit) {
+    let tempTile = circuitTileFactory.getTileWithSpirit(spirit);
+    circuitTileGrid.setTile(cursorCircuitTilePos, tempTile);
+    addPlaceCircuitTileCommand(cursorCircuitTilePos, spirit);
 }
 
 function placeCircuitTile() {
-    placeCircuitTileHelper(simpleCircuitTileSet.wire);
+    placeCircuitTileHelper(simpleSpiritSet.wire);
 }
 
 function removeCircuitTile() {
-    placeCircuitTileHelper(simpleCircuitTileSet.empty);
+    placeCircuitTileHelper(simpleSpiritSet.empty);
 }
 
 function tileActionIsAvailable(name) {
@@ -344,15 +344,23 @@ function addMineCommand(pos, spirit) {
     ]);
 }
 
-function addPlaceWorldTileCommand(pos, spirit) {
+function addPlaceTileCommand(commandName, pos, spirit) {
     addInventoryCommand({
-        commandName: "placeWorldTile",
+        commandName: commandName,
         pos: pos.toJson(),
         spiritReference: spirit.getReference().getJson()
     }, [
         localPlayerInventory.getInventoryUpdate(spirit)
     ]);
     spirit.addToCache();
+}
+
+function addPlaceWorldTileCommand(pos, spirit) {
+    addPlaceTileCommand("placeWorldTile", pos, spirit);
+}
+
+function addPlaceCircuitTileCommand(pos, spirit) {
+    addPlaceTileCommand("placeCircuitTile", pos, spirit);
 }
 
 function addCraftCommand(recipe, inventoryUpdateList) {
@@ -423,13 +431,18 @@ addInventoryCommandRepeater("mine", command => {
     worldTileGrid.setTile(tempPos, simpleWorldTileSet.empty);
 });
 
-addInventoryCommandRepeater("placeWorldTile", command => {
-    let tempPos = createPosFromJson(command.pos);
-    let tempSpiritReference = convertJsonToSpiritReference(command.spiritReference);
-    let tempSpirit = tempSpiritReference.getCachedSpirit();
-    let tempTile = getWorldTileWithSpirit(tempSpirit);
-    worldTileGrid.setTile(tempPos, tempTile);
-});
+function addPlaceTileCommandRepeater(commandName, tileGrid) {
+    addInventoryCommandRepeater(commandName, command => {
+        let tempPos = createPosFromJson(command.pos);
+        let tempSpiritReference = convertJsonToSpiritReference(command.spiritReference);
+        let tempSpirit = tempSpiritReference.getCachedSpirit();
+        let tempTile = tileGrid.tileFactory.getTileWithSpirit(tempSpirit);
+        tileGrid.setTile(tempPos, tempTile);
+    });
+}
+
+addPlaceTileCommandRepeater("placeWorldTile", worldTileGrid);
+addPlaceTileCommandRepeater("placeCircuitTile", circuitTileGrid);
 
 addInventoryCommandRepeater("craft");
 addInventoryCommandRepeater("transfer");
@@ -448,26 +461,16 @@ addCommandRepeater("stopInspecting", command => {
 addCommandListener("setWorldTileGrid", command => {
     worldTileGrid.windowOffset = createPosFromJson(command.pos);
     playerWorldTileList = [];
-    tempTileList = [];
-    let tempOffset = new Pos(0, 0);
-    let tempPos = new Pos(0, 0);
-    for (let data of command.tiles) {
-        tempPos.set(worldTileGrid.windowOffset);
-        tempPos.add(tempOffset);
-        let tempTile = convertClientJsonToWorldTile(data);
-        tempTile.addEvent(tempPos);
-        tempTileList.push(tempTile);
-        tempOffset.x += 1;
-        if (tempOffset.x >= command.width) {
-            tempOffset.x = 0;
-            tempOffset.y += 1;
-        }
-    }
+    tempTileList = command.tiles.map(data => {
+        return worldTileFactory.convertClientJsonToTile(data)
+    });
     worldTileGrid.setTiles(tempTileList, command.width, command.height);
 });
 
 addCommandListener("setCircuitTileGrid", command => {
-    tempTileList = command.tiles.map(data => convertClientJsonToCircuitTile(data));
+    tempTileList = command.tiles.map(data => {
+        return circuitTileFactory.convertClientJsonToTile(data)
+    });
     circuitTileGrid.setTiles(tempTileList, circuitSize, circuitSize);
 });
 

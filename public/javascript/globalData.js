@@ -58,6 +58,9 @@ new PlayerWorldTileFactory();
 new MachineWorldTileFactory();
 new ComplexWorldTileFactory("circuit");
 
+let worldTileFactory = new WorldTileFactory();
+let circuitTileFactory = new CircuitTileFactory();
+
 for (let data of recipeDataList) {
     let tempRecipe = convertJsonToRecipe(data);
     recipeList.push(tempRecipe);
@@ -67,8 +70,8 @@ let localPlayerUsername;
 let localPlayerSpiritId;
 let localPlayerWorldTile = null;
 let playerWorldTileList = [];
-let worldTileGrid = new TileGrid(simpleWorldTileSet.loading);
-let circuitTileGrid = new TileGrid(simpleCircuitTileSet.loading);
+let worldTileGrid = new TileGrid(worldTileFactory);
+let circuitTileGrid = new TileGrid(circuitTileFactory);
 // Map from parent spirit ID to inventory.
 let parentSpiritInventoryMap = {};
 let localPlayerInventory = null;

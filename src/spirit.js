@@ -5,7 +5,7 @@ import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.j
 import {Inventory, pushInventoryUpdate} from "./inventory.js";
 import {pushRecipeComponent} from "./recipe.js";
 import {WorldTile} from "./worldTile.js";
-import {TileGrid} from "./tileGrid.js";
+import {createCircuitTileGrid} from "./tileGrid.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 let dbUtils = ostracodMultiplayer.dbUtils;
@@ -459,12 +459,7 @@ export class CircuitSpirit extends ComplexSpirit {
     constructor(spiritType, id, tileGrid = null) {
         super(spiritType, id);
         if (tileGrid === null) {
-            tileGrid = new TileGrid(
-                circuitSize,
-                circuitSize,
-                simpleCircuitTileSet.empty,
-                simpleCircuitTileSet.barrier
-            );
+            tileGrid = createCircuitTileGrid(circuitSize, circuitSize);
             // Generate some garbage tiles for testing purposes.
             let tempPos = new Pos(0, 0);
             while (tempPos.y < tileGrid.height) {

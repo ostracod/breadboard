@@ -58,41 +58,47 @@ class MachineWorldTileFactory extends ComplexWorldTileFactory {
     }
 }
 
-function getTileWithSpirit(simpleTileMap, complexTileFactoryMap, spirit) {
-    if (spirit instanceof SimpleSpirit) {
-        return simpleTileMap[spirit.serialInteger];
+class TileFactory {
+    
+    constructor(simpleTileMap, complexTileFactoryMap) {
+        this.simpleTileMap = simpleTileMap;
+        this.complexTileFactoryMap = complexTileFactoryMap;
     }
-    if (spirit instanceof ComplexSpirit) {
-        let tempFactory = complexTileFactoryMap[spirit.classId];
-        return tempFactory.createTileWithSpirit(spirit);
+    
+    convertClientJsonToTile(data) {
+        if (typeof data === "number") {
+            return this.simpleTileMap[data];
+        } else {
+            let tempSpirit = convertClientJsonToSpirit(data.spirit);
+            let tempFactory = this.complexTileFactoryMap[tempSpirit.classId];
+            return tempFactory.convertClientJsonToTile(data, tempSpirit);
+        }
     }
-    return null;
-}
-
-function getWorldTileWithSpirit(spirit) {
-    return getTileWithSpirit(simpleWorldTileMap, complexWorldTileFactoryMap, spirit);
-}
-
-function getCircuitTileWithSpirit(spirit) {
-    return getTileWithSpirit(simpleCircuitTileMap, complexCircuitTileFactoryMap, spirit);
-}
-
-function convertClientJsonToTile(simpleTileMap, complexTileFactoryMap, data) {
-    if (typeof data === "number") {
-        return simpleTileMap[data];
-    } else {
-        let tempSpirit = convertClientJsonToSpirit(data.spirit);
-        let tempFactory = complexTileFactoryMap[tempSpirit.classId];
-        return tempFactory.convertClientJsonToTile(data, tempSpirit);
+    
+    getTileWithSpirit(spirit) {
+        if (spirit instanceof SimpleSpirit) {
+            return this.simpleTileMap[spirit.serialInteger];
+        }
+        if (spirit instanceof ComplexSpirit) {
+            let tempFactory = this.complexTileFactoryMap[spirit.classId];
+            return tempFactory.createTileWithSpirit(spirit);
+        }
+        return null;
     }
 }
 
-function convertClientJsonToWorldTile(data) {
-    return convertClientJsonToTile(simpleWorldTileMap, complexWorldTileFactoryMap, data);
+class WorldTileFactory extends TileFactory {
+    
+    constructor() {
+        super(simpleWorldTileMap, complexWorldTileFactoryMap);
+    }
 }
 
-function convertClientJsonToCircuitTile(data, shouldPerformTransaction = true) {
-    return convertClientJsonToTile(simpleCircuitTileMap, complexCircuitTileFactoryMap, data);
+class CircuitTileFactory extends TileFactory {
+    
+    constructor() {
+        super(simpleCircuitTileMap, complexCircuitTileFactoryMap);
+    }
 }
 
 

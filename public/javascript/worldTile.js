@@ -9,10 +9,6 @@ class WorldTile extends Tile {
         return simpleWorldTileMap;
     }
     
-    addEvent(pos) {
-        // Do nothing.
-    }
-    
     canBeMined() {
         return this.spirit.canBeMined();
     }
@@ -32,7 +28,7 @@ class ComplexWorldTile extends WorldTile {
         this.pos = null;
     }
     
-    addEvent(pos) {
+    addToGridEvent(tileGrid, pos) {
         this.pos = pos.copy();
     }
     

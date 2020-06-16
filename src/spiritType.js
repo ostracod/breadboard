@@ -3,8 +3,7 @@ import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, simpleSpiritTypeS
 import {SimpleSpirit, PlayerSpirit, MachineSpirit, CircuitSpirit} from "./spirit.js";
 import {convertDbJsonToInventory} from "./inventory.js";
 import {RecipeComponent} from "./recipe.js";
-import {convertDbJsonToCircuitTile} from "./tileFactory.js";
-import {convertDbJsonToTileGrid} from "./tileGrid.js";
+import {convertDbJsonToCircuitTileGrid} from "./tileGrid.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 let gameUtils = ostracodMultiplayer.gameUtils;
@@ -231,10 +230,7 @@ export class CircuitSpiritType extends ComplexSpiritType {
     }
     
     convertDbJsonToSpirit(data) {
-        return convertDbJsonToTileGrid(
-            data.containerData,
-            convertDbJsonToCircuitTile
-        ).then(tileGrid => {
+        return convertDbJsonToCircuitTileGrid(data.containerData).then(tileGrid => {
             return new CircuitSpirit(this, data.id, tileGrid);
         });
     }
