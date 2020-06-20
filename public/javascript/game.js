@@ -1,7 +1,7 @@
 
 const pixelSize = 6;
 const spritePixelSize = spriteSize * pixelSize;
-const playerActionOffsetSet = [
+const tileActionOffsetSet = [
     new Pos(-1, 0),
     new Pos(1, 0),
     new Pos(0, -1),
@@ -13,6 +13,7 @@ const circuitTileActionNameSet = ["remove", "place", "inspect"];
 let canvasTileWidth;
 let canvasTileHeight;
 let cameraPos = new Pos(0, 0);
+let mouseIsHeld = false;
 let isMining = false;
 let minePlayerPos;
 let mineTargetPos;
@@ -175,8 +176,9 @@ function craftCircuitTile(pos, spiritType, shouldAddCommand = true) {
 }
 
 function craftOrPlaceCircuitTile() {
-    // TODO: Choose spirit or spirit type depending on user selection.
-    craftCircuitTile(cursorCircuitTilePos, simpleSpiritTypeSet.wire, true);
+    // TODO: Allow placing circuit in inventory.
+    let tempSpiritType = selectedCircuitTileOptionRow.spiritType;
+    craftCircuitTile(cursorCircuitTilePos, tempSpiritType, true);
 }
 
 function removeCircuitTile() {
@@ -464,7 +466,7 @@ addPlaceTileCommandRepeater("placeCircuitTile", circuitTileGrid);
 addCommandRepeater("craftCircuitTile", command => {
     let tempPos = createPosFromJson(command.pos);
     let tempSpiritType = convertJsonToSpiritType(command.spiritType);
-    craftCircuitTile(cursorCircuitTilePos, tempSpiritType, false);
+    craftCircuitTile(tempPos, tempSpiritType, false);
 });
 
 addInventoryCommandRepeater("craft");
@@ -521,6 +523,7 @@ class ClientDelegate {
         canvasTileHeight = Math.floor(canvasHeight / spritePixelSize);
         initializeSpriteSheet(() => {
             drawAllRecipes();
+            drawAllCircuitTilesToPlace();
         });
         
         addEnterWorldCommand();
@@ -552,6 +555,10 @@ class ClientDelegate {
         canvas.onmouseleave = () => {
             cursorCircuitTilePos = null;
         }
+        
+        document.getElementsByTagName("body")[0].onmouseup = event => {
+            mouseUpEvent();
+        }
     }
     
     setLocalPlayerInfo(command) {
@@ -580,19 +587,19 @@ class ClientDelegate {
             return true;
         }
         if (keyCode === 37 || keyCode === 65) {
-            startLocalPlayerAction(0);
+            startWorldTileAction(0);
             return false;
         }
         if (keyCode === 39 || keyCode === 68) {
-            startLocalPlayerAction(1);
+            startWorldTileAction(1);
             return false;
         }
         if (keyCode === 38 || keyCode === 87) {
-            startLocalPlayerAction(2);
+            startWorldTileAction(2);
             return false;
         }
         if (keyCode === 40 || keyCode === 83) {
-            startLocalPlayerAction(3);
+            startWorldTileAction(3);
             return false;
         }
         if (keyCode === 49) {
@@ -622,16 +629,16 @@ class ClientDelegate {
     
     keyUpEvent(keyCode) {
         if (keyCode === 37 || keyCode === 65) {
-            stopLocalPlayerAction(0);
+            stopWorldTileAction(0);
         }
         if (keyCode === 39 || keyCode === 68) {
-            stopLocalPlayerAction(1);
+            stopWorldTileAction(1);
         }
         if (keyCode === 38 || keyCode === 87) {
-            stopLocalPlayerAction(2);
+            stopWorldTileAction(2);
         }
         if (keyCode === 40 || keyCode === 83) {
-            stopLocalPlayerAction(3);
+            stopWorldTileAction(3);
         }
         return true;
     }
@@ -639,11 +646,11 @@ class ClientDelegate {
 
 clientDelegate = new ClientDelegate();
 
-function startLocalPlayerAction(offsetIndex) {
+function startWorldTileAction(offsetIndex) {
     if (localPlayerWorldTile === null) {
         return;
     }
-    let offset = playerActionOffsetSet[offsetIndex];
+    let offset = tileActionOffsetSet[offsetIndex];
     if (shiftKeyIsHeld) {
         let tempPos = localPlayerWorldTile.pos.copy();
         tempPos.add(offset);
@@ -659,11 +666,11 @@ function startLocalPlayerAction(offsetIndex) {
     }
 }
 
-function stopLocalPlayerAction(offsetIndex) {
+function stopWorldTileAction(offsetIndex) {
     if (localPlayerWorldTile === null) {
         return;
     }
-    let offset = playerActionOffsetSet[offsetIndex];
+    let offset = tileActionOffsetSet[offsetIndex];
     localPlayerWorldTile.walkController.stopWalk(offset);
 }
 
@@ -676,22 +683,38 @@ function convertMouseEventToPos(event) {
     return new Pos(tempX, tempY);
 }
 
-function mouseMoveEvent(pos) {
-    cursorCircuitTilePos = pos;
-}
-
-function mouseDownEvent(pos) {
-    if (inspectedCircuitSpiritId === null) {
+function performCircuitTileAction() {
+    if (inspectedCircuitSpiritId === null || cursorCircuitTilePos === null) {
         return;
     }
-    cursorCircuitTilePos = pos;
     if (selectedTileAction === "remove") {
         removeCircuitTile();
     } else if (selectedTileAction === "place") {
         craftOrPlaceCircuitTile();
     } else if (selectedTileAction === "inspect") {
-        inspectedCircuitTilePos = pos;
+        inspectedCircuitTilePos = cursorCircuitTilePos;
     }
+}
+
+function mouseMoveEvent(pos) {
+    if (pos !== null && cursorCircuitTilePos !== null
+            && pos.equals(cursorCircuitTilePos)) {
+        return;
+    }
+    cursorCircuitTilePos = pos;
+    if (mouseIsHeld) {
+        performCircuitTileAction();
+    }
+}
+
+function mouseDownEvent(pos) {
+    mouseIsHeld = true;
+    cursorCircuitTilePos = pos;
+    performCircuitTileAction();
+}
+
+function mouseUpEvent() {
+    mouseIsHeld = false;
 }
 
 

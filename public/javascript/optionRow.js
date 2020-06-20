@@ -113,4 +113,31 @@ class RecipeOptionRow extends OptionRow {
     }
 }
 
+class CircuitTileOptionRow extends OptionRow {
+    
+    constructor(spiritType) {
+        super(
+            document.getElementById("circuitTilesToPlace"),
+            spiritType.getDisplayName(),
+            spiritType.spriteList
+        );
+        this.spiritType = spiritType;
+        if (selectedCircuitTileOptionRow === null) {
+            this.select();
+        }
+    }
+    
+    select() {
+        super.select();
+        if (selectedCircuitTileOptionRow !== null) {
+            selectedCircuitTileOptionRow.unselect();
+        }
+        selectedCircuitTileOptionRow = this;
+    }
+    
+    clickEvent() {
+        this.select();
+    }
+}
+
 

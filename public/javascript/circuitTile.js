@@ -24,4 +24,12 @@ class ComplexCircuitTile extends CircuitTile {
     }
 }
 
+function drawAllCircuitTilesToPlace() {
+    for (let arrangement = 0; arrangement < wireArrangementAmount; arrangement++) {
+        let tempSerialInteger = simpleSpiritSerialIntegerSet.wire + arrangement;
+        let tempSpiritType = simpleSpiritTypeMap[tempSerialInteger];
+        new CircuitTileOptionRow(tempSpiritType);
+    }
+}
+
 

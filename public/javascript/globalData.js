@@ -80,5 +80,6 @@ let inspectedCircuitSpiritId = null;
 let inspectedCircuitTilePos = null;
 let cursorCircuitTilePos = null;
 let selectedRecipe = null;
+let selectedCircuitTileOptionRow = null;
 
 

@@ -172,7 +172,17 @@ class WireSpiritType extends SimpleSpiritType {
     }
     
     getDisplayName() {
-        return "Wire";
+        let tempText;
+        if (this.arrangement === 11) {
+            tempText = "Crossover";
+        } else if (this.arrangement === 10) {
+            tempText = "4-Way";
+        } else if (this.arrangement >= 6) {
+            tempText = "3-Way";
+        } else {
+            tempText = "2-Way";
+        }
+        return tempText + " Wire";
     }
 }
 

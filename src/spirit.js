@@ -450,7 +450,7 @@ export class PlayerSpirit extends InventorySpirit {
         }
         let tempSpirit = spiritType.craft();
         let tempCircuitTile = circuitTileFactory.getTileWithSpirit(tempSpirit);
-        this.inspectedCircuit.setTile(pos, tempCircuitTile);
+        this.inspectedCircuit.tileGrid.setTile(pos, tempCircuitTile);
     }
 }
 
@@ -514,10 +514,6 @@ export class CircuitSpirit extends ComplexSpirit {
             }
         }
         return output;
-    }
-    
-    setTile(pos, tile) {
-        this.tileGrid.setTile(pos, tile);
     }
 }
 
