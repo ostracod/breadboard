@@ -11,6 +11,7 @@ export class TileGrid {
         this.width = width;
         this.height = height;
         this.tileFactory = tileFactory;
+        this.parentSpirit = null;
         this.fillTile = this.tileFactory.getTileWithSpirit(simpleSpiritSet.empty);
         this.outsideTile = this.tileFactory.getTileWithSpirit(simpleSpiritSet.barrier);
         this.length = this.width * this.height;
@@ -23,6 +24,20 @@ export class TileGrid {
             this.setTile(tempPos, this.fillTile);
             this.advancePos(tempPos);
         }
+    }
+    
+    populateParentSpirit(spirit) {
+        this.parentSpirit = spirit;
+        for (let tile of this.tileList) {
+            tile.spirit.populateParentSpirit(this.parentSpirit);
+        }
+    }
+    
+    markParentSpiritAsDirty() {
+        if (this.parentSpirit === null) {
+            return;
+        }
+        this.parentSpirit.markAsDirty();
     }
     
     convertPosToIndex(pos) {
@@ -60,6 +75,7 @@ export class TileGrid {
         }
         this.tileList[index] = tile;
         tile.addToGridEvent(this, pos);
+        this.markParentSpiritAsDirty();
     }
     
     swapTiles(pos1, pos2) {
@@ -71,6 +87,7 @@ export class TileGrid {
         this.tileList[index2] = tempTile1;
         tempTile1.moveEvent(pos2);
         tempTile2.moveEvent(pos1);
+        this.markParentSpiritAsDirty();
     }
     
     getWindowClientJson(pos, width, height) {

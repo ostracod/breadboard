@@ -146,6 +146,9 @@ export class ComplexSpirit extends Spirit {
     }
     
     changeParentSpirit(spirit) {
+        if (spirit === this.parentSpirit) {
+            return;
+        }
         this.parentSpirit = spirit;
         this.markAsDirty();
     }
@@ -488,6 +491,7 @@ export class CircuitSpirit extends ComplexSpirit {
             }
         }
         this.tileGrid = tileGrid;
+        this.tileGrid.populateParentSpirit(this);
     }
     
     getContainerDbJson() {
