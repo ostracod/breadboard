@@ -160,18 +160,27 @@ function inspectWorldTile(pos) {
     inspectSpirit(tempSpirit);
 }
 
-function placeCircuitTileHelper(spirit) {
-    let tempTile = circuitTileFactory.getTileWithSpirit(spirit);
-    circuitTileGrid.setTile(cursorCircuitTilePos, tempTile);
-    addPlaceCircuitTileCommand(cursorCircuitTilePos, spirit);
+function placeCircuitTile() {
+    // TODO: Implement.
+    
 }
 
-function placeCircuitTile() {
-    placeCircuitTileHelper(simpleSpiritSet.wire);
+function craftCircuitTile(pos, spiritType, shouldAddCommand = true) {
+    let tempSpirit = spiritType.craft();
+    let tempTile = circuitTileFactory.getTileWithSpirit(tempSpirit);
+    circuitTileGrid.setTile(pos, tempTile);
+    if (shouldAddCommand) {
+        addCraftCircuitTileCommand(pos, spiritType);
+    }
+}
+
+function craftOrPlaceCircuitTile() {
+    // TODO: Choose spirit or spirit type depending on user selection.
+    craftCircuitTile(cursorCircuitTilePos, simpleSpiritTypeSet.wire, true);
 }
 
 function removeCircuitTile() {
-    placeCircuitTileHelper(simpleSpiritSet.empty);
+    craftCircuitTile(cursorCircuitTilePos, simpleSpiritTypeSet.empty, true);
 }
 
 function tileActionIsAvailable(name) {
@@ -363,6 +372,14 @@ function addPlaceCircuitTileCommand(pos, spirit) {
     addPlaceTileCommand("placeCircuitTile", pos, spirit);
 }
 
+function addCraftCircuitTileCommand(pos, spiritType) {
+    gameUpdateCommandList.push({
+        commandName: "craftCircuitTile",
+        pos: pos.toJson(),
+        spiritType: spiritType.getJson()
+    });
+}
+
 function addCraftCommand(recipe, inventoryUpdateList) {
     addInventoryCommand({
         commandName: "craft",
@@ -443,6 +460,12 @@ function addPlaceTileCommandRepeater(commandName, tileGrid) {
 
 addPlaceTileCommandRepeater("placeWorldTile", worldTileGrid);
 addPlaceTileCommandRepeater("placeCircuitTile", circuitTileGrid);
+
+addCommandRepeater("craftCircuitTile", command => {
+    let tempPos = createPosFromJson(command.pos);
+    let tempSpiritType = convertJsonToSpiritType(command.spiritType);
+    craftCircuitTile(cursorCircuitTilePos, tempSpiritType, false);
+});
 
 addInventoryCommandRepeater("craft");
 addInventoryCommandRepeater("transfer");
@@ -665,7 +688,7 @@ function mouseDownEvent(pos) {
     if (selectedTileAction === "remove") {
         removeCircuitTile();
     } else if (selectedTileAction === "place") {
-        placeCircuitTile();
+        craftOrPlaceCircuitTile();
     } else if (selectedTileAction === "inspect") {
         inspectedCircuitTilePos = pos;
     }

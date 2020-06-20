@@ -19,7 +19,7 @@ let complexSpiritCache = [];
 // Map from serial integer to SimpleSpiritType.
 let simpleSpiritTypeMap = {};
 // Map from spirit class ID to list of ComplexSpiritType.
-let complexSpiritTypeMap = {};
+let complexSpiritTypesMap = {};
 
 // Maps from spirit serial integer to Tile.
 let simpleWorldTileMap = {};

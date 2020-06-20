@@ -3,6 +3,7 @@ import ostracodMultiplayer from "ostracod-multiplayer";
 import {complexSpiritMap, world} from "./globalData.js";
 import {createPosFromJson} from "./pos.js";
 import {MachineSpirit, persistAllComplexSpirits} from "./spirit.js";
+import {convertJsonToSpiritType} from "./spiritType.js";
 import {ComplexSpiritReference, convertJsonToSpiritReference} from "./spiritReference.js";
 import {getRecipeById} from "./recipe.js";
 
@@ -169,8 +170,13 @@ addPlaceTileCommandListener("placeWorldTile", (playerTile, pos, spiritReference)
 });
 
 addPlaceTileCommandListener("placeCircuitTile", (playerTile, pos, spiritReference) => {
-    // TODO: Update circuit tile grid.
-    console.log([pos, spiritReference]);
+    playerTile.spirit.placeCircuitTile(pos, spiritReference);
+});
+
+addCommandListener("craftCircuitTile", (command, playerTile, commandList) => {
+    let tempPos = createPosFromJson(command.pos);
+    let tempSpiritType = convertJsonToSpiritType(command.spiritType);
+    playerTile.spirit.craftCircuitTile(tempPos, tempSpiritType);
 });
 
 addCommandListener("craft", (command, playerTile, commandList) => {

@@ -2,8 +2,8 @@
 class SpiritType {
     
     // Concrete subclasses of SpiritType must implement these methods:
-    // matchesSpiritClientJson, matchesJson, convertClientJsonToSpirit, craft,
-    // getDisplayName
+    // matchesSpiritClientJson, getJson, matchesJson, convertClientJsonToSpirit
+    // craft, getDisplayName
     
     constructor(spriteList, baseName) {
         this.spriteList = spriteList
@@ -40,6 +40,13 @@ class SimpleSpiritType extends SpiritType {
     
     matchesSpiritClientJson(data) {
         return (typeof data === "number" && this.spirit.serialInteger === data);
+    }
+    
+    getJson() {
+        return {
+            type: "simple",
+            serialInteger: this.serialInteger
+        };
     }
     
     matchesJson(data) {
@@ -174,14 +181,21 @@ class ComplexSpiritType extends SpiritType {
     constructor(spriteList, baseName) {
         super(spriteList, baseName);
         this.spiritClassId = complexSpiritClassIdSet[this.baseName];
-        if (!(this.spiritClassId in complexSpiritTypeMap)) {
-            complexSpiritTypeMap[this.spiritClassId] = [];
+        if (!(this.spiritClassId in complexSpiritTypesMap)) {
+            complexSpiritTypesMap[this.spiritClassId] = [];
         }
-        complexSpiritTypeMap[this.spiritClassId].push(this);
+        complexSpiritTypesMap[this.spiritClassId].push(this);
     }
     
     matchesSpiritClientJson(data) {
         return (typeof data !== "number" && this.spiritClassId === data.classId);
+    }
+    
+    getJson() {
+        return {
+            type: "complex",
+            classId: this.spiritClassId
+        };
     }
     
     matchesJson(data) {
@@ -219,6 +233,12 @@ class MachineSpiritType extends ComplexSpiritType {
     
     matchesSpiritClientJson(data) {
         return (super.matchesSpiritClientJson(data) && this.colorIndex === data.colorIndex);
+    }
+    
+    getJson() {
+        let output = super.getJson();
+        output.colorIndex = this.colorIndex;
+        return output;
     }
     
     matchesJson(data) {
@@ -287,7 +307,7 @@ function convertClientJsonToSpirit(data) {
     if (typeof data === "number") {
         tempType = simpleSpiritTypeMap[data];
     } else {
-        let tempTypeList = complexSpiritTypeMap[data.classId];
+        let tempTypeList = complexSpiritTypesMap[data.classId];
         for (let spiritType of tempTypeList) {
             if (spiritType.matchesSpiritClientJson(data)) {
                 tempType = spiritType;
@@ -303,7 +323,7 @@ function convertJsonToSpiritType(data) {
         return simpleSpiritTypeMap[data.serialInteger];
     }
     if (data.type == "complex") {
-        let tempTypeList = complexSpiritTypeMap[data.classId];
+        let tempTypeList = complexSpiritTypesMap[data.classId];
         for (let spiritType of tempTypeList) {
             if (spiritType.matchesJson(data)) {
                 return spiritType;

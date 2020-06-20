@@ -1,5 +1,5 @@
 
-import {simpleSpiritSerialIntegerSet, wireArrangementAmount, circuitSize, simpleSpiritSet, simpleCircuitTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap, simpleCircuitTileMap} from "./globalData.js";
+import {simpleSpiritSerialIntegerSet, wireArrangementAmount, circuitSize, simpleSpiritSet, simpleCircuitTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap, simpleCircuitTileMap, circuitTileFactory} from "./globalData.js";
 import {Pos} from "./pos.js";
 import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
 import {Inventory, pushInventoryUpdate} from "./inventory.js";
@@ -432,6 +432,23 @@ export class PlayerSpirit extends InventorySpirit {
             this.inventory.addRecipeComponent(product);
         }
     }
+    
+    placeCircuitTile(pos, spiritReference) {
+        // TODO: Implement.
+        
+    }
+    
+    craftCircuitTile(pos, spiritType) {
+        if (this.inspectedCircuit === null) {
+            return;
+        }
+        if (!spiritType.isFreeToCraft()) {
+            return;
+        }
+        let tempSpirit = spiritType.craft();
+        let tempCircuitTile = circuitTileFactory.getTileWithSpirit(tempSpirit);
+        this.inspectedCircuit.setTile(pos, tempCircuitTile);
+    }
 }
 
 export class MachineSpirit extends InventorySpirit {
@@ -493,6 +510,10 @@ export class CircuitSpirit extends ComplexSpirit {
             }
         }
         return output;
+    }
+    
+    setTile(pos, tile) {
+        this.tileGrid.setTile(pos, tile);
     }
 }
 

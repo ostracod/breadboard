@@ -16,7 +16,7 @@ let dbUtils = ostracodMultiplayer.dbUtils;
 class SpiritType {
     
     // Concrete subclasses of SpiritType must implement these methods:
-    // matchesSpiritDbJson, getJson, convertDbJsonToSpirit, craft
+    // matchesSpiritDbJson, getJson, matchesJson, convertDbJsonToSpirit, craft
     
     constructor(baseName) {
         this.baseName = baseName;
@@ -37,6 +37,10 @@ class SpiritType {
     // Returns a list of RecipeComponent.
     getBaseRecycleProducts() {
         return [];
+    }
+    
+    isFreeToCraft() {
+        return false;
     }
 }
 
@@ -61,6 +65,10 @@ export class SimpleSpiritType extends SpiritType {
         };
     }
     
+    matchesJson(data) {
+        return (data.type === "simple" && this.spirit.serialInteger === data.serialInteger);
+    }
+    
     convertDbJsonToSpirit(data) {
         return Promise.resolve(this.spirit);
     }
@@ -74,6 +82,10 @@ export class EmptySpiritType extends SimpleSpiritType {
     
     constructor() {
         super("empty");
+    }
+    
+    isFreeToCraft() {
+        return true;
     }
 }
 
@@ -130,6 +142,10 @@ export class WireSpiritType extends SimpleSpiritType {
         super("wire", arrangement);
         this.arrangement = arrangement;
     }
+    
+    isFreeToCraft() {
+        return true;
+    }
 }
 
 class ComplexSpiritType extends SpiritType {
@@ -153,6 +169,10 @@ class ComplexSpiritType extends SpiritType {
             type: "complex",
             classId: this.spiritClassId
         };
+    }
+    
+    matchesJson(data) {
+        return (data.type === "complex" && this.spiritClassId === data.classId);
     }
 }
 
@@ -198,6 +218,10 @@ export class MachineSpiritType extends ComplexSpiritType {
         let output = super.getJson();
         output.colorIndex = this.colorIndex;
         return output;
+    }
+    
+    matchesJson(data) {
+        return (super.matchesJson(data) && this.colorIndex === data.colorIndex);
     }
     
     convertDbJsonToSpirit(data) {
@@ -324,6 +348,21 @@ export function convertNestedDbJsonToSpirit(data, shouldPerformTransaction = tru
         return Promise.resolve(convertDbJsonToSpirit(data));
     }
     return loadComplexSpirit(data.id, shouldPerformTransaction);
+}
+
+export function convertJsonToSpiritType(data) {
+    if (data.type == "simple") {
+        return simpleSpiritTypeMap[data.serialInteger];
+    }
+    if (data.type == "complex") {
+        let tempTypeList = complexSpiritTypesMap[data.classId];
+        for (let spiritType of tempTypeList) {
+            if (spiritType.matchesJson(data)) {
+                return spiritType;
+            }
+        }
+    }
+    return null;
 }
 
 
