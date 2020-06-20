@@ -6,9 +6,7 @@ import {Inventory, pushInventoryUpdate} from "./inventory.js";
 import {pushRecipeComponent} from "./recipe.js";
 import {WorldTile} from "./worldTile.js";
 import {createCircuitTileGrid} from "./tileGrid.js";
-
-import ostracodMultiplayer from "ostracod-multiplayer";
-let dbUtils = ostracodMultiplayer.dbUtils;
+import {niceUtils} from "./niceUtils.js";
 
 let nextComplexSpiritId = 0;
 
@@ -186,45 +184,31 @@ export class ComplexSpirit extends Spirit {
     
     persist() {
         let tempShouldHaveDbRow = this.shouldHaveDbRow();
-        return new Promise((resolve, reject) => {
-            
-            function queryCallback(error, results, fields) {
-                if (error) {
-                    reject(dbUtils.convertSqlErrorToText(error));
-                    return;
-                }
-                resolve();
-            }
-            
-            let attributeData = JSON.stringify(this.getAttributeDbJson());
-            let containerData = JSON.stringify(this.getContainerDbJson());
-            if (this.hasDbRow) {
-                if (tempShouldHaveDbRow) {
-                    dbUtils.performQuery(
-                        "UPDATE ComplexSpirits SET attributeData = ?, containerData = ? WHERE id = ?",
-                        [attributeData, containerData, this.id],
-                        queryCallback
-                    );
-                } else {
-                    dbUtils.performQuery(
-                        "DELETE FROM ComplexSpirits WHERE id = ?",
-                        [this.id],
-                        queryCallback
-                    );
-                }
+        let attributeData = JSON.stringify(this.getAttributeDbJson());
+        let containerData = JSON.stringify(this.getContainerDbJson());
+        if (this.hasDbRow) {
+            if (tempShouldHaveDbRow) {
+                return niceUtils.performDbQuery(
+                    "UPDATE ComplexSpirits SET attributeData = ?, containerData = ? WHERE id = ?",
+                    [attributeData, containerData, this.id]
+                );
             } else {
-                if (tempShouldHaveDbRow) {
-                    this.hasDbRow = true;
-                    dbUtils.performQuery(
-                        "INSERT INTO ComplexSpirits (id, parentId, classId, attributeData, containerData) VALUES (?, NULL, ?, ?, ?)",
-                        [this.id, this.classId, attributeData, containerData],
-                        queryCallback
-                    );
-                } else {
-                    resolve();
-                }
+                return niceUtils.performDbQuery(
+                    "DELETE FROM ComplexSpirits WHERE id = ?",
+                    [this.id]
+                );
             }
-        });
+        } else {
+            if (tempShouldHaveDbRow) {
+                this.hasDbRow = true;
+                return niceUtils.performDbQuery(
+                    "INSERT INTO ComplexSpirits (id, parentId, classId, attributeData, containerData) VALUES (?, NULL, ?, ?, ?)",
+                    [this.id, this.classId, attributeData, containerData]
+                );
+            } else {
+                return Promise.resolve();
+            }
+        }
     }
 }
 
@@ -535,12 +519,10 @@ export function persistAllComplexSpirits() {
     if (operationList.length <= 0) {
         return Promise.resolve();
     }
-    return new Promise((resolve, reject) => {
-        dbUtils.performTransaction(callback => {
-            operationList.reduce((accumulator, operation) => {
-                return accumulator.then(operation);
-            }, Promise.resolve()).then(callback);
-        }, resolve);
+    return niceUtils.performDbTransaction(() => {
+        return operationList.reduce((accumulator, operation) => {
+            return accumulator.then(operation);
+        }, Promise.resolve());
     });
 }
 

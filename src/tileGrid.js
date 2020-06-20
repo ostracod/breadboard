@@ -1,9 +1,7 @@
 
 import {simpleSpiritSet, worldTileFactory, circuitTileFactory} from "./globalData.js";
 import {Pos} from "./pos.js";
-
-import ostracodMultiplayer from "ostracod-multiplayer";
-let dbUtils = ostracodMultiplayer.dbUtils;
+import {niceUtils} from "./niceUtils.js";
 
 export class TileGrid {
     
@@ -133,37 +131,27 @@ export function createCircuitTileGrid(width, height) {
     return new TileGrid(width, height, circuitTileFactory);
 }
 
-function convertDbJsonToTileGrid(data, tileFactory) {
-    return new Promise((resolve, reject) => {
-        let output = new TileGrid(data.width, data.height, tileFactory);
-        dbUtils.performTransaction(callback => {
-            let tempPos = new Pos(0, 0);
-            let index = 0;
-            function convertNextTile() {
-                if (index >= data.tiles.length) {
-                    callback();
-                    return;
-                }
-                tileFactory.convertDbJsonToTile(data.tiles[index], false).then(tile => {
-                    output.setTile(tempPos, tile);
-                    output.advancePos(tempPos);
-                    index += 1;
-                    convertNextTile();
-                });
-            }
-            convertNextTile();
-        }, () => {
-            resolve(output);
-        });
-    });
+function convertDbJsonToTileGrid(data, tileFactory, shouldPerformTransaction) {
+    let output = new TileGrid(data.width, data.height, tileFactory);
+    return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => {
+        let tempPos = new Pos(0, 0);
+        return data.tiles.reduce((accumulator, tileData) => {
+            return accumulator.then(() => {
+                return tileFactory.convertDbJsonToTile(tileData, false);
+            }).then(tile => {
+                output.setTile(tempPos, tile);
+                output.advancePos(tempPos);
+            });
+        }, Promise.resolve());
+    }).then(() => output);
 }
 
-export function convertDbJsonToWorldTileGrid(data) {
-    return convertDbJsonToTileGrid(data, worldTileFactory);
+export function convertDbJsonToWorldTileGrid(data, shouldPerformTransaction = true) {
+    return convertDbJsonToTileGrid(data, worldTileFactory, shouldPerformTransaction);
 }
 
-export function convertDbJsonToCircuitTileGrid(data) {
-    return convertDbJsonToTileGrid(data, circuitTileFactory);
+export function convertDbJsonToCircuitTileGrid(data, shouldPerformTransaction = true) {
+    return convertDbJsonToTileGrid(data, circuitTileFactory, shouldPerformTransaction);
 }
 
 

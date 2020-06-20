@@ -4,10 +4,10 @@ import {SimpleSpirit, PlayerSpirit, MachineSpirit, CircuitSpirit} from "./spirit
 import {convertDbJsonToInventory} from "./inventory.js";
 import {RecipeComponent} from "./recipe.js";
 import {convertDbJsonToCircuitTileGrid} from "./tileGrid.js";
+import {niceUtils} from "./niceUtils.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 let gameUtils = ostracodMultiplayer.gameUtils;
-let dbUtils = ostracodMultiplayer.dbUtils;
 
 // A SpiritType serves the following purposes:
 // > Identify whether a spirit instance matches particular criteria
@@ -69,7 +69,7 @@ export class SimpleSpiritType extends SpiritType {
         return (data.type === "simple" && this.spirit.serialInteger === data.serialInteger);
     }
     
-    convertDbJsonToSpirit(data) {
+    convertDbJsonToSpirit(data, shouldPerformTransaction) {
         return Promise.resolve(this.spirit);
     }
     
@@ -182,12 +182,15 @@ export class PlayerSpiritType extends ComplexSpiritType {
         super("player");
     }
     
-    convertDbJsonToSpirit(data) {
+    convertDbJsonToSpirit(data, shouldPerformTransaction) {
         let tempPlayer = gameUtils.getPlayerByUsername(data.attributeData.username);
         if (tempPlayer === null) {
             return Promise.resolve(null);
         } else {
-            return convertDbJsonToInventory(data.containerData).then(inventory => {
+            return convertDbJsonToInventory(
+                data.containerData,
+                shouldPerformTransaction
+            ).then(inventory => {
                 return new PlayerSpirit(this, tempPlayer, inventory);
             });
         }
@@ -224,8 +227,11 @@ export class MachineSpiritType extends ComplexSpiritType {
         return (super.matchesJson(data) && this.colorIndex === data.colorIndex);
     }
     
-    convertDbJsonToSpirit(data) {
-        return convertDbJsonToInventory(data.containerData).then(inventory => {;
+    convertDbJsonToSpirit(data, shouldPerformTransaction) {
+        return convertDbJsonToInventory(
+            data.containerData,
+            shouldPerformTransaction
+        ).then(inventory => {
             return new MachineSpirit(this, data.id, inventory);
         });
     }
@@ -253,8 +259,11 @@ export class CircuitSpiritType extends ComplexSpiritType {
         super("circuit");
     }
     
-    convertDbJsonToSpirit(data) {
-        return convertDbJsonToCircuitTileGrid(data.containerData).then(tileGrid => {
+    convertDbJsonToSpirit(data, shouldPerformTransaction) {
+        return convertDbJsonToCircuitTileGrid(
+            data.containerData,
+            shouldPerformTransaction
+        ).then(tileGrid => {
             return new CircuitSpirit(this, data.id, tileGrid);
         });
     }
@@ -276,7 +285,7 @@ export class CircuitSpiritType extends ComplexSpiritType {
     }
 }
 
-export function convertDbJsonToSpirit(data) {
+export function convertDbJsonToSpirit(data, shouldPerformTransaction = true) {
     let tempType;
     if (typeof data === "number") {
         tempType = simpleSpiritTypeMap[data];
@@ -289,19 +298,16 @@ export function convertDbJsonToSpirit(data) {
             }
         }
     }
-    return tempType.convertDbJsonToSpirit(data);
+    return tempType.convertDbJsonToSpirit(data, shouldPerformTransaction);
 }
 
 export function loadComplexSpirit(id, shouldPerformTransaction = true) {
     if (id in dirtyComplexSpiritMap) {
         return Promise.resolve(dirtyComplexSpiritMap[id]);
     }
-    
-    let dbError;
-    let dbResults;
-    
-    function performQuery(callback) {
-        dbUtils.performQuery(
+    let output;
+    return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => {
+        return niceUtils.performDbQuery(
             "SELECT * FROM ComplexSpirits WHERE id = ?",
             [id],
             (error, results, fields) => {
@@ -309,43 +315,24 @@ export function loadComplexSpirit(id, shouldPerformTransaction = true) {
                 dbResults = results;
                 callback();
             }
-        );
-    }
-    
-    return new Promise((resolve, reject) => {
-        
-        function processResults() {
-            if (dbError) {
-                reject(dbUtils.convertSqlErrorToText(dbError));
-                return;
-            }
-            if (dbResults.length <= 0) {
-                resolve(null);
-                return;
-            }
-            let tempRow = dbResults[0];
-            convertDbJsonToSpirit({
+        ).then(results => {
+            let tempRow = results[0];
+            return convertDbJsonToSpirit({
                 id: tempRow.id,
                 classId: tempRow.classId,
                 attributeData: JSON.parse(tempRow.attributeData),
                 containerData: JSON.parse(tempRow.containerData)
-            }).then(spirit => {
-                spirit.hasDbRow = true;
-                resolve(spirit);
-            });
-        }
-        
-        if (shouldPerformTransaction) {
-            dbUtils.performTransaction(performQuery, processResults);
-        } else {
-            performQuery(processResults);
-        }
-    });
+            }, false);
+        }).then(spirit => {
+            spirit.hasDbRow = true;
+            output = spirit;
+        });
+    }).then(() => output);
 }
 
 export function convertNestedDbJsonToSpirit(data, shouldPerformTransaction = true) {
     if (typeof data === "number" || "classId" in data) {
-        return Promise.resolve(convertDbJsonToSpirit(data));
+        return Promise.resolve(convertDbJsonToSpirit(data, shouldPerformTransaction));
     }
     return loadComplexSpirit(data.id, shouldPerformTransaction);
 }

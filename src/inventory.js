@@ -1,6 +1,7 @@
 
 import {complexSpiritMap} from "./globalData.js";
 import {SimpleSpiritType, convertDbJsonToSpirit} from "./spiritType.js";
+import {niceUtils} from "./niceUtils.js";
 
 export class InventoryItem {
     
@@ -282,15 +283,17 @@ class InventoryUpdate {
     }
 }
 
-export function convertDbJsonToInventory(data) {
+export function convertDbJsonToInventory(data, shouldPerformTransaction = true) {
     let output = new Inventory();
-    return data.reduce((accumulator, itemData) => {
-        return accumulator.then(() => {
-            return convertDbJsonToSpirit(itemData.spirit)
-        }).then(spirit => {
-            new InventoryItem(output, spirit, itemData.count);
-        });
-    }, Promise.resolve()).then(() => output);
+    return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => {
+        return data.reduce((accumulator, itemData) => {
+            return accumulator.then(() => {
+                return convertDbJsonToSpirit(itemData.spirit, false);
+            }).then(spirit => {
+                new InventoryItem(output, spirit, itemData.count);
+            });
+        }, Promise.resolve());
+    }).then(() => output);
 }
 
 function convertClientJsonToInventoryUpdate(data) {
