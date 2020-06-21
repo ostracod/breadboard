@@ -119,41 +119,44 @@ const spiritColorSet = [
     new NamedColor(32, 224, 32, "Green"),
     new NamedColor(32, 128, 160, "Dark Cyan"),
     new NamedColor(32, 224, 255, "Cyan"),
-    new NamedColor(64, 64, 160, "Dark Blue"),
+    new NamedColor(64, 64, 192, "Dark Blue"),
     new NamedColor(128, 128, 255, "Blue"),
     new NamedColor(128, 32, 160, "Dark Magenta"),
     new NamedColor(224, 32, 255, "Magenta")
 ];
 const spiritColorAmount = spiritColorSet.length;
-let blockPaletteList = [];
+let colorPaletteList = [];
 for (let color of spiritColorSet) {
     let tempColor = color.copy();
     tempColor.scale(0.5);
-    blockPaletteList.push(new ColorPalette([tempColor, color]));
+    colorPaletteList.push(new ColorPalette([tempColor, color]));
 }
-const blockSpriteSet = new SpriteSet(0, 0, blockPaletteList);
-const machineSpriteSet = new SpriteSet(1, 1, blockPaletteList);
+const blockSpriteSet = new SpriteSet(0, 0, colorPaletteList);
+const machineSpriteSet = new SpriteSet(1, 1, colorPaletteList);
 const resourceSpriteSet = new SpriteSet(2, 2, [
-    blockPaletteList[10],
-    blockPaletteList[7]
+    colorPaletteList[10],
+    colorPaletteList[7]
 ]);
-const playerSpriteSet = new SpriteSet(3, 3, [blockPaletteList[13]]);
-const circuitSpriteSet = new SpriteSet(4, 4, [blockPaletteList[9]]);
-const loadingSpriteSet = new SpriteSet(5, 5, [blockPaletteList[0]]);
-const barrierSpriteSet = new SpriteSet(6, 6, [blockPaletteList[1]]);
+const playerSpriteSet = new SpriteSet(3, 3, [colorPaletteList[13]]);
+const circuitSpriteSet = new SpriteSet(4, 4, [colorPaletteList[9]]);
+const loadingSpriteSet = new SpriteSet(5, 5, [colorPaletteList[0]]);
+const barrierSpriteSet = new SpriteSet(6, 6, [colorPaletteList[1]]);
 const wireSpriteSet = new SpriteSet(20, 30, [
-    blockPaletteList[4],
-    blockPaletteList[5],
-    blockPaletteList[7]
+    colorPaletteList[5],
+    colorPaletteList[7]
 ]);
 const chipSpriteSet = new SpriteSet(40, 40, [
-    new ColorPalette([new Color(0, 0, 0), null])
+    colorPaletteList[2],
+    colorPaletteList[4],
+    colorPaletteList[6],
+    colorPaletteList[8],
+    colorPaletteList[10],
+    colorPaletteList[12],
+    colorPaletteList[14]
 ]);
 const portSpriteSet = new SpriteSet(41, 45, [
-    new ColorPalette([new Color(255, 0, 0), null]),
-    new ColorPalette([new Color(0, 224, 0), null]),
-    new ColorPalette([new Color(64, 160, 255), null]),
-    new ColorPalette([new Color(160, 64, 255), null])
+    colorPaletteList[3],
+    colorPaletteList[13]
 ]);
 const characterSpriteSet = new SpriteSet(60, 159, [
     new ColorPalette([new Color(0, 0, 255), null])
