@@ -1,14 +1,15 @@
 
-import {simpleSpiritSerialIntegerSet, wireArrangementAmount, circuitSize, simpleSpiritSet, simpleCircuitTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap, simpleCircuitTileMap, circuitTileFactory} from "./globalData.js";
+import {simpleSpiritSerialIntegerSet, wireArrangementAmount, worldSize, circuitSize, simpleSpiritSet, simpleSpiritTypeSet, complexSpiritTypeSet, simpleWorldTileSet, simpleCircuitTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap, simpleCircuitTileMap, circuitTileFactory} from "./globalData.js";
 import {Pos} from "./pos.js";
+import {loadComplexSpirit} from "./spiritType.js";
 import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
 import {Inventory, pushInventoryUpdate} from "./inventory.js";
 import {pushRecipeComponent} from "./recipe.js";
-import {WorldTile} from "./worldTile.js";
-import {createCircuitTileGrid} from "./tileGrid.js";
+import {WorldTile, PlayerWorldTile} from "./worldTile.js";
+import {createWorldTileGrid, createCircuitTileGrid} from "./tileGrid.js";
 import {niceUtils} from "./niceUtils.js";
 
-let nextComplexSpiritId = 0;
+let nextComplexSpiritId;
 
 // The idea is that a Spirit is something which may
 // exist as a Tile or Item.
@@ -42,7 +43,7 @@ class Spirit {
         // Do nothing.
     }
     
-    setTile(tile) {
+    setParentTile(tile) {
         // Do nothing.
     }
     
@@ -84,7 +85,7 @@ export class ComplexSpirit extends Spirit {
         super(spiritType);
         this.classId = this.spiritType.spiritClassId;
         this.parentSpirit = null;
-        this.tile = null;
+        this.parentTile = null;
         if (id === null) {
             this.id = nextComplexSpiritId;
             nextComplexSpiritId += 1;
@@ -163,8 +164,8 @@ export class ComplexSpirit extends Spirit {
         return false;
     }
     
-    setTile(tile) {
-        this.tile = tile;
+    setParentTile(tile) {
+        this.parentTile = tile;
     }
     
     // Spirit must be removed from parent before invoking destroy method.
@@ -179,7 +180,7 @@ export class ComplexSpirit extends Spirit {
             return false;
         }
         // TODO: Optimize nesting logic.
-        return (this.parentSpirit === null);
+        return (this.parentSpirit === null || this.parentSpirit instanceof WorldSpirit);
     }
     
     persist() {
@@ -217,9 +218,10 @@ export class InventorySpirit extends ComplexSpirit {
     constructor(spiritType, id, inventory) {
         super(spiritType, id);
         if (inventory === null) {
-            inventory = new Inventory();
+            this.inventory = new Inventory();
+        } else {
+            this.inventory = inventory;
         }
-        this.inventory = inventory;
         this.inventory.populateParentSpirit(this);
         this.inventory.addObserver(this);
     }
@@ -297,11 +299,11 @@ export class PlayerSpirit extends InventorySpirit {
         if (spirit.hasParentSpirit(this)) {
             return true;
         }
-        if (!(spirit.tile instanceof WorldTile)) {
+        if (!(spirit.parentTile instanceof WorldTile)) {
             return false;
         }
-        let tempPos1 = this.tile.pos;
-        let tempPos2 = spirit.tile.pos;
+        let tempPos1 = this.parentTile.pos;
+        let tempPos2 = spirit.parentTile.pos;
         return tempPos1.isAdjacentTo(tempPos2);
     }
     
@@ -458,23 +460,18 @@ export class MachineSpirit extends InventorySpirit {
     }
 }
 
-export class CircuitSpirit extends ComplexSpirit {
+export class TileGridSpirit extends ComplexSpirit {
+    
+    // Concrete subclasses of TileGridSpirit must implement these methods:
+    // generateTileGrid
     
     constructor(spiritType, id, tileGrid = null) {
         super(spiritType, id);
         if (tileGrid === null) {
-            tileGrid = createCircuitTileGrid(circuitSize, circuitSize);
-            // Generate some garbage tiles for testing purposes.
-            let tempPos = new Pos(0, 0);
-            while (tempPos.y < tileGrid.height) {
-                if (Math.random() < 0.3) {
-                    let tempTile = simpleCircuitTileMap[simpleSpiritSerialIntegerSet.wire + Math.floor(Math.random() * wireArrangementAmount)];
-                    tileGrid.setTile(tempPos, tempTile);
-                }
-                tileGrid.advancePos(tempPos);
-            }
+            this.generateTileGrid();
+        } else {
+            this.tileGrid = tileGrid;
         }
-        this.tileGrid = tileGrid;
         this.tileGrid.populateParentSpirit(this);
     }
     
@@ -499,14 +496,156 @@ export class CircuitSpirit extends ComplexSpirit {
         }
         return output;
     }
+    
+    getTile(pos) {
+        return this.tileGrid.getTile(pos);
+    }
+    
+    setTile(pos, tile) {
+        this.tileGrid.setTile(pos, tile);
+    }
+    
+    swapTiles(pos1, pos2) {
+        this.tileGrid.swapTiles(pos1, pos2);
+    }
 }
 
-export function getNextComplexSpiritId() {
-    return nextComplexSpiritId;
+export class WorldSpirit extends TileGridSpirit {
+    
+    constructor(spiritType, id, tileGrid) {
+        super(spiritType, id, tileGrid);
+        this.playerTileList = [];
+    }
+    
+    generateTileGrid() {
+        this.tileGrid = createWorldTileGrid(worldSize, worldSize);
+        for (let count = 0; count < 1000; count++) {
+            let tempTile;
+            if (Math.random() < 0.5) {
+                tempTile = simpleWorldTileSet.matterite;
+            } else {
+                tempTile = simpleWorldTileSet.energite;
+            }
+            let tempPos = new Pos(
+                Math.floor(Math.random() * this.tileGrid.width),
+                Math.floor(Math.random() * this.tileGrid.height)
+            );
+            this.setTile(tempPos, tempTile);
+        }
+    }
+    
+    setTile(pos, tile) {
+        let tempOldTile = this.tileGrid.getTile(pos);
+        super.setTile(pos, tile);
+        tempOldTile.removeFromWorldEvent();
+        tile.addToWorldEvent(this);
+    }
+    
+    getWindowClientJson(pos, width, height) {
+        return this.tileGrid.getWindowClientJson(pos, width, height);
+    }
+    
+    findPlayerTile(player) {
+        for (let index = 0; index < this.playerTileList.length; index++) {
+            let tempTile = this.playerTileList[index];
+            let tempPlayer = tempTile.spirit.player;
+            if (tempPlayer.username == player.username) {
+                return index;
+            }
+        }
+        return -1;
+    }
+    
+    getPlayerTile(player) {
+        let index = this.findPlayerTile(player);
+        if (index < 0) {
+            return null;
+        }
+        return this.playerTileList[index];
+    }
+    
+    getPlayerSpirit(player) {
+        let tempTile = this.getPlayerTile(player);
+        if (tempTile === null) {
+            return null;
+        }
+        return tempTile.spirit;
+    }
+    
+    addPlayerTile(player) {
+        let tempTile = this.getPlayerTile(player);
+        if (tempTile !== null) {
+            return Promise.resolve(tempTile.spirit);
+        }
+        let tempPromise;
+        let tempId = player.extraFields.complexSpiritId;
+        if (tempId === null) {
+            let tempSpirit = complexSpiritTypeSet.player.createPlayerSpirit(player);
+            tempPromise = Promise.resolve(tempSpirit);
+        } else {
+            tempPromise = loadComplexSpirit(tempId);
+        }
+        return tempPromise.then(spirit => {
+            let tempTile = new PlayerWorldTile(spirit);
+            // TODO: Make player tile placement more robust.
+            let tempPos = new Pos(3, 3);
+            while (true) {
+                let tempOldTile = this.getTile(tempPos);
+                if (tempOldTile.spirit.spiritType === simpleSpiritTypeSet.empty) {
+                    break;
+                }
+                tempPos.x += 1;
+            }
+            tempTile.addToWorld(this, tempPos);
+            return spirit;
+        });
+    }
+    
+    tick() {
+        // TODO: Put something here.
+        
+        return Promise.resolve();
+    }
 }
 
-export function setNextComplexSpiritId(id) {
-    nextComplexSpiritId = id;
+export class CircuitSpirit extends TileGridSpirit {
+    
+    generateTileGrid() {
+        this.tileGrid = createCircuitTileGrid(circuitSize, circuitSize);
+        // Generate some garbage tiles for testing purposes.
+        let tempPos = new Pos(0, 0);
+        while (tempPos.y < this.tileGrid.height) {
+            if (Math.random() < 0.3) {
+                let tempTile = simpleCircuitTileMap[simpleSpiritSerialIntegerSet.wire + Math.floor(Math.random() * wireArrangementAmount)];
+                this.setTile(tempPos, tempTile);
+            }
+            this.tileGrid.advancePos(tempPos);
+        }
+    }
+}
+
+export function loadNextComplexSpiritId() {
+    return niceUtils.performDbQuery(
+        "SELECT * FROM Configuration WHERE name = ?",
+        ["nextComplexSpiritId"]
+    ).then(results => {
+        if (results.length > 0) {
+            nextComplexSpiritId = parseInt(results[0].value);
+        } else {
+            nextComplexSpiritId = 0;
+            return niceUtils.performDbQuery(
+                "INSERT INTO Configuration (name, value) VALUES (?, ?)",
+                ["nextComplexSpiritId", nextComplexSpiritId]
+            );
+        }
+    });
+}
+
+export function persistNextComplexSpiritId() {
+    return niceUtils.performDbQuery(
+        "UPDATE Configuration SET value = ? WHERE name = ?",
+        [nextComplexSpiritId, "nextComplexSpiritId"]
+    );
 }
 
 export function persistAllComplexSpirits() {
@@ -519,11 +658,9 @@ export function persistAllComplexSpirits() {
     if (operationList.length <= 0) {
         return Promise.resolve();
     }
-    return niceUtils.performDbTransaction(() => {
-        return operationList.reduce((accumulator, operation) => {
-            return accumulator.then(operation);
-        }, Promise.resolve());
-    });
+    return operationList.reduce((accumulator, operation) => {
+        return accumulator.then(operation);
+    }, Promise.resolve());
 }
 
 

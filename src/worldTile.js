@@ -12,7 +12,7 @@ export class WorldTile extends Tile {
         return simpleWorldTileMap;
     }
     
-    addToWorldEvent(world) {
+    addToWorldEvent(worldSpirit) {
         // Do nothing.
     }
     
@@ -36,12 +36,12 @@ export class ComplexWorldTile extends WorldTile {
     
     constructor(spirit) {
         super(spirit, complexTileComplexity);
-        this.world = null;
+        this.worldSpirit = null;
         this.pos = null;
     }
     
-    addToGridEvent(world, pos) {
-        super.addToGridEvent(world, pos);
+    addToGridEvent(tileGrid, pos) {
+        super.addToGridEvent(tileGrid, pos);
         this.pos = pos.copy();
     }
     
@@ -50,14 +50,14 @@ export class ComplexWorldTile extends WorldTile {
         this.pos = null;
     }
     
-    addToWorldEvent(world) {
-        super.addToWorldEvent(world);
-        this.world = world;
+    addToWorldEvent(worldSpirit) {
+        super.addToWorldEvent(worldSpirit);
+        this.worldSpirit = worldSpirit;
     }
     
     removeFromWorldEvent() {
         super.removeFromWorldEvent();
-        this.world = null;
+        this.worldSpirit = null;
     }
     
     moveEvent(pos) {
@@ -65,22 +65,22 @@ export class ComplexWorldTile extends WorldTile {
         this.pos.set(pos);
     }
     
-    addToWorld(world, pos) {
-        world.setTile(pos, this);
+    addToWorld(worldSpirit, pos) {
+        worldSpirit.setTile(pos, this);
     }
     
     removeFromWorld() {
-        this.world.setTile(this.pos, simpleWorldTileSet.empty);
+        this.worldSpirit.setTile(this.pos, simpleWorldTileSet.empty);
     }
     
     move(offset) {
         let tempNextPos = this.pos.copy();
         tempNextPos.add(offset);
-        let tempTile = this.world.getTile(tempNextPos);
+        let tempTile = this.worldSpirit.getTile(tempNextPos);
         if (tempTile.spirit.spiritType !== simpleSpiritTypeSet.empty) {
             return false;
         }
-        this.world.swapTiles(this.pos, tempNextPos);
+        this.worldSpirit.swapTiles(this.pos, tempNextPos);
         return true;
     }
 }
@@ -133,14 +133,14 @@ export class PlayerWorldTile extends ComplexWorldTile {
         return simpleWorldTileSet.empty.getDbJson();
     }
     
-    addToWorldEvent(world) {
-        super.addToWorldEvent(world);
-        this.world.playerTileList.push(this);
+    addToWorldEvent(worldSpirit) {
+        super.addToWorldEvent(worldSpirit);
+        this.worldSpirit.playerTileList.push(this);
     }
     
     removeFromWorldEvent() {
-        let index = this.world.findPlayerTile(this.spirit.player);
-        this.world.playerTileList.splice(index, 1);
+        let index = this.worldSpirit.findPlayerTile(this.spirit.player);
+        this.worldSpirit.playerTileList.splice(index, 1);
         super.removeFromWorldEvent();
     }
     
@@ -157,16 +157,16 @@ export class PlayerWorldTile extends ComplexWorldTile {
         if (!tempResult) {
             return;
         }
-        let tempTile = this.world.getTile(pos);
+        let tempTile = this.worldSpirit.getTile(pos);
         if (!tempTile.canBeMined()) {
             return;
         }
-        this.world.setTile(pos, simpleWorldTileSet.empty);
+        this.worldSpirit.setTile(pos, simpleWorldTileSet.empty);
         this.spirit.inventory.incrementItemCountBySpirit(tempTile.spirit);
     }
     
     placeWorldTile(pos, spiritReference) {
-        let tempTile = this.world.getTile(pos);
+        let tempTile = this.worldSpirit.getTile(pos);
         if (tempTile.spirit.spiritType !== simpleSpiritTypeSet.empty) {
             return;
         }
@@ -179,7 +179,7 @@ export class PlayerWorldTile extends ComplexWorldTile {
         }
         tempItem.setCount(tempItem.count - 1);
         tempTile = worldTileFactory.getTileWithSpirit(tempItem.spirit);
-        this.world.setTile(pos, tempTile);
+        this.worldSpirit.setTile(pos, tempTile);
     }
 }
 

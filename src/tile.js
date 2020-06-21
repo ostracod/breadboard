@@ -19,12 +19,12 @@ export class Tile {
     }
     
     addToGridEvent(tileGrid, pos) {
-        this.spirit.setTile(this);
+        this.spirit.setParentTile(this);
         this.spirit.changeParentSpirit(tileGrid.parentSpirit);
     }
     
     removeFromGridEvent() {
-        this.spirit.setTile(null);
+        this.spirit.setParentTile(null);
         this.spirit.changeParentSpirit(null);
     }
     

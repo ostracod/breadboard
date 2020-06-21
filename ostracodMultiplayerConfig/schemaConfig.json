@@ -57,6 +57,19 @@
                     "type": "TEXT"
                 }
             ]
+        },
+        {
+            "name": "Configuration",
+            "fields": [
+                {
+                    "name": "name",
+                    "type": "VARCHAR(100)"
+                },
+                {
+                    "name": "value",
+                    "type": "VARCHAR(100)"
+                }
+            ]
         }
     ]
 }

@@ -1,13 +1,16 @@
 
 import ostracodMultiplayer from "ostracod-multiplayer";
-import {complexSpiritMap, world} from "./globalData.js";
+import {complexSpiritClassIdSet, complexSpiritTypeSet, complexSpiritMap} from "./globalData.js";
 import {createPosFromJson} from "./pos.js";
-import {MachineSpirit, persistAllComplexSpirits} from "./spirit.js";
-import {convertJsonToSpiritType} from "./spiritType.js";
+import {MachineSpirit, persistAllComplexSpirits, persistNextComplexSpiritId} from "./spirit.js";
+import {convertJsonToSpiritType, loadComplexSpirit} from "./spiritType.js";
 import {ComplexSpiritReference, convertJsonToSpiritReference} from "./spiritReference.js";
 import {getRecipeById} from "./recipe.js";
+import {niceUtils} from "./niceUtils.js";
 
 let gameUtils = ostracodMultiplayer.gameUtils;
+
+let worldSpirit;
 
 function addSetWorldTileGridCommand(playerTile, commandList) {
     let tempWindowSize = 21;
@@ -15,7 +18,11 @@ function addSetWorldTileGridCommand(playerTile, commandList) {
     let tempCenterOffset = Math.floor(tempWindowSize / 2);
     tempPos.x -= tempCenterOffset;
     tempPos.y -= tempCenterOffset;
-    let tempTileJsonList = world.getClientJson(tempPos, tempWindowSize, tempWindowSize);
+    let tempTileJsonList = worldSpirit.getWindowClientJson(
+        tempPos,
+        tempWindowSize,
+        tempWindowSize
+    );
     commandList.push({
         commandName: "setWorldTileGrid",
         pos: tempPos.toJson(),
@@ -89,7 +96,7 @@ gameUtils.addCommandListener(
     "enterWorld",
     false,
     (command, player, commandList, done, errorHandler) => {
-        world.addPlayerTile(player).then(playerSpirit => {
+        worldSpirit.addPlayerTile(player).then(playerSpirit => {
             let tempInventory = playerSpirit.inventory;
             addUpdateInventoryItemCommands(tempInventory, commandList);
             done();
@@ -103,7 +110,7 @@ function addCommandListener(commandName, handler) {
             commandName,
             true,
             (command, player, commandList) => {
-                handler(command, world.getPlayerTile(player), commandList);
+                handler(command, worldSpirit.getPlayerTile(player), commandList);
             }
         );
     } else {
@@ -113,7 +120,7 @@ function addCommandListener(commandName, handler) {
             (command, player, commandList, done, errorHandler) => {
                 handler(
                     command,
-                    world.getPlayerTile(player),
+                    worldSpirit.getPlayerTile(player),
                     commandList,
                     done,
                     errorHandler
@@ -229,7 +236,7 @@ class GameDelegate {
     }
     
     playerLeaveEvent(player) {
-        let tempTile = world.getPlayerTile(player);
+        let tempTile = worldSpirit.getPlayerTile(player);
         if (tempTile !== null) {
             tempTile.removeFromWorld();
             delete complexSpiritMap[tempTile.spirit.id];
@@ -237,8 +244,9 @@ class GameDelegate {
     }
     
     persistEvent(done) {
-        world.persist();
-        persistAllComplexSpirits().then(done);
+        return niceUtils.performDbTransaction(() => {
+            return persistNextComplexSpiritId().then(persistAllComplexSpirits);
+        }).then(done);
     }
 }
 
@@ -246,12 +254,26 @@ export let gameDelegate = new GameDelegate();
 
 function timerEvent() {
     gameUtils.performAtomicOperation(callback => {
-        world.tick().then(callback);
+        worldSpirit.tick().then(callback);
     }, () => {
         setTimeout(timerEvent, 40);
     });
 }
 
-timerEvent();
+export function loadOrCreateWorldSpirit() {
+    return niceUtils.performDbQuery(
+        "SELECT id FROM ComplexSpirits WHERE classId = ?",
+        [complexSpiritClassIdSet.world]
+    ).then(results => {
+        if (results.length > 0) {
+            return loadComplexSpirit(results[0].id, false);
+        } else {
+            return complexSpiritTypeSet.world.craft();
+        }
+    }).then(spirit => {
+        worldSpirit = spirit;
+        timerEvent();
+    });
+}
 
 

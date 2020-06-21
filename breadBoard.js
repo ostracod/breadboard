@@ -2,8 +2,11 @@
 import * as pathUtils from "path";
 import express from "express";
 import ostracodMultiplayer from "ostracod-multiplayer";
-import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, recipeDataList, world} from "./src/globalData.js";
-import {gameDelegate} from "./src/gameDelegate.js";
+
+import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, recipeDataList} from "./src/globalData.js";
+import {loadNextComplexSpiritId} from "./src/spirit.js";
+import {gameDelegate, loadOrCreateWorldSpirit} from "./src/gameDelegate.js";
+import {niceUtils} from "./src/niceUtils.js";
 
 let ostracodMultiplayerInstance = ostracodMultiplayer.ostracodMultiplayer;
 
@@ -28,10 +31,12 @@ if (!tempResult) {
     process.exit(1);
 }
 
-console.log("Loading world tile grid...");
+console.log("Loading world...");
 // TODO: Disable web requests until this promise finishes.
-world.loadTileGrid().then(() => {
-    console.log("Finished loading world tile grid.");
+niceUtils.performDbTransaction(() => {
+    return loadNextComplexSpiritId().then(loadOrCreateWorldSpirit)
+}).then(() => {
+    console.log("Finished loading world.");
 });
 
 

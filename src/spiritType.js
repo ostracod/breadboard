@@ -1,9 +1,9 @@
 
 import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, simpleSpiritTypeSet, complexSpiritTypeSet, dirtyComplexSpiritMap, simpleSpiritTypeMap, complexSpiritTypesMap} from "./globalData.js";
-import {SimpleSpirit, PlayerSpirit, MachineSpirit, CircuitSpirit} from "./spirit.js";
+import {SimpleSpirit, PlayerSpirit, MachineSpirit, WorldSpirit, CircuitSpirit} from "./spirit.js";
 import {convertDbJsonToInventory} from "./inventory.js";
 import {RecipeComponent} from "./recipe.js";
-import {convertDbJsonToCircuitTileGrid} from "./tileGrid.js";
+import {convertDbJsonToWorldTileGrid, convertDbJsonToCircuitTileGrid} from "./tileGrid.js";
 import {niceUtils} from "./niceUtils.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
@@ -253,6 +253,26 @@ export class MachineSpiritType extends ComplexSpiritType {
     }
 }
 
+export class WorldSpiritType extends ComplexSpiritType {
+    
+    constructor() {
+        super("world");
+    }
+    
+    convertDbJsonToSpirit(data, shouldPerformTransaction) {
+        return convertDbJsonToWorldTileGrid(
+            data.containerData,
+            shouldPerformTransaction
+        ).then(tileGrid => {
+            return new WorldSpirit(this, data.id, tileGrid);
+        });
+    }
+    
+    craft() {
+        return new WorldSpirit(this, null);
+    }
+}
+
 export class CircuitSpiritType extends ComplexSpiritType {
     
     constructor() {
@@ -309,12 +329,7 @@ export function loadComplexSpirit(id, shouldPerformTransaction = true) {
     return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => {
         return niceUtils.performDbQuery(
             "SELECT * FROM ComplexSpirits WHERE id = ?",
-            [id],
-            (error, results, fields) => {
-                dbError = error;
-                dbResults = results;
-                callback();
-            }
+            [id]
         ).then(results => {
             let tempRow = results[0];
             return convertDbJsonToSpirit({

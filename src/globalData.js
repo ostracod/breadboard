@@ -10,13 +10,15 @@ export const simpleSpiritSerialIntegerSet = {
 };
 
 export const complexSpiritClassIdSet = {
-    player: 0,
-    machine: 1,
-    circuit: 2
+    world: 0,
+    player: 1,
+    machine: 2,
+    circuit: 3
 };
 
 export const spiritColorAmount = 16;
 export const wireArrangementAmount = 12;
+export const worldSize = 100;
 export const circuitSize = 17;
 
 // Map from name to SimpleSpirit.
@@ -49,7 +51,7 @@ export let complexCircuitTileFactoryMap = {};
 export let recipeList = [];
 export let recipeDataList = [];
 
-import {EmptySpiritType, BarrierSpiritType, MatteriteSpiritType, EnergiteSpiritType, BlockSpiritType, WireSpiritType, PlayerSpiritType, MachineSpiritType, CircuitSpiritType} from "./spiritType.js";
+import {EmptySpiritType, BarrierSpiritType, MatteriteSpiritType, EnergiteSpiritType, BlockSpiritType, WireSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, CircuitSpiritType} from "./spiritType.js";
 import {SimpleWorldTile} from "./worldTile.js";
 import {SimpleCircuitTile} from "./circuitTile.js";
 import {ComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory, WorldTileFactory, CircuitTileFactory} from "./tileFactory.js";
@@ -70,6 +72,7 @@ new PlayerSpiritType();
 for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new MachineSpiritType(colorIndex);
 }
+new WorldSpiritType();
 new CircuitSpiritType();
 
 for (let serialInteger in simpleSpiritMap) {
@@ -125,9 +128,5 @@ for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
         createMachineRecipeComponent(colorIndex)
     );
 }
-
-import {World} from "./world.js";
-
-export let world = new World();
 
 
