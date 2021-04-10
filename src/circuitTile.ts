@@ -1,28 +1,29 @@
 
 import {simpleCircuitTileSet, simpleCircuitTileMap} from "./globalData.js";
+import {SimpleSpirit, ComplexSpirit} from "./spirit.js";
 import {Tile, simpleTileComplexity, complexTileComplexity} from "./tile.js";
 
 export class CircuitTile extends Tile {
     
-    getSimpleTileSet() {
+    getSimpleTileSet(): {[name: string]: CircuitTile} {
         return simpleCircuitTileSet;
     }
     
-    getSimpleTileMap() {
+    getSimpleTileMap(): {[serialInteger: string]: CircuitTile} {
         return simpleCircuitTileMap;
     }
 }
 
 export class SimpleCircuitTile extends CircuitTile {
     
-    constructor(spirit) {
+    constructor(spirit: SimpleSpirit) {
         super(spirit, simpleTileComplexity);
     }
 }
 
 export class ComplexCircuitTile extends CircuitTile {
     
-    constructor(spirit) {
+    constructor(spirit: ComplexSpirit) {
         super(spirit, complexTileComplexity);
     }
 }

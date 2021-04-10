@@ -1,11 +1,13 @@
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 import {complexSpiritClassIdSet, complexSpiritTypeSet, complexSpiritMap} from "./globalData.js";
-import {ComplexSpiritDbRow} from "./interfaces.js";
-import {createPosFromJson} from "./pos.js";
-import {MachineSpirit, persistAllComplexSpirits, persistNextComplexSpiritId} from "./spirit.js";
+import {Player, ComplexSpiritDbRow, InventoryUpdateClientJson, CommandHandler, SynchronousCommandHandler, AsynchronousCommandHandler, ClientCommand, SetWorldTileGridClientCommand, SetCircuitTileGridClientCommand, UpdateInventoryItemClientCommand, StopInspectingClientCommand, InventoryUpdatesClientCommand} from "./interfaces.js";
+import {Pos, createPosFromJson} from "./pos.js";
+import {PlayerSpirit, MachineSpirit, CircuitSpirit, persistAllComplexSpirits, persistNextComplexSpiritId} from "./spirit.js";
 import {convertJsonToSpiritType, loadComplexSpirit} from "./spiritType.js";
-import {ComplexSpiritReference, convertJsonToSpiritReference} from "./spiritReference.js";
+import {SpiritReference, ComplexSpiritReference, convertJsonToSpiritReference} from "./spiritReference.js";
+import {PlayerWorldTile} from "./worldTile.js";
+import {Inventory, InventoryUpdate} from "./inventory.js";
 import {getRecipeById} from "./recipe.js";
 import {niceUtils} from "./niceUtils.js";
 
@@ -13,7 +15,10 @@ let gameUtils = ostracodMultiplayer.gameUtils;
 
 let worldSpirit;
 
-function addSetWorldTileGridCommand(playerTile, commandList) {
+function addSetWorldTileGridCommand(
+    playerTile: PlayerWorldTile,
+    commandList: ClientCommand[]
+): void {
     let tempWindowSize = 21;
     let tempPos = playerTile.pos.copy();
     let tempCenterOffset = Math.floor(tempWindowSize / 2);
@@ -30,46 +35,65 @@ function addSetWorldTileGridCommand(playerTile, commandList) {
         tiles: tempTileJsonList,
         width: tempWindowSize,
         height: tempWindowSize
-    });
+    } as SetWorldTileGridClientCommand);
 }
 
-function addSetCircuitTileGridCommand(circuitSpirit, commandList) {
+function addSetCircuitTileGridCommand(
+    circuitSpirit: CircuitSpirit,
+    commandList: ClientCommand[],
+): void {
     let tempTileList = circuitSpirit.tileGrid.tileList;
     commandList.push({
         commandName: "setCircuitTileGrid",
         tiles: tempTileList.map(tile => tile.getClientJson())
-    });
+    } as SetCircuitTileGridClientCommand);
 }
 
-function addUpdateInventoryItemCommandHelper(inventoryUpdateData, commandList) {
+function addUpdateInventoryItemCommandHelper(
+    inventoryUpdateData: InventoryUpdateClientJson,
+    commandList: ClientCommand[],
+): void {
     commandList.push({
         commandName: "updateInventoryItem",
         inventoryUpdate: inventoryUpdateData
-    });
+    } as UpdateInventoryItemClientCommand);
 }
 
-function addUpdateInventoryItemCommand(inventoryUpdate, commandList) {
+function addUpdateInventoryItemCommand(
+    inventoryUpdate: InventoryUpdate,
+    commandList: ClientCommand[],
+): void {
     addUpdateInventoryItemCommandHelper(
         inventoryUpdate.getClientJson(false),
         commandList
     );
 }
 
-function addUpdateInventoryItemCommands(inventory, commandList) {
+function addUpdateInventoryItemCommands(
+    inventory: Inventory,
+    commandList: ClientCommand[],
+): void {
     for (let item of inventory.items) {
         let tempUpdate = item.getInventoryUpdate();
         addUpdateInventoryItemCommand(tempUpdate, commandList);
     }
 }
 
-function addStopInspectingCommand(spiritId, commandList) {
+function addStopInspectingCommand(
+    spiritId: number,
+    commandList: ClientCommand[],
+): void {
     commandList.push({
         commandName: "stopInspecting",
         spiritId: spiritId
-    });
+    } as StopInspectingClientCommand);
 }
 
-function processInventoryUpdates(command, playerSpirit, commandList) {
+function processInventoryUpdates(
+    command: InventoryUpdatesClientCommand,
+    playerSpirit: PlayerSpirit,
+    commandList: ClientCommand[],
+): void {
     for (let updateData of command.inventoryUpdates) {
         let tempReference = convertJsonToSpiritReference(updateData.spiritReference);
         if (tempReference instanceof ComplexSpiritReference && tempReference.id < 0) {
@@ -96,7 +120,13 @@ function processInventoryUpdates(command, playerSpirit, commandList) {
 gameUtils.addCommandListener(
     "enterWorld",
     false,
-    (command, player, commandList, done, errorHandler) => {
+    (
+        command: ClientCommand,
+        player: Player,
+        commandList: ClientCommand[],
+        done: () => void,
+        errorHandler: (message: string) => void,
+    ): void => {
         worldSpirit.addPlayerTile(player).then(playerSpirit => {
             let tempInventory = playerSpirit.inventory;
             addUpdateInventoryItemCommands(tempInventory, commandList);
@@ -105,21 +135,34 @@ gameUtils.addCommandListener(
     }
 );
 
-function addCommandListener(commandName, handler) {
+function addCommandListener<T extends ClientCommand>(
+    commandName: string,
+    handler: CommandHandler<T>,
+): void {
     if (handler.length === 3) {
         gameUtils.addCommandListener(
             commandName,
             true,
-            (command, player, commandList) => {
-                handler(command, worldSpirit.getPlayerTile(player), commandList);
+            (command: T, player: Player, commandList: ClientCommand[]): void => {
+                (handler as SynchronousCommandHandler<T>)(
+                    command,
+                    worldSpirit.getPlayerTile(player),
+                    commandList,
+                );
             }
         );
     } else {
         gameUtils.addCommandListener(
             commandName,
             false,
-            (command, player, commandList, done, errorHandler) => {
-                handler(
+            (
+                command: T,
+                player: Player,
+                commandList: ClientCommand[],
+                done: () => void,
+                errorHandler: (message: string) => void,
+            ): void => {
+                (handler as AsynchronousCommandHandler<T>)(
                     command,
                     worldSpirit.getPlayerTile(player),
                     commandList,
@@ -164,7 +207,14 @@ addCommandListener("mine", (command, playerTile, commandList) => {
     processInventoryUpdates(command, playerTile.spirit, commandList);
 });
 
-function addPlaceTileCommandListener(commandName, placeTile) {
+function addPlaceTileCommandListener(
+    commandName: string,
+    placeTile: (
+        playerTile: PlayerWorldTile,
+        pos: Pos,
+        spiritReference: SpiritReference
+    ) => void,
+): void {
     addCommandListener(commandName, (command, playerTile, commandList) => {
         let tempPos = createPosFromJson(command.pos);
         let tempReference = convertJsonToSpiritReference(command.spiritReference);
@@ -232,11 +282,11 @@ class GameDelegate {
         
     }
     
-    playerEnterEvent(player) {
+    playerEnterEvent(player: Player): void {
         // Player tile is created by enterWorld command.
     }
     
-    playerLeaveEvent(player) {
+    playerLeaveEvent(player: Player): void {
         let tempTile = worldSpirit.getPlayerTile(player);
         if (tempTile !== null) {
             tempTile.removeFromWorld();
@@ -244,8 +294,8 @@ class GameDelegate {
         }
     }
     
-    persistEvent(done) {
-        return niceUtils.performDbTransaction(() => {
+    persistEvent(done: () => void): void {
+        niceUtils.performDbTransaction(() => {
             return persistNextComplexSpiritId().then(persistAllComplexSpirits);
         }).then(done);
     }
@@ -253,7 +303,7 @@ class GameDelegate {
 
 export let gameDelegate = new GameDelegate();
 
-function timerEvent() {
+function timerEvent(): void {
     gameUtils.performAtomicOperation(callback => {
         worldSpirit.tick().then(callback);
     }, () => {
@@ -261,7 +311,7 @@ function timerEvent() {
     });
 }
 
-export function loadOrCreateWorldSpirit() {
+export function loadOrCreateWorldSpirit(): Promise<void> {
     return niceUtils.performDbQuery(
         "SELECT id FROM ComplexSpirits WHERE classId = ?",
         [complexSpiritClassIdSet.world]

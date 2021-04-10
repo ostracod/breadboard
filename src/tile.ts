@@ -1,4 +1,5 @@
 
+import {TileClientJson, SimpleTileClientJson, ComplexTileClientJson} from "./interfaces.js";
 import {Spirit} from "./spirit.js";
 
 export abstract class Tile {
@@ -45,7 +46,7 @@ abstract class TileComplexity {
         // Do nothing.
     }
     
-    abstract convertToClientJson(tile);
+    abstract convertToClientJson(tile): TileClientJson;
     
     abstract convertToDbJson(tile);
 }
@@ -61,7 +62,7 @@ class SimpleTileComplexity extends TileComplexity {
         tempTileMap[tempSerialInteger] = tile;
     }
     
-    convertToClientJson(tile) {
+    convertToClientJson(tile): SimpleTileClientJson {
         return tile.spirit.serialInteger;
     }
     
@@ -72,7 +73,7 @@ class SimpleTileComplexity extends TileComplexity {
 
 class ComplexTileComplexity extends TileComplexity {
     
-    convertToClientJson(tile) {
+    convertToClientJson(tile): ComplexTileClientJson {
         return {
             spirit: tile.spirit.getClientJson()
         };

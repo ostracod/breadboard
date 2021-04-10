@@ -2,6 +2,7 @@
 import {SimpleSpirit} from "./spirit.js";
 import {SimpleSpiritType, ComplexSpiritType} from "./spiritType.js";
 import {WorldTile} from "./worldTile.js";
+import {CircuitTile} from "./circuitTile.js";
 
 export const simpleSpiritSerialIntegerSet = {
     empty: 0,
@@ -29,7 +30,7 @@ export let simpleSpiritSet: {[name: string]: SimpleSpirit} = {};
 export let simpleSpiritTypeSet: {[name: string]: SimpleSpiritType} = {};
 export let complexSpiritTypeSet: {[name: string]: ComplexSpiritType} = {};
 export let simpleWorldTileSet: {[name: string]: WorldTile} = {};
-export let simpleCircuitTileSet = {};
+export let simpleCircuitTileSet: {[name: string]: CircuitTile} = {};
 
 // Map from serial integer to SimpleSpirit.
 export let simpleSpiritMap = {};
@@ -42,9 +43,8 @@ export let simpleSpiritTypeMap = {};
 // Map from spirit class ID to list of ComplexSpiritType.
 export let complexSpiritTypesMap = {};
 
-// Maps from spirit serial integer to Tile.
-export let simpleWorldTileMap = {};
-export let simpleCircuitTileMap = {};
+export let simpleWorldTileMap: {[serialInteger: string]: WorldTile} = {};
+export let simpleCircuitTileMap: {[serialInteger: string]: CircuitTile} = {};
 // Maps from spirit class ID to ComplexWorldTileFactory.
 export let complexWorldTileFactoryMap = {};
 export let complexCircuitTileFactoryMap = {};
