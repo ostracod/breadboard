@@ -1,12 +1,16 @@
 
 import {simpleSpiritSerialIntegerSet, wireArrangementAmount, worldSize, circuitSize, simpleSpiritSet, simpleSpiritTypeSet, complexSpiritTypeSet, simpleWorldTileSet, simpleCircuitTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap, simpleCircuitTileMap, circuitTileFactory} from "./globalData.js";
+import {Player, ConfigDbRow, SpiritClientJson, ComplexSpiritClientJson, PlayerSpiritClientJson, MachineSpiritClientJson, SpiritNestedDbJson} from "./interfaces.js";
 import {Pos} from "./pos.js";
-import {loadComplexSpirit} from "./spiritType.js";
+import {SpiritType, SimpleSpiritType, ComplexSpiritType, PlayerSpiritType, MachineSpiritType, loadComplexSpirit} from "./spiritType.js";
+import {SpiritReference} from "./spiritReference.js";
 import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
-import {Inventory, pushInventoryUpdate} from "./inventory.js";
+import {Inventory, InventoryObserver, InventoryUpdate, pushInventoryUpdate} from "./inventory.js";
 import {pushRecipeComponent} from "./recipe.js";
-import {WorldTile, PlayerWorldTile} from "./worldTile.js";
-import {createWorldTileGrid, createCircuitTileGrid} from "./tileGrid.js";
+import {Tile} from "./tile.js";
+import {WorldTile, ComplexWorldTile, PlayerWorldTile} from "./worldTile.js";
+import {CircuitTile} from "./circuitTile.js";
+import {TileGrid, createWorldTileGrid, createCircuitTileGrid} from "./tileGrid.js";
 import {niceUtils} from "./niceUtils.js";
 
 let nextComplexSpiritId;
@@ -18,10 +22,9 @@ let nextComplexSpiritId;
 // A ComplexSpirit holds custom state, and must
 // be serialized as a JSON dictionary.
 
-class Spirit {
+export abstract class Spirit {
     
-    // Concrete subclasses of Spirit must implement these methods:
-    // getClientJson, getNestedDbJson, getReference
+    spiritType: SpiritType;
     
     constructor(spiritType) {
         this.spiritType = spiritType;
@@ -54,9 +57,19 @@ class Spirit {
     getRecycleProducts() {
         return this.spiritType.getBaseRecycleProducts();
     }
+    
+    abstract getClientJson(): SpiritClientJson;
+    
+    abstract getNestedDbJson(): SpiritNestedDbJson;
+    
+    abstract getReference(): SpiritReference;
 }
 
 export class SimpleSpirit extends Spirit {
+    
+    spiritType: SimpleSpiritType;
+    serialInteger: number;
+    reference: SimpleSpiritReference;
     
     constructor(spiritType) {
         super(spiritType);
@@ -80,6 +93,15 @@ export class SimpleSpirit extends Spirit {
 }
 
 export class ComplexSpirit extends Spirit {
+    
+    spiritType: ComplexSpiritType;
+    id: number;
+    classId: number;
+    parentSpirit: ComplexSpirit;
+    parentTile: Tile;
+    reference: ComplexSpiritReference;
+    hasDbRow: boolean;
+    isDestroyed: boolean;
     
     constructor(spiritType, id) {
         super(spiritType);
@@ -106,7 +128,7 @@ export class ComplexSpirit extends Spirit {
         }
     }
     
-    getClientJson() {
+    getClientJson(): ComplexSpiritClientJson {
         return {
             classId: this.classId,
             id: this.id
@@ -213,7 +235,9 @@ export class ComplexSpirit extends Spirit {
     }
 }
 
-export class InventorySpirit extends ComplexSpirit {
+export class InventorySpirit extends ComplexSpirit implements InventoryObserver {
+    
+    inventory: Inventory;
     
     constructor(spiritType, id, inventory) {
         super(spiritType, id);
@@ -256,6 +280,12 @@ export class InventorySpirit extends ComplexSpirit {
 
 export class PlayerSpirit extends InventorySpirit {
     
+    player: Player;
+    inspectedMachine: MachineSpirit;
+    inspectedCircuit: CircuitSpirit;
+    inventoryUpdates: InventoryUpdate[];
+    stopInspectionSpiritIds: number[];
+    
     constructor(spiritType, player, inventory = null) {
         let lastId = player.extraFields.complexSpiritId;
         super(spiritType, lastId, inventory);
@@ -275,8 +305,8 @@ export class PlayerSpirit extends InventorySpirit {
         pushInventoryUpdate(this.inventoryUpdates, tempUpdate);
     }
     
-    getClientJson() {
-        let output = super.getClientJson();
+    getClientJson(): PlayerSpiritClientJson {
+        let output = super.getClientJson() as PlayerSpiritClientJson;
         output.username = this.player.username;
         return output;
     }
@@ -299,11 +329,12 @@ export class PlayerSpirit extends InventorySpirit {
         if (spirit.hasParentSpirit(this)) {
             return true;
         }
-        if (!(spirit.parentTile instanceof WorldTile)) {
+        if (!(spirit.parentTile instanceof ComplexWorldTile
+                && this.parentTile instanceof ComplexWorldTile)) {
             return false;
         }
-        let tempPos1 = this.parentTile.pos;
-        let tempPos2 = spirit.parentTile.pos;
+        let tempPos1 = (this.parentTile as ComplexWorldTile).pos;
+        let tempPos2 = (spirit.parentTile as ComplexWorldTile).pos;
         return tempPos1.isAdjacentTo(tempPos2);
     }
     
@@ -442,13 +473,16 @@ export class PlayerSpirit extends InventorySpirit {
 
 export class MachineSpirit extends InventorySpirit {
     
+    spiritType: MachineSpiritType;
+    colorIndex: number;
+    
     constructor(spiritType, id, inventory = null) {
         super(spiritType, id, inventory);
         this.colorIndex = this.spiritType.colorIndex;
     }
     
-    getClientJson() {
-        let output = super.getClientJson();
+    getClientJson(): MachineSpiritClientJson {
+        let output = super.getClientJson() as MachineSpiritClientJson;
         output.colorIndex = this.colorIndex;
         return output;
     }
@@ -460,10 +494,9 @@ export class MachineSpirit extends InventorySpirit {
     }
 }
 
-export class TileGridSpirit extends ComplexSpirit {
+export abstract class TileGridSpirit<T extends Tile> extends ComplexSpirit {
     
-    // Concrete subclasses of TileGridSpirit must implement these methods:
-    // generateTileGrid
+    tileGrid: TileGrid<T>;
     
     constructor(spiritType, id, tileGrid = null) {
         super(spiritType, id);
@@ -508,11 +541,15 @@ export class TileGridSpirit extends ComplexSpirit {
     swapTiles(pos1, pos2) {
         this.tileGrid.swapTiles(pos1, pos2);
     }
+    
+    abstract generateTileGrid();
 }
 
-export class WorldSpirit extends TileGridSpirit {
+export class WorldSpirit extends TileGridSpirit<WorldTile> {
     
-    constructor(spiritType, id, tileGrid) {
+    playerTileList: PlayerWorldTile[];
+    
+    constructor(spiritType, id, tileGrid = null) {
         super(spiritType, id, tileGrid);
         this.playerTileList = [];
     }
@@ -580,7 +617,7 @@ export class WorldSpirit extends TileGridSpirit {
         let tempPromise;
         let tempId = player.extraFields.complexSpiritId;
         if (tempId === null) {
-            let tempSpirit = complexSpiritTypeSet.player.createPlayerSpirit(player);
+            let tempSpirit = (complexSpiritTypeSet.player as PlayerSpiritType).createPlayerSpirit(player);
             tempPromise = Promise.resolve(tempSpirit);
         } else {
             tempPromise = loadComplexSpirit(tempId);
@@ -608,7 +645,7 @@ export class WorldSpirit extends TileGridSpirit {
     }
 }
 
-export class CircuitSpirit extends TileGridSpirit {
+export class CircuitSpirit extends TileGridSpirit<CircuitTile> {
     
     generateTileGrid() {
         this.tileGrid = createCircuitTileGrid(circuitSize, circuitSize);
@@ -628,7 +665,7 @@ export function loadNextComplexSpiritId() {
     return niceUtils.performDbQuery(
         "SELECT * FROM Configuration WHERE name = ?",
         ["nextComplexSpiritId"]
-    ).then(results => {
+    ).then((results: ConfigDbRow[]) => {
         if (results.length > 0) {
             nextComplexSpiritId = parseInt(results[0].value);
         } else {

@@ -1,5 +1,8 @@
 
 import {simpleSpiritTypeSet, simpleWorldTileSet, simpleWorldTileMap, worldTileFactory} from "./globalData.js";
+import {WalkControllerJson} from "./interfaces.js";
+import {Pos} from "./pos.js";
+import {WorldSpirit, PlayerSpirit} from "./spirit.js";
 import {Tile, simpleTileComplexity, complexTileComplexity} from "./tile.js";
 
 export class WorldTile extends Tile {
@@ -33,6 +36,9 @@ export class SimpleWorldTile extends WorldTile {
 }
 
 export class ComplexWorldTile extends WorldTile {
+    
+    worldSpirit: WorldSpirit;
+    pos: Pos;
     
     constructor(spirit) {
         super(spirit, complexTileComplexity);
@@ -87,6 +93,10 @@ export class ComplexWorldTile extends WorldTile {
 
 class TimeBudget {
     
+    maximumTime: number;
+    time: number;
+    lastTimestamp: number;
+    
     constructor(maximumTime) {
         this.maximumTime = maximumTime;
         this.time = this.maximumTime;
@@ -115,6 +125,11 @@ class TimeBudget {
 }
 
 export class PlayerWorldTile extends ComplexWorldTile {
+    
+    spirit: PlayerSpirit;
+    walkControllerData: WalkControllerJson;
+    walkTimeBudget: TimeBudget;
+    mineTimeBudget: TimeBudget;
     
     constructor(playerSpirit) {
         super(playerSpirit);

@@ -1,4 +1,8 @@
 
+import {SimpleSpirit} from "./spirit.js";
+import {SimpleSpiritType, ComplexSpiritType} from "./spiritType.js";
+import {WorldTile} from "./worldTile.js";
+
 export const simpleSpiritSerialIntegerSet = {
     empty: 0,
     barrier: 1,
@@ -21,13 +25,10 @@ export const wireArrangementAmount = 12;
 export const worldSize = 100;
 export const circuitSize = 17;
 
-// Map from name to SimpleSpirit.
-export let simpleSpiritSet = {};
-// Maps from name to SpiritType.
-export let simpleSpiritTypeSet = {};
-export let complexSpiritTypeSet = {};
-// Maps from name to Tile.
-export let simpleWorldTileSet = {};
+export let simpleSpiritSet: {[name: string]: SimpleSpirit} = {};
+export let simpleSpiritTypeSet: {[name: string]: SimpleSpiritType} = {};
+export let complexSpiritTypeSet: {[name: string]: ComplexSpiritType} = {};
+export let simpleWorldTileSet: {[name: string]: WorldTile} = {};
 export let simpleCircuitTileSet = {};
 
 // Map from serial integer to SimpleSpirit.
@@ -88,11 +89,8 @@ new ComplexWorldTileFactory("circuit");
 export let worldTileFactory = new WorldTileFactory();
 export let circuitTileFactory = new CircuitTileFactory();
 
-function createSimpleRecipeComponent(spiritKey, count, offset) {
-    let tempInteger = simpleSpiritSerialIntegerSet[spiritKey];
-    if (typeof offset !== "undefined") {
-        tempInteger += offset;
-    }
+function createSimpleRecipeComponent(spiritKey, count, offset = 0) {
+    let tempInteger = simpleSpiritSerialIntegerSet[spiritKey] + offset;
     let tempType = simpleSpiritTypeMap[tempInteger];
     return new RecipeComponent(tempType, count);
 }

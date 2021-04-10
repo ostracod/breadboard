@@ -3,10 +3,10 @@ import * as pathUtils from "path";
 import express from "express";
 import ostracodMultiplayer from "ostracod-multiplayer";
 
-import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, recipeDataList} from "./src/globalData.js";
-import {loadNextComplexSpiritId} from "./src/spirit.js";
-import {gameDelegate, loadOrCreateWorldSpirit} from "./src/gameDelegate.js";
-import {niceUtils} from "./src/niceUtils.js";
+import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, recipeDataList} from "./globalData.js";
+import {loadNextComplexSpiritId} from "./spirit.js";
+import {gameDelegate, loadOrCreateWorldSpirit} from "./gameDelegate.js";
+import {niceUtils} from "./niceUtils.js";
 
 let ostracodMultiplayerInstance = ostracodMultiplayer.ostracodMultiplayer;
 

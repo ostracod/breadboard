@@ -3,6 +3,6 @@
     "version": "1.0.0",
     "type": "module",
     "dependencies": {
-        "ostracod-multiplayer": "github:ostracod/ostracod-multiplayer"
+        "ostracod-multiplayer": "github:ostracod/ostracod-multiplayer#semver:^1.2.1"
     }
 }

@@ -1,9 +1,16 @@
 
 import {complexSpiritMap} from "./globalData.js";
+import {InventoryUpdateClientJson} from "./interfaces.js";
+import {Spirit, ComplexSpirit} from "./spirit.js";
 import {SimpleSpiritType, convertDbJsonToSpirit} from "./spiritType.js";
+import {convertJsonToSpiritReference} from "./spiritReference.js";
 import {niceUtils} from "./niceUtils.js";
 
 export class InventoryItem {
+    
+    inventory: Inventory;
+    spirit: Spirit;
+    count: number;
     
     constructor(inventory, spirit, count) {
         this.inventory = inventory;
@@ -59,7 +66,15 @@ export class InventoryItem {
     }
 }
 
+export interface InventoryObserver {
+    inventoryChangeEvent(inventory: Inventory, item: InventoryItem);
+}
+
 export class Inventory {
+    
+    items: InventoryItem[];
+    observers: InventoryObserver[];
+    parentSpirit: ComplexSpirit;
     
     constructor() {
         this.items = [];
@@ -256,7 +271,11 @@ export class Inventory {
     }
 }
 
-class InventoryUpdate {
+export class InventoryUpdate {
+    
+    inventory: Inventory;
+    spirit: Spirit;
+    count: number;
     
     constructor(inventory, spirit, count) {
         this.inventory = inventory;
@@ -264,11 +283,11 @@ class InventoryUpdate {
         this.count = count;
     }
     
-    getClientJson(shouldUseReference = true) {
+    getClientJson(shouldUseReference = true): InventoryUpdateClientJson {
         let output = {
             parentSpiritId: this.inventory.parentSpirit.id,
             count: this.count
-        };
+        } as InventoryUpdateClientJson;
         if (shouldUseReference) {
             let tempReference = this.spirit.getReference();
             output.spiritReference = tempReference.getJson();

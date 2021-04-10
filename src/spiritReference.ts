@@ -1,24 +1,38 @@
 
 import {simpleSpiritMap, complexSpiritMap} from "./globalData.js";
+import {SpiritReferenceJson, SimpleSpiritReferenceJson, ComplexSpiritReferenceJson} from "./interfaces.js";
+import {Spirit} from "./spirit.js";
 
 // A SpiritReference is used to identify unique
 // instances of Spirits.
 
-class SpiritReference {
-    
-    // Concrete subclasses of SpiritReference must implement these methods:
-    // equals, getSpirit
+export abstract class SpiritReference {
     
     constructor() {
         
     }
+    
+    abstract getJson(): SpiritReferenceJson;
+    
+    abstract equals(spiritReference): boolean;
+    
+    abstract getSpirit(): Spirit;
 }
 
 export class SimpleSpiritReference extends SpiritReference {
     
+    serialInteger: number;
+    
     constructor(serialInteger) {
         super();
         this.serialInteger = serialInteger;
+    }
+    
+    getJson(): SimpleSpiritReferenceJson {
+        return {
+            type: "simple",
+            serialInteger: this.serialInteger
+        };
     }
     
     equals(spiritReference) {
@@ -35,9 +49,18 @@ export class SimpleSpiritReference extends SpiritReference {
 
 export class ComplexSpiritReference extends SpiritReference {
     
+    id: number;
+    
     constructor(id) {
         super();
         this.id = id;
+    }
+    
+    getJson(): ComplexSpiritReferenceJson {
+        return {
+            type: "complex",
+            id: this.id
+        };
     }
     
     equals(spiritReference) {

@@ -6,6 +6,6 @@ databaseConfig.json
 ssl.crt
 ssl.key
 serverMessages.txt
-world.json
+dist
 
 

@@ -2,16 +2,20 @@
 import {complexSpiritClassIdSet, simpleWorldTileMap, simpleCircuitTileMap, complexWorldTileFactoryMap, complexCircuitTileFactoryMap} from "./globalData.js";
 import {convertNestedDbJsonToSpirit} from "./spiritType.js";
 import {SimpleSpirit, ComplexSpirit} from "./spirit.js";
+import {Tile} from "./tile.js";
 import {ComplexWorldTile, PlayerWorldTile, MachineWorldTile} from "./worldTile.js";
 
-class ComplexTileFactory {
+abstract class ComplexTileFactory {
     
-    // Concrete subclasses of ComplexTileFactory must implement these methods:
-    // convertDbJsonToTile, createTileWithSpirit
+    baseName: string;
     
     constructor(baseName) {
         this.baseName = baseName;
     }
+    
+    abstract convertDbJsonToTile(data, spirit): Tile;
+    
+    abstract createTileWithSpirit(spirit);
 }
 
 export class ComplexWorldTileFactory extends ComplexTileFactory {
@@ -22,7 +26,7 @@ export class ComplexWorldTileFactory extends ComplexTileFactory {
         complexWorldTileFactoryMap[tempClassId] = this;
     }
     
-    convertDbJsonToTile(data, spirit) {
+    convertDbJsonToTile(data, spirit): Tile {
         return new ComplexWorldTile(spirit);
     }
     
@@ -37,7 +41,7 @@ export class PlayerWorldTileFactory extends ComplexWorldTileFactory {
         super("player");
     }
     
-    convertDbJsonToTile(data, spirit) {
+    convertDbJsonToTile(data, spirit): Tile {
         throw new Error("Player should not be persisted as world tile.");
     }
     
@@ -61,7 +65,10 @@ export class MachineWorldTileFactory extends ComplexWorldTileFactory {
     }
 }
 
-class TileFactory {
+export class TileFactory {
+    
+    simpleTileMap: {[serialInteger: string]: Tile};
+    complexTileFactoryMap: {[classId: string]: ComplexTileFactory};
     
     constructor(simpleTileMap, complexTileFactoryMap) {
         this.simpleTileMap = simpleTileMap;

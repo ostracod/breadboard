@@ -1,6 +1,7 @@
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 import {complexSpiritClassIdSet, complexSpiritTypeSet, complexSpiritMap} from "./globalData.js";
+import {ComplexSpiritDbRow} from "./interfaces.js";
 import {createPosFromJson} from "./pos.js";
 import {MachineSpirit, persistAllComplexSpirits, persistNextComplexSpiritId} from "./spirit.js";
 import {convertJsonToSpiritType, loadComplexSpirit} from "./spiritType.js";
@@ -264,7 +265,7 @@ export function loadOrCreateWorldSpirit() {
     return niceUtils.performDbQuery(
         "SELECT id FROM ComplexSpirits WHERE classId = ?",
         [complexSpiritClassIdSet.world]
-    ).then(results => {
+    ).then((results: ComplexSpiritDbRow[]) => {
         if (results.length > 0) {
             return loadComplexSpirit(results[0].id, false);
         } else {

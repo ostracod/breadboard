@@ -2,8 +2,22 @@
 import {simpleSpiritSet, worldTileFactory, circuitTileFactory} from "./globalData.js";
 import {Pos} from "./pos.js";
 import {niceUtils} from "./niceUtils.js";
+import {ComplexSpirit} from "./spirit.js";
+import {Tile} from "./tile.js";
+import {WorldTile} from "./worldTile.js";
+import {CircuitTile} from "./circuitTile.js";
+import {TileFactory} from "./tileFactory.js";
 
-export class TileGrid {
+export class TileGrid<T extends Tile> {
+    
+    width: number;
+    height: number;
+    tileFactory: TileFactory;
+    parentSpirit: ComplexSpirit;
+    fillTile: T;
+    outsideTile: T;
+    length: number;
+    tileList: T[];
     
     constructor(width, height, tileFactory) {
         this.width = width;
@@ -124,11 +138,11 @@ export class TileGrid {
 }
 
 export function createWorldTileGrid(width, height) {
-    return new TileGrid(width, height, worldTileFactory);
+    return new TileGrid<WorldTile>(width, height, worldTileFactory);
 }
 
 export function createCircuitTileGrid(width, height) {
-    return new TileGrid(width, height, circuitTileFactory);
+    return new TileGrid<CircuitTile>(width, height, circuitTileFactory);
 }
 
 function convertDbJsonToTileGrid(data, tileFactory, shouldPerformTransaction) {

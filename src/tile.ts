@@ -1,8 +1,10 @@
 
-export class Tile {
+import {Spirit} from "./spirit.js";
+
+export abstract class Tile {
     
-    // Concrete subclasses of Tile must implement these methods:
-    // convertToClientJson, convertToDbJson, getSimpleTileSet, getSimpleTileMap
+    spirit: Spirit;
+    tileComplexity: TileComplexity;
     
     constructor(spirit, tileComplexity) {
         this.spirit = spirit;
@@ -31,16 +33,21 @@ export class Tile {
     moveEvent(pos) {
         // Do nothing.
     }
+    
+    abstract getSimpleTileSet();
+    
+    abstract getSimpleTileMap();
 }
 
-class TileComplexity {
-    
-    // Concrete subclasses of TileComplexity must implement these methods:
-    // convertToClientJson, convertToDbJson
+abstract class TileComplexity {
     
     registerTile(tile) {
         // Do nothing.
     }
+    
+    abstract convertToClientJson(tile);
+    
+    abstract convertToDbJson(tile);
 }
 
 class SimpleTileComplexity extends TileComplexity {

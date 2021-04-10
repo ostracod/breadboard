@@ -1,6 +1,7 @@
 
 import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, simpleSpiritTypeSet, complexSpiritTypeSet, dirtyComplexSpiritMap, simpleSpiritTypeMap, complexSpiritTypesMap} from "./globalData.js";
-import {SimpleSpirit, PlayerSpirit, MachineSpirit, WorldSpirit, CircuitSpirit} from "./spirit.js";
+import {SpiritTypeJson, ComplexSpiritTypeJson, MachineSpiritTypeJson} from "./interfaces.js";
+import {Spirit, SimpleSpirit, PlayerSpirit, MachineSpirit, WorldSpirit, CircuitSpirit} from "./spirit.js";
 import {convertDbJsonToInventory} from "./inventory.js";
 import {RecipeComponent} from "./recipe.js";
 import {convertDbJsonToWorldTileGrid, convertDbJsonToCircuitTileGrid} from "./tileGrid.js";
@@ -13,10 +14,9 @@ let gameUtils = ostracodMultiplayer.gameUtils;
 // > Identify whether a spirit instance matches particular criteria
 // > Create new instances of spirits
 
-class SpiritType {
+export abstract class SpiritType {
     
-    // Concrete subclasses of SpiritType must implement these methods:
-    // matchesSpiritDbJson, getJson, matchesJson, convertDbJsonToSpirit, craft
+    baseName: string;
     
     constructor(baseName) {
         this.baseName = baseName;
@@ -42,9 +42,22 @@ class SpiritType {
     isFreeToCraft() {
         return false;
     }
+    
+    abstract matchesSpiritDbJson(data): boolean;
+    
+    abstract getJson(): SpiritTypeJson;
+    
+    abstract matchesJson(data): boolean;
+    
+    abstract convertDbJsonToSpirit(data, shouldPerformTransaction): Promise<Spirit>;
+    
+    abstract craft(): Spirit;
 }
 
 export class SimpleSpiritType extends SpiritType {
+    
+    serialInteger: number;
+    spirit: SimpleSpirit;
     
     constructor(baseName, offset = 0) {
         super(baseName);
@@ -138,6 +151,8 @@ export class BlockSpiritType extends SimpleSpiritType {
 
 export class WireSpiritType extends SimpleSpiritType {
     
+    arrangement: number;
+    
     constructor(arrangement) {
         super("wire", arrangement);
         this.arrangement = arrangement;
@@ -148,7 +163,9 @@ export class WireSpiritType extends SimpleSpiritType {
     }
 }
 
-class ComplexSpiritType extends SpiritType {
+export abstract class ComplexSpiritType extends SpiritType {
+    
+    spiritClassId: number;
     
     constructor(baseName) {
         super(baseName);
@@ -164,7 +181,7 @@ class ComplexSpiritType extends SpiritType {
         return (typeof data !== "number" && this.spiritClassId === data.classId);
     }
     
-    getJson() {
+    getJson(): ComplexSpiritTypeJson {
         return {
             type: "complex",
             classId: this.spiritClassId
@@ -196,7 +213,7 @@ export class PlayerSpiritType extends ComplexSpiritType {
         }
     }
     
-    craft() {
+    craft(): Spirit {
         throw new Error("Cannot craft player.");
     }
     
@@ -206,6 +223,8 @@ export class PlayerSpiritType extends ComplexSpiritType {
 }
 
 export class MachineSpiritType extends ComplexSpiritType {
+    
+    colorIndex: number;
     
     constructor(colorIndex) {
         super("machine");
@@ -217,8 +236,8 @@ export class MachineSpiritType extends ComplexSpiritType {
             && this.colorIndex === data.attributeData.colorIndex);
     }
     
-    getJson() {
-        let output = super.getJson();
+    getJson(): MachineSpiritTypeJson {
+        let output = super.getJson() as MachineSpiritTypeJson;
         output.colorIndex = this.colorIndex;
         return output;
     }

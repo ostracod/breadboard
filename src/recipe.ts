@@ -1,9 +1,13 @@
 
 import {recipeList, recipeDataList} from "./globalData.js";
+import {SpiritType} from "./spiritType.js";
 
 let nextRecipeId = 0;
 
 export class RecipeComponent {
+    
+    spiritType: SpiritType;
+    count: number;
     
     constructor(spiritType, count) {
         this.spiritType = spiritType;
@@ -23,6 +27,10 @@ export class RecipeComponent {
 }
 
 export class Recipe {
+    
+    ingredients: RecipeComponent[];
+    product: RecipeComponent;
+    id: number;
     
     constructor(ingredients, product) {
         this.ingredients = ingredients;
