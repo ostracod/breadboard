@@ -4,6 +4,7 @@ import {convertNestedDbJsonToSpirit} from "./spiritType.js";
 import {SimpleSpirit, ComplexSpirit} from "./spirit.js";
 import {Tile} from "./tile.js";
 import {ComplexWorldTile, PlayerWorldTile, MachineWorldTile} from "./worldTile.js";
+import {ComplexCircuitTile} from "./circuitTile.js";
 
 abstract class ComplexTileFactory {
     
@@ -62,6 +63,23 @@ export class MachineWorldTileFactory extends ComplexWorldTileFactory {
     
     createTileWithSpirit(spirit) {
         return new MachineWorldTile(spirit);
+    }
+}
+
+export class ComplexCircuitTileFactory extends ComplexTileFactory {
+    
+    constructor(baseName) {
+        super(baseName);
+        let tempClassId = complexSpiritClassIdSet[this.baseName];
+        complexCircuitTileFactoryMap[tempClassId] = this;
+    }
+    
+    convertDbJsonToTile(data, spirit): Tile {
+        return new ComplexCircuitTile(spirit);
+    }
+    
+    createTileWithSpirit(spirit) {
+        return new ComplexCircuitTile(spirit);
     }
 }
 

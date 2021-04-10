@@ -405,7 +405,7 @@ export class PlayerSpirit extends InventorySpirit {
     }
     
     getInventoryByParentSpiritId(parentSpiritId) {
-        let tempSpirit = complexSpiritMap[parentSpiritId];
+        let tempSpirit = complexSpiritMap[parentSpiritId] as InventorySpirit;
         if (typeof tempSpirit === "undefined") {
             return null;
         }

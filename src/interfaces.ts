@@ -73,11 +73,34 @@ export interface ComplexTileClientJson {
     spirit: ComplexSpiritClientJson;
 }
 
+export interface InventoryItemClientJson {
+    spirit: SpiritClientJson;
+    count: number;
+}
+
+export interface InventoryItemDbJson {
+    spirit: SpiritNestedDbJson;
+    count: number;
+}
+
 export interface InventoryUpdateClientJson {
     parentSpiritId: number;
     count: number;
     spiritReference?: SpiritReferenceJson;
     spirit?: SpiritClientJson;
+}
+
+export type InventoryDbJson = InventoryItemDbJson[];
+
+export interface RecipeComponentJson {
+    spiritType: SpiritTypeJson;
+    count: number;
+}
+
+export interface RecipeJson {
+    id: number;
+    ingredients: RecipeComponentJson[];
+    product: RecipeComponentJson;
 }
 
 export interface ComplexSpiritDbRow {

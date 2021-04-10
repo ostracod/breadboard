@@ -1,8 +1,11 @@
 
-import {SimpleSpirit} from "./spirit.js";
-import {SimpleSpiritType, ComplexSpiritType} from "./spiritType.js";
-import {WorldTile} from "./worldTile.js";
-import {CircuitTile} from "./circuitTile.js";
+import {RecipeJson} from "./interfaces.js";
+import {SimpleSpirit, ComplexSpirit} from "./spirit.js";
+import {SimpleSpiritType, ComplexSpiritType, EmptySpiritType, BarrierSpiritType, MatteriteSpiritType, EnergiteSpiritType, BlockSpiritType, WireSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, CircuitSpiritType} from "./spiritType.js";
+import {WorldTile, SimpleWorldTile} from "./worldTile.js";
+import {CircuitTile, SimpleCircuitTile} from "./circuitTile.js";
+import {ComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory, WorldTileFactory, CircuitTileFactory, ComplexCircuitTileFactory} from "./tileFactory.js";
+import {Recipe, RecipeComponent} from "./recipe.js";
 
 export const simpleSpiritSerialIntegerSet = {
     empty: 0,
@@ -32,31 +35,20 @@ export let complexSpiritTypeSet: {[name: string]: ComplexSpiritType} = {};
 export let simpleWorldTileSet: {[name: string]: WorldTile} = {};
 export let simpleCircuitTileSet: {[name: string]: CircuitTile} = {};
 
-// Map from serial integer to SimpleSpirit.
-export let simpleSpiritMap = {};
-// Maps from complex spirit ID to ComplexSpirit.
-export let complexSpiritMap = {};
-export let dirtyComplexSpiritMap = {};
+export let simpleSpiritMap: {[serialInteger: string]: SimpleSpirit} = {};
+export let complexSpiritMap: {[id: string]: ComplexSpirit} = {};
+export let dirtyComplexSpiritMap: {[id: string]: ComplexSpirit} = {};
 
-// Map from serial integer to SimpleSpiritType.
-export let simpleSpiritTypeMap = {};
-// Map from spirit class ID to list of ComplexSpiritType.
-export let complexSpiritTypesMap = {};
+export let simpleSpiritTypeMap: {[serialInteger: string]: SimpleSpiritType} = {};
+export let complexSpiritTypesMap: {[classId: string]: ComplexSpiritType[]} = {};
 
 export let simpleWorldTileMap: {[serialInteger: string]: WorldTile} = {};
 export let simpleCircuitTileMap: {[serialInteger: string]: CircuitTile} = {};
-// Maps from spirit class ID to ComplexWorldTileFactory.
-export let complexWorldTileFactoryMap = {};
-export let complexCircuitTileFactoryMap = {};
+export let complexWorldTileFactoryMap: {[classId: string]: ComplexWorldTileFactory} = {};
+export let complexCircuitTileFactoryMap: {[classId: string]: ComplexCircuitTileFactory} = {};
 
-export let recipeList = [];
-export let recipeDataList = [];
-
-import {EmptySpiritType, BarrierSpiritType, MatteriteSpiritType, EnergiteSpiritType, BlockSpiritType, WireSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, CircuitSpiritType} from "./spiritType.js";
-import {SimpleWorldTile} from "./worldTile.js";
-import {SimpleCircuitTile} from "./circuitTile.js";
-import {ComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory, WorldTileFactory, CircuitTileFactory} from "./tileFactory.js";
-import {Recipe, RecipeComponent} from "./recipe.js";
+export let recipeList: Recipe[] = [];
+export let recipeDataList: RecipeJson[] = [];
 
 new EmptySpiritType();
 new BarrierSpiritType();
@@ -89,14 +81,18 @@ new ComplexWorldTileFactory("circuit");
 export let worldTileFactory = new WorldTileFactory();
 export let circuitTileFactory = new CircuitTileFactory();
 
-function createSimpleRecipeComponent(spiritKey, count, offset = 0) {
+function createSimpleRecipeComponent(
+    spiritKey: string,
+    count: number,
+    offset = 0,
+): RecipeComponent {
     let tempInteger = simpleSpiritSerialIntegerSet[spiritKey] + offset;
     let tempType = simpleSpiritTypeMap[tempInteger];
     return new RecipeComponent(tempType, count);
 }
 
-function createMachineRecipeComponent(colorIndex) {
-    let tempTypeList = complexSpiritTypesMap[complexSpiritClassIdSet.machine];
+function createMachineRecipeComponent(colorIndex: number): RecipeComponent {
+    let tempTypeList = complexSpiritTypesMap[complexSpiritClassIdSet.machine] as MachineSpiritType[];
     for (let spiritType of tempTypeList) {
         if (spiritType.colorIndex === colorIndex) {
             return new RecipeComponent(spiritType, 1);
