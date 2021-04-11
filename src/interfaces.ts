@@ -24,6 +24,10 @@ export interface SpiritTypeJson {
     type: string;
 }
 
+export interface SimpleSpiritTypeJson extends SpiritTypeJson {
+    serialInteger: number;
+}
+
 export interface ComplexSpiritTypeJson extends SpiritTypeJson {
     classId: number;
 }
@@ -51,7 +55,7 @@ export interface MachineSpiritClientJson extends ComplexSpiritClientJson {
 
 export type SpiritNestedDbJson = any;
 
-export type SimpleSpiritNestedDbJson = number;
+export type SimpleSpiritNestedDbJson = SimpleSpiritDbJson;
 
 export type ComplexSpiritAttributeJson = any;
 
@@ -136,15 +140,31 @@ export interface TileGridDbJson {
     tiles: TileDbJson[];
 }
 
-export interface ComplexSpiritDbRow {
+export type SpiritDbJson = any;
+
+export type SimpleSpiritDbJson = number;
+
+interface ComplexSpiritDbJsonHelper<T1 extends ComplexSpiritAttributeJson, T2 extends ComplexSpiritContainerJson> {
     id: number;
     parentId: number;
     classId: number;
-    attributeData: any;
-    containerData: any;
+    attributeData: T1;
+    containerData: T2;
 }
 
-export interface ConfigDbRow {
+export type ComplexSpiritDbJson = ComplexSpiritDbJsonHelper<any, any>;
+
+// TODO: Think about how to clean up these type definitions.
+
+export type PlayerSpiritDbJson = ComplexSpiritDbJsonHelper<PlayerSpiritAttributeJson, InventorySpiritContainerJson>;
+
+export type MachineSpiritDbJson = ComplexSpiritDbJsonHelper<MachineSpiritAttributeJson, InventorySpiritContainerJson>;
+
+export type WorldSpiritDbJson = ComplexSpiritDbJsonHelper<ComplexSpiritAttributeJson, TileGridSpiritContainerJson>;
+
+export type CircuitSpiritDbJson = ComplexSpiritDbJsonHelper<ComplexSpiritAttributeJson, TileGridSpiritContainerJson>;
+
+export interface ConfigDbJson {
     name: string;
     value: string;
 }

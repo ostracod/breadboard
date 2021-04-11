@@ -1,7 +1,7 @@
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 import {complexSpiritClassIdSet, complexSpiritTypeSet, complexSpiritMap} from "./globalData.js";
-import {Player, ComplexSpiritDbRow, InventoryUpdateClientJson, CommandHandler, SynchronousCommandHandler, AsynchronousCommandHandler, ClientCommand, SetWorldTileGridClientCommand, SetCircuitTileGridClientCommand, UpdateInventoryItemClientCommand, StopInspectingClientCommand, InventoryUpdatesClientCommand} from "./interfaces.js";
+import {Player, ComplexSpiritDbJson, InventoryUpdateClientJson, CommandHandler, SynchronousCommandHandler, AsynchronousCommandHandler, ClientCommand, SetWorldTileGridClientCommand, SetCircuitTileGridClientCommand, UpdateInventoryItemClientCommand, StopInspectingClientCommand, InventoryUpdatesClientCommand} from "./interfaces.js";
 import {Pos, createPosFromJson} from "./pos.js";
 import {PlayerSpirit, MachineSpirit, CircuitSpirit, persistAllComplexSpirits, persistNextComplexSpiritId} from "./spirit.js";
 import {convertJsonToSpiritType, loadComplexSpirit} from "./spiritType.js";
@@ -315,7 +315,7 @@ export function loadOrCreateWorldSpirit(): Promise<void> {
     return niceUtils.performDbQuery(
         "SELECT id FROM ComplexSpirits WHERE classId = ?",
         [complexSpiritClassIdSet.world]
-    ).then((results: ComplexSpiritDbRow[]) => {
+    ).then((results: ComplexSpiritDbJson[]) => {
         if (results.length > 0) {
             return loadComplexSpirit(results[0].id, false);
         } else {

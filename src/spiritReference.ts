@@ -1,7 +1,7 @@
 
 import {simpleSpiritMap, complexSpiritMap} from "./globalData.js";
 import {SpiritReferenceJson, SimpleSpiritReferenceJson, ComplexSpiritReferenceJson} from "./interfaces.js";
-import {Spirit} from "./spirit.js";
+import {Spirit, SimpleSpirit, ComplexSpirit} from "./spirit.js";
 
 // A SpiritReference is used to identify unique
 // instances of Spirits.
@@ -23,7 +23,7 @@ export class SimpleSpiritReference extends SpiritReference {
     
     serialInteger: number;
     
-    constructor(serialInteger) {
+    constructor(serialInteger: number) {
         super();
         this.serialInteger = serialInteger;
     }
@@ -35,14 +35,14 @@ export class SimpleSpiritReference extends SpiritReference {
         };
     }
     
-    equals(spiritReference) {
+    equals(spiritReference: SpiritReference): boolean {
         if (!(spiritReference instanceof SimpleSpiritReference)) {
             return false;
         }
         return (this.serialInteger == spiritReference.serialInteger);
     }
     
-    getSpirit() {
+    getSpirit(): SimpleSpirit {
         return simpleSpiritMap[this.serialInteger];
     }
 }
@@ -51,7 +51,7 @@ export class ComplexSpiritReference extends SpiritReference {
     
     id: number;
     
-    constructor(id) {
+    constructor(id: number) {
         super();
         this.id = id;
     }
@@ -63,15 +63,15 @@ export class ComplexSpiritReference extends SpiritReference {
         };
     }
     
-    equals(spiritReference) {
+    equals(spiritReference: SpiritReference): boolean {
         if (!(spiritReference instanceof ComplexSpiritReference)) {
             return false;
         }
         return (this.id === spiritReference.id);
     }
     
-    getSpirit() {
-        if (this.id in simpleSpiritMap) {
+    getSpirit(): ComplexSpirit {
+        if (this.id in complexSpiritMap) {
             return complexSpiritMap[this.id];
         } else {
             return null;
@@ -79,11 +79,11 @@ export class ComplexSpiritReference extends SpiritReference {
     }
 }
 
-export function convertJsonToSpiritReference(data) {
+export function convertJsonToSpiritReference(data: SpiritReferenceJson): SpiritReference {
     if (data.type === "simple") {
-        return new SimpleSpiritReference(data.serialInteger);
+        return new SimpleSpiritReference((data as SimpleSpiritReferenceJson).serialInteger);
     } else {
-        return new ComplexSpiritReference(data.id);
+        return new ComplexSpiritReference((data as ComplexSpiritReferenceJson).id);
     }
 }
 

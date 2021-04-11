@@ -1,6 +1,6 @@
 
 import {simpleSpiritSerialIntegerSet, wireArrangementAmount, worldSize, circuitSize, simpleSpiritSet, simpleSpiritTypeSet, complexSpiritTypeSet, simpleWorldTileSet, simpleCircuitTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap, simpleCircuitTileMap, circuitTileFactory} from "./globalData.js";
-import {Player, ConfigDbRow, SpiritClientJson, SimpleSpiritClientJson, ComplexSpiritClientJson, PlayerSpiritClientJson, MachineSpiritClientJson, SpiritNestedDbJson, SimpleSpiritNestedDbJson, ComplexSpiritNestedDbJson, ComplexSpiritContainerJson, InventorySpiritContainerJson, TileGridSpiritContainerJson, ComplexSpiritAttributeJson, PlayerSpiritAttributeJson, MachineSpiritAttributeJson, TileClientJson} from "./interfaces.js";
+import {Player, ConfigDbJson, SpiritClientJson, SimpleSpiritClientJson, ComplexSpiritClientJson, PlayerSpiritClientJson, MachineSpiritClientJson, SpiritNestedDbJson, SimpleSpiritNestedDbJson, ComplexSpiritNestedDbJson, ComplexSpiritContainerJson, InventorySpiritContainerJson, TileGridSpiritContainerJson, ComplexSpiritAttributeJson, PlayerSpiritAttributeJson, MachineSpiritAttributeJson, TileClientJson} from "./interfaces.js";
 import {Pos} from "./pos.js";
 import {SpiritType, SimpleSpiritType, ComplexSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, loadComplexSpirit} from "./spiritType.js";
 import {SpiritReference} from "./spiritReference.js";
@@ -24,9 +24,9 @@ let nextComplexSpiritId: number;
 
 export abstract class Spirit {
     
-    spiritType: SpiritType;
+    spiritType: SpiritType<Spirit>;
     
-    constructor(spiritType: SpiritType) {
+    constructor(spiritType: SpiritType<Spirit>) {
         this.spiritType = spiritType;
     }
     
@@ -94,7 +94,7 @@ export class SimpleSpirit extends Spirit {
 
 export class ComplexSpirit extends Spirit {
     
-    spiritType: ComplexSpiritType;
+    spiritType: ComplexSpiritType<ComplexSpirit>;
     id: number;
     classId: number;
     parentSpirit: ComplexSpirit;
@@ -103,7 +103,7 @@ export class ComplexSpirit extends Spirit {
     hasDbRow: boolean;
     isDestroyed: boolean;
     
-    constructor(spiritType: ComplexSpiritType, id: number) {
+    constructor(spiritType: ComplexSpiritType<ComplexSpirit>, id: number) {
         super(spiritType);
         this.classId = this.spiritType.spiritClassId;
         this.parentSpirit = null;
@@ -240,9 +240,14 @@ export class ComplexSpirit extends Spirit {
 
 export class InventorySpirit extends ComplexSpirit implements InventoryObserver {
     
+    spiritType: ComplexSpiritType<InventorySpirit>;
     inventory: Inventory;
     
-    constructor(spiritType: ComplexSpiritType, id: number, inventory: Inventory) {
+    constructor(
+        spiritType: ComplexSpiritType<InventorySpirit>,
+        id: number,
+        inventory: Inventory,
+    ) {
         super(spiritType, id);
         if (inventory === null) {
             this.inventory = new Inventory();
@@ -471,7 +476,7 @@ export class PlayerSpirit extends InventorySpirit {
         
     }
     
-    craftCircuitTile(pos: Pos, spiritType: SpiritType): void {
+    craftCircuitTile(pos: Pos, spiritType: SpiritType<Spirit>): void {
         if (this.inspectedCircuit === null) {
             return;
         }
@@ -509,9 +514,14 @@ export class MachineSpirit extends InventorySpirit {
 
 export abstract class TileGridSpirit<T extends Tile> extends ComplexSpirit {
     
+    spiritType: ComplexSpiritType<TileGridSpirit<T>>;
     tileGrid: TileGrid<T>;
     
-    constructor(spiritType: ComplexSpiritType, id: number, tileGrid: TileGrid<T> = null) {
+    constructor(
+        spiritType: ComplexSpiritType<TileGridSpirit<T>>,
+        id: number,
+        tileGrid: TileGrid<T> = null,
+    ) {
         super(spiritType, id);
         if (tileGrid === null) {
             this.generateTileGrid();
@@ -683,7 +693,7 @@ export function loadNextComplexSpiritId(): Promise<void> {
     return niceUtils.performDbQuery(
         "SELECT * FROM Configuration WHERE name = ?",
         ["nextComplexSpiritId"]
-    ).then((results: ConfigDbRow[]) => {
+    ).then((results: ConfigDbJson[]) => {
         if (results.length > 0) {
             nextComplexSpiritId = parseInt(results[0].value);
         } else {

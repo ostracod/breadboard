@@ -100,7 +100,7 @@ export class TileFactory<T extends Tile> {
             return convertNestedDbJsonToSpirit(
                 data.spirit,
                 shouldPerformTransaction
-            ).then(spirit => {
+            ).then((spirit: ComplexSpirit) => {
                 let tempFactory = this.complexTileFactoryMap[spirit.classId];
                 return tempFactory.convertDbJsonToTile(data, spirit);
             });

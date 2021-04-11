@@ -31,7 +31,7 @@ export const circuitSize = 17;
 
 export let simpleSpiritSet: {[name: string]: SimpleSpirit} = {};
 export let simpleSpiritTypeSet: {[name: string]: SimpleSpiritType} = {};
-export let complexSpiritTypeSet: {[name: string]: ComplexSpiritType} = {};
+export let complexSpiritTypeSet: {[name: string]: ComplexSpiritType<ComplexSpirit>} = {};
 export let simpleWorldTileSet: {[name: string]: WorldTile} = {};
 export let simpleCircuitTileSet: {[name: string]: CircuitTile} = {};
 
@@ -40,7 +40,7 @@ export let complexSpiritMap: {[id: string]: ComplexSpirit} = {};
 export let dirtyComplexSpiritMap: {[id: string]: ComplexSpirit} = {};
 
 export let simpleSpiritTypeMap: {[serialInteger: string]: SimpleSpiritType} = {};
-export let complexSpiritTypesMap: {[classId: string]: ComplexSpiritType[]} = {};
+export let complexSpiritTypesMap: {[classId: string]: ComplexSpiritType<ComplexSpirit>[]} = {};
 
 export let simpleWorldTileMap: {[serialInteger: string]: WorldTile} = {};
 export let simpleCircuitTileMap: {[serialInteger: string]: CircuitTile} = {};
