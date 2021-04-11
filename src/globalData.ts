@@ -2,7 +2,7 @@
 import {RecipeJson} from "./interfaces.js";
 import {SimpleSpirit, ComplexSpirit} from "./spirit.js";
 import {SimpleSpiritType, ComplexSpiritType, EmptySpiritType, BarrierSpiritType, MatteriteSpiritType, EnergiteSpiritType, BlockSpiritType, WireSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, CircuitSpiritType} from "./spiritType.js";
-import {WorldTile, SimpleWorldTile} from "./worldTile.js";
+import {WorldTile, SimpleWorldTile, ComplexWorldTile} from "./worldTile.js";
 import {CircuitTile, SimpleCircuitTile} from "./circuitTile.js";
 import {ComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory, WorldTileFactory, CircuitTileFactory, ComplexCircuitTileFactory} from "./tileFactory.js";
 import {Recipe, RecipeComponent} from "./recipe.js";
@@ -44,7 +44,7 @@ export let complexSpiritTypesMap: {[classId: string]: ComplexSpiritType[]} = {};
 
 export let simpleWorldTileMap: {[serialInteger: string]: WorldTile} = {};
 export let simpleCircuitTileMap: {[serialInteger: string]: CircuitTile} = {};
-export let complexWorldTileFactoryMap: {[classId: string]: ComplexWorldTileFactory} = {};
+export let complexWorldTileFactoryMap: {[classId: string]: ComplexWorldTileFactory<ComplexWorldTile>} = {};
 export let complexCircuitTileFactoryMap: {[classId: string]: ComplexCircuitTileFactory} = {};
 
 export let recipeList: Recipe[] = [];

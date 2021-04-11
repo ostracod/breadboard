@@ -3,10 +3,10 @@ import {complexSpiritClassIdSet, simpleWorldTileMap, simpleCircuitTileMap, compl
 import {convertNestedDbJsonToSpirit} from "./spiritType.js";
 import {SimpleSpirit, ComplexSpirit} from "./spirit.js";
 import {Tile} from "./tile.js";
-import {ComplexWorldTile, PlayerWorldTile, MachineWorldTile} from "./worldTile.js";
-import {ComplexCircuitTile} from "./circuitTile.js";
+import {WorldTile, ComplexWorldTile, PlayerWorldTile, MachineWorldTile} from "./worldTile.js";
+import {CircuitTile, ComplexCircuitTile} from "./circuitTile.js";
 
-abstract class ComplexTileFactory {
+abstract class ComplexTileFactory<T extends Tile> {
     
     baseName: string;
     
@@ -14,12 +14,12 @@ abstract class ComplexTileFactory {
         this.baseName = baseName;
     }
     
-    abstract convertDbJsonToTile(data, spirit): Tile;
+    abstract convertDbJsonToTile(data, spirit): T;
     
     abstract createTileWithSpirit(spirit);
 }
 
-export class ComplexWorldTileFactory extends ComplexTileFactory {
+export class ComplexWorldTileFactory<T extends ComplexWorldTile> extends ComplexTileFactory<ComplexWorldTile> {
     
     constructor(baseName) {
         super(baseName);
@@ -27,7 +27,7 @@ export class ComplexWorldTileFactory extends ComplexTileFactory {
         complexWorldTileFactoryMap[tempClassId] = this;
     }
     
-    convertDbJsonToTile(data, spirit): Tile {
+    convertDbJsonToTile(data, spirit): ComplexWorldTile {
         return new ComplexWorldTile(spirit);
     }
     
@@ -36,13 +36,13 @@ export class ComplexWorldTileFactory extends ComplexTileFactory {
     }
 }
 
-export class PlayerWorldTileFactory extends ComplexWorldTileFactory {
+export class PlayerWorldTileFactory extends ComplexWorldTileFactory<PlayerWorldTile> {
     
     constructor() {
         super("player");
     }
     
-    convertDbJsonToTile(data, spirit): Tile {
+    convertDbJsonToTile(data, spirit): PlayerWorldTile {
         throw new Error("Player should not be persisted as world tile.");
     }
     
@@ -51,7 +51,7 @@ export class PlayerWorldTileFactory extends ComplexWorldTileFactory {
     }
 }
 
-export class MachineWorldTileFactory extends ComplexWorldTileFactory {
+export class MachineWorldTileFactory extends ComplexWorldTileFactory<MachineWorldTile> {
     
     constructor() {
         super("machine");
@@ -66,7 +66,7 @@ export class MachineWorldTileFactory extends ComplexWorldTileFactory {
     }
 }
 
-export class ComplexCircuitTileFactory extends ComplexTileFactory {
+export class ComplexCircuitTileFactory extends ComplexTileFactory<ComplexCircuitTile> {
     
     constructor(baseName) {
         super(baseName);
@@ -74,7 +74,7 @@ export class ComplexCircuitTileFactory extends ComplexTileFactory {
         complexCircuitTileFactoryMap[tempClassId] = this;
     }
     
-    convertDbJsonToTile(data, spirit): Tile {
+    convertDbJsonToTile(data, spirit): ComplexCircuitTile {
         return new ComplexCircuitTile(spirit);
     }
     
@@ -83,10 +83,10 @@ export class ComplexCircuitTileFactory extends ComplexTileFactory {
     }
 }
 
-export class TileFactory {
+export class TileFactory<T extends Tile> {
     
     simpleTileMap: {[serialInteger: string]: Tile};
-    complexTileFactoryMap: {[classId: string]: ComplexTileFactory};
+    complexTileFactoryMap: {[classId: string]: ComplexTileFactory<T>};
     
     constructor(simpleTileMap, complexTileFactoryMap) {
         this.simpleTileMap = simpleTileMap;
@@ -119,14 +119,14 @@ export class TileFactory {
     }
 }
 
-export class WorldTileFactory extends TileFactory {
+export class WorldTileFactory extends TileFactory<WorldTile> {
     
     constructor() {
         super(simpleWorldTileMap, complexWorldTileFactoryMap);
     }
 }
 
-export class CircuitTileFactory extends TileFactory {
+export class CircuitTileFactory extends TileFactory<CircuitTile> {
     
     constructor() {
         super(simpleCircuitTileMap, complexCircuitTileFactoryMap);

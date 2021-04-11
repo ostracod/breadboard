@@ -1,5 +1,6 @@
 
 import {simpleSpiritSet, worldTileFactory, circuitTileFactory} from "./globalData.js";
+import {TileGridDbJson} from "./interfaces.js";
 import {Pos} from "./pos.js";
 import {niceUtils} from "./niceUtils.js";
 import {ComplexSpirit} from "./spirit.js";
@@ -12,7 +13,7 @@ export class TileGrid<T extends Tile> {
     
     width: number;
     height: number;
-    tileFactory: TileFactory;
+    tileFactory: TileFactory<T>;
     parentSpirit: ComplexSpirit;
     fillTile: T;
     outsideTile: T;
@@ -132,7 +133,7 @@ export class TileGrid<T extends Tile> {
         return this.getJson(tile => tile.getClientJson());
     }
     
-    getDbJson() {
+    getDbJson(): TileGridDbJson {
         return this.getJson(tile => tile.getDbJson());
     }
 }
@@ -145,8 +146,12 @@ export function createCircuitTileGrid(width, height) {
     return new TileGrid<CircuitTile>(width, height, circuitTileFactory);
 }
 
-function convertDbJsonToTileGrid(data, tileFactory, shouldPerformTransaction) {
-    let output = new TileGrid(data.width, data.height, tileFactory);
+function convertDbJsonToTileGrid<T extends Tile>(
+    data,
+    tileFactory: TileFactory<T>,
+    shouldPerformTransaction
+) {
+    let output = new TileGrid<T>(data.width, data.height, tileFactory);
     return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => {
         let tempPos = new Pos(0, 0);
         return data.tiles.reduce((accumulator, tileData) => {

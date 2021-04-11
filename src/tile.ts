@@ -1,5 +1,5 @@
 
-import {TileClientJson, SimpleTileClientJson, ComplexTileClientJson} from "./interfaces.js";
+import {TileClientJson, SimpleTileClientJson, ComplexTileClientJson, TileDbJson} from "./interfaces.js";
 import {Spirit} from "./spirit.js";
 
 export abstract class Tile {
@@ -17,7 +17,7 @@ export abstract class Tile {
         return this.tileComplexity.convertToClientJson(this);
     }
     
-    getDbJson() {
+    getDbJson(): TileDbJson {
         return this.tileComplexity.convertToDbJson(this);
     }
     

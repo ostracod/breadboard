@@ -8,13 +8,13 @@ class NiceUtils {
         
     }
     
-    extendList(destination, valueList) {
+    extendList(destination: any[], valueList: any[]): void {
         for (let value of valueList) {
             destination.push(value);
         }
     }
     
-    reverseMap(valueMap) {
+    reverseMap(valueMap: {[key: string]: any}): {[key: string]: any} {
         let output = {};
         for (let key in valueMap) {
             let tempValue = valueMap[key];
@@ -23,7 +23,7 @@ class NiceUtils {
         return output;
     }
     
-    performDbTransaction(operation) {
+    performDbTransaction(operation: () => Promise<void>): Promise<void> {
         return new Promise((resolve, reject) => {
             dbUtils.performTransaction(callback => {
                 operation().then(callback);
@@ -33,7 +33,10 @@ class NiceUtils {
         });
     }
     
-    performConditionalDbTransaction(shouldPerformTransaction, operation) {
+    performConditionalDbTransaction(
+        shouldPerformTransaction: boolean,
+        operation: () => Promise<void>
+    ): Promise<void> {
         if (shouldPerformTransaction) {
             return niceUtils.performDbTransaction(operation);
         } else {
@@ -41,7 +44,7 @@ class NiceUtils {
         }
     }
     
-    performDbQuery(query, parameterList) {
+    performDbQuery(query: string, parameterList: (string | number)[]): Promise<any> {
         return new Promise((resolve, reject) => {
             dbUtils.performQuery(query, parameterList, (error, results, fields) => {
                 if (error) {

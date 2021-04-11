@@ -53,6 +53,31 @@ export type SpiritNestedDbJson = any;
 
 export type SimpleSpiritNestedDbJson = number;
 
+export type ComplexSpiritAttributeJson = any;
+
+export interface PlayerSpiritAttributeJson {
+    username: string;
+}
+
+export interface MachineSpiritAttributeJson {
+    colorIndex: number;
+}
+
+export type ComplexSpiritContainerJson = any;
+
+export type InventorySpiritContainerJson = InventoryDbJson;
+
+export type TileGridSpiritContainerJson = TileGridDbJson;
+
+interface ComplexSpiritNestedDbJsonHelper<T1 extends ComplexSpiritAttributeJson, T2 extends ComplexSpiritContainerJson> {
+    id: number;
+    classId?: number;
+    attributeData?: T1;
+    containerData?: T2;
+}
+
+export type ComplexSpiritNestedDbJson = ComplexSpiritNestedDbJsonHelper<any, any>;
+
 export interface SpiritReferenceJson {
     type: string;
 }
@@ -72,6 +97,8 @@ export type SimpleTileClientJson = number;
 export interface ComplexTileClientJson {
     spirit: ComplexSpiritClientJson;
 }
+
+export type TileDbJson = any;
 
 export interface InventoryItemClientJson {
     spirit: SpiritClientJson;
@@ -101,6 +128,12 @@ export interface RecipeJson {
     id: number;
     ingredients: RecipeComponentJson[];
     product: RecipeComponentJson;
+}
+
+export interface TileGridDbJson {
+    width: number;
+    height: number;
+    tiles: TileDbJson[];
 }
 
 export interface ComplexSpiritDbRow {

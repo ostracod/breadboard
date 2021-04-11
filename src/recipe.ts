@@ -1,5 +1,6 @@
 
 import {recipeList, recipeDataList} from "./globalData.js";
+import {RecipeComponentJson, RecipeJson} from "./interfaces.js";
 import {SpiritType} from "./spiritType.js";
 
 let nextRecipeId = 0;
@@ -9,19 +10,19 @@ export class RecipeComponent {
     spiritType: SpiritType;
     count: number;
     
-    constructor(spiritType, count) {
+    constructor(spiritType: SpiritType, count: number) {
         this.spiritType = spiritType;
         this.count = count;
     }
     
-    getJson() {
+    getJson(): RecipeComponentJson {
         return {
             spiritType: this.spiritType.getJson(),
             count: this.count
         };
     }
     
-    scale(value) {
+    scale(value: number): void {
         this.count *= value;
     }
 }
@@ -32,7 +33,7 @@ export class Recipe {
     product: RecipeComponent;
     id: number;
     
-    constructor(ingredients, product) {
+    constructor(ingredients: RecipeComponent[], product: RecipeComponent) {
         this.ingredients = ingredients;
         this.product = product;
         this.id = nextRecipeId;
@@ -41,7 +42,7 @@ export class Recipe {
         recipeDataList.push(this.getJson());
     }
     
-    getJson() {
+    getJson(): RecipeJson {
         let tempDataList = [];
         for (let ingredient of this.ingredients) {
             tempDataList.push(ingredient.getJson());
@@ -54,7 +55,10 @@ export class Recipe {
     }
 }
 
-export function pushRecipeComponent(destination, recipeComponent) {
+export function pushRecipeComponent(
+    destination: RecipeComponent[],
+    recipeComponent: RecipeComponent,
+): void {
     for (let tempComponent of destination) {
         if (tempComponent.spiritType === recipeComponent.spiritType) {
             tempComponent.count += recipeComponent.count;
@@ -64,7 +68,7 @@ export function pushRecipeComponent(destination, recipeComponent) {
     destination.push(recipeComponent);
 }
 
-export function getRecipeById(id) {
+export function getRecipeById(id: number): Recipe {
     for (let recipe of recipeList) {
         if (recipe.id == id) {
             return recipe;

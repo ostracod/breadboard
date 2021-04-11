@@ -1,19 +1,19 @@
 
 import {simpleSpiritSerialIntegerSet, wireArrangementAmount, worldSize, circuitSize, simpleSpiritSet, simpleSpiritTypeSet, complexSpiritTypeSet, simpleWorldTileSet, simpleCircuitTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap, simpleCircuitTileMap, circuitTileFactory} from "./globalData.js";
-import {Player, ConfigDbRow, SpiritClientJson, ComplexSpiritClientJson, PlayerSpiritClientJson, MachineSpiritClientJson, SpiritNestedDbJson} from "./interfaces.js";
+import {Player, ConfigDbRow, SpiritClientJson, SimpleSpiritClientJson, ComplexSpiritClientJson, PlayerSpiritClientJson, MachineSpiritClientJson, SpiritNestedDbJson, SimpleSpiritNestedDbJson, ComplexSpiritNestedDbJson, ComplexSpiritContainerJson, InventorySpiritContainerJson, TileGridSpiritContainerJson, ComplexSpiritAttributeJson, PlayerSpiritAttributeJson, MachineSpiritAttributeJson, TileClientJson} from "./interfaces.js";
 import {Pos} from "./pos.js";
-import {SpiritType, SimpleSpiritType, ComplexSpiritType, PlayerSpiritType, MachineSpiritType, loadComplexSpirit} from "./spiritType.js";
+import {SpiritType, SimpleSpiritType, ComplexSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, loadComplexSpirit} from "./spiritType.js";
 import {SpiritReference} from "./spiritReference.js";
 import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
-import {Inventory, InventoryObserver, InventoryUpdate, pushInventoryUpdate} from "./inventory.js";
-import {pushRecipeComponent} from "./recipe.js";
+import {Inventory, InventoryItem, InventoryObserver, InventoryUpdate, pushInventoryUpdate} from "./inventory.js";
+import {RecipeComponent, pushRecipeComponent} from "./recipe.js";
 import {Tile} from "./tile.js";
 import {WorldTile, ComplexWorldTile, PlayerWorldTile} from "./worldTile.js";
 import {CircuitTile} from "./circuitTile.js";
 import {TileGrid, createWorldTileGrid, createCircuitTileGrid} from "./tileGrid.js";
 import {niceUtils} from "./niceUtils.js";
 
-let nextComplexSpiritId;
+let nextComplexSpiritId: number;
 
 // The idea is that a Spirit is something which may
 // exist as a Tile or Item.
@@ -26,35 +26,35 @@ export abstract class Spirit {
     
     spiritType: SpiritType;
     
-    constructor(spiritType) {
+    constructor(spiritType: SpiritType) {
         this.spiritType = spiritType;
     }
     
-    canBeMined() {
+    canBeMined(): boolean {
         return this.spiritType.canBeMined();
     }
     
-    canBeInspected() {
+    canBeInspected(): boolean {
         return this.spiritType.canBeInspected();
     }
     
-    populateParentSpirit(spirit) {
+    populateParentSpirit(spirit: ComplexSpirit): void {
         // Do nothing.
     }
     
-    changeParentSpirit(spirit) {
+    changeParentSpirit(spirit: ComplexSpirit): void {
         // Do nothing.
     }
     
-    setParentTile(tile) {
+    setParentTile(tile: Tile): void {
         // Do nothing.
     }
     
-    destroy() {
+    destroy(): void {
         // Do nothing.
     }
     
-    getRecycleProducts() {
+    getRecycleProducts(): RecipeComponent[] {
         return this.spiritType.getBaseRecycleProducts();
     }
     
@@ -71,7 +71,7 @@ export class SimpleSpirit extends Spirit {
     serialInteger: number;
     reference: SimpleSpiritReference;
     
-    constructor(spiritType) {
+    constructor(spiritType: SimpleSpiritType) {
         super(spiritType);
         this.serialInteger = this.spiritType.serialInteger;
         this.reference = new SimpleSpiritReference(this.serialInteger);
@@ -79,15 +79,15 @@ export class SimpleSpirit extends Spirit {
         simpleSpiritMap[this.serialInteger] = this;
     }
     
-    getClientJson() {
+    getClientJson(): SimpleSpiritClientJson {
         return this.serialInteger;
     }
     
-    getNestedDbJson() {
+    getNestedDbJson(): SimpleSpiritNestedDbJson {
         return this.serialInteger;
     }
     
-    getReference() {
+    getReference(): SpiritReference {
         return this.reference;
     }
 }
@@ -103,7 +103,7 @@ export class ComplexSpirit extends Spirit {
     hasDbRow: boolean;
     isDestroyed: boolean;
     
-    constructor(spiritType, id) {
+    constructor(spiritType: ComplexSpiritType, id: number) {
         super(spiritType);
         this.classId = this.spiritType.spiritClassId;
         this.parentSpirit = null;
@@ -121,7 +121,7 @@ export class ComplexSpirit extends Spirit {
         this.isDestroyed = false;
     }
     
-    markAsDirty() {
+    markAsDirty(): void {
         dirtyComplexSpiritMap[this.id] = this;
         if (!this.hasDbRow && this.parentSpirit !== null) {
             this.parentSpirit.markAsDirty();
@@ -135,15 +135,15 @@ export class ComplexSpirit extends Spirit {
         };
     }
     
-    getAttributeDbJson() {
+    getAttributeDbJson(): ComplexSpiritAttributeJson {
         return null;
     }
     
-    getContainerDbJson() {
+    getContainerDbJson(): ComplexSpiritContainerJson {
         return null;
     }
     
-    getNestedDbJson() {
+    getNestedDbJson(): ComplexSpiritNestedDbJson {
         if (this.shouldHaveDbRow()) {
             return {
                 id: this.id
@@ -158,15 +158,15 @@ export class ComplexSpirit extends Spirit {
         }
     }
     
-    getReference() {
+    getReference(): SpiritReference {
         return this.reference;
     }
     
-    populateParentSpirit(spirit) {
+    populateParentSpirit(spirit: ComplexSpirit): void {
         this.parentSpirit = spirit;
     }
     
-    changeParentSpirit(spirit) {
+    changeParentSpirit(spirit: ComplexSpirit): void {
         if (spirit === this.parentSpirit) {
             return;
         }
@@ -175,29 +175,32 @@ export class ComplexSpirit extends Spirit {
     }
     
     // Parent may be any number of steps removed.
-    hasParentSpirit(spirit) {
+    hasParentSpirit(spirit: Spirit): boolean {
+        if (!(spirit instanceof ComplexSpirit)) {
+            return false;
+        }
         let tempSpirit = this.parentSpirit;
         while (tempSpirit !== null) {
             if (spirit === tempSpirit) {
                 return true;
             }
-            tempSpirit = tempSpirit.parentSpirit;
+            tempSpirit = (tempSpirit as ComplexSpirit).parentSpirit;
         }
         return false;
     }
     
-    setParentTile(tile) {
+    setParentTile(tile: Tile): void {
         this.parentTile = tile;
     }
     
     // Spirit must be removed from parent before invoking destroy method.
-    destroy() {
+    destroy(): void {
         delete complexSpiritMap[this.id];
         this.isDestroyed = true;
         this.markAsDirty();
     }
     
-    shouldHaveDbRow() {
+    shouldHaveDbRow(): boolean {
         if (this.isDestroyed) {
             return false;
         }
@@ -205,7 +208,7 @@ export class ComplexSpirit extends Spirit {
         return (this.parentSpirit === null || this.parentSpirit instanceof WorldSpirit);
     }
     
-    persist() {
+    persist(): Promise<void> {
         let tempShouldHaveDbRow = this.shouldHaveDbRow();
         let attributeData = JSON.stringify(this.getAttributeDbJson());
         let containerData = JSON.stringify(this.getContainerDbJson());
@@ -239,7 +242,7 @@ export class InventorySpirit extends ComplexSpirit implements InventoryObserver 
     
     inventory: Inventory;
     
-    constructor(spiritType, id, inventory) {
+    constructor(spiritType: ComplexSpiritType, id: number, inventory: Inventory) {
         super(spiritType, id);
         if (inventory === null) {
             this.inventory = new Inventory();
@@ -250,22 +253,22 @@ export class InventorySpirit extends ComplexSpirit implements InventoryObserver 
         this.inventory.addObserver(this);
     }
     
-    inventoryChangeEvent(inventory, item) {
+    inventoryChangeEvent(inventory: Inventory, item: InventoryItem): void {
         this.markAsDirty();
     }
     
-    getContainerDbJson() {
+    getContainerDbJson(): InventorySpiritContainerJson {
         return this.inventory.getDbJson();
     }
     
-    destroy() {
+    destroy(): void {
         for (let item of this.inventory.items) {
             item.spirit.destroy();
         }
         super.destroy();
     }
     
-    getRecycleProducts() {
+    getRecycleProducts(): RecipeComponent[] {
         let output = super.getRecycleProducts();
         for (let item of this.inventory.items) {
             let tempProductList = item.spirit.getRecycleProducts();
@@ -280,13 +283,14 @@ export class InventorySpirit extends ComplexSpirit implements InventoryObserver 
 
 export class PlayerSpirit extends InventorySpirit {
     
+    spiritType: PlayerSpiritType;
     player: Player;
     inspectedMachine: MachineSpirit;
     inspectedCircuit: CircuitSpirit;
     inventoryUpdates: InventoryUpdate[];
     stopInspectionSpiritIds: number[];
     
-    constructor(spiritType, player, inventory = null) {
+    constructor(spiritType: PlayerSpiritType, player: Player, inventory: Inventory = null) {
         let lastId = player.extraFields.complexSpiritId;
         super(spiritType, lastId, inventory);
         if (lastId === null) {
@@ -299,7 +303,7 @@ export class PlayerSpirit extends InventorySpirit {
         this.stopInspectionSpiritIds = [];
     }
     
-    inventoryChangeEvent(inventory, item) {
+    inventoryChangeEvent(inventory: Inventory, item: InventoryItem): void {
         super.inventoryChangeEvent(inventory, item);
         let tempUpdate = item.getInventoryUpdate();
         pushInventoryUpdate(this.inventoryUpdates, tempUpdate);
@@ -311,65 +315,67 @@ export class PlayerSpirit extends InventorySpirit {
         return output;
     }
     
-    getAttributeDbJson() {
+    getAttributeDbJson(): PlayerSpiritAttributeJson {
         return {
             username: this.player.username
         };
     }
     
-    getNestedDbJson() {
+    getNestedDbJson(): ComplexSpiritNestedDbJson {
         // Player spirit should never be persisted in a container.
         return null;
     }
     
-    canInspect(spirit) {
-        if (!spirit.canBeInspected()) {
+    canInspect(spirit: Spirit): boolean {
+        if (!(spirit instanceof ComplexSpirit && spirit.canBeInspected())) {
             return false;
         }
-        if (spirit.hasParentSpirit(this)) {
-            return true;
-        }
-        if (!(spirit.parentTile instanceof ComplexWorldTile
+        const complexSpirit = spirit as ComplexSpirit;
+        if (!(complexSpirit.parentTile instanceof ComplexWorldTile
                 && this.parentTile instanceof ComplexWorldTile)) {
             return false;
         }
+        if (complexSpirit.hasParentSpirit(this)) {
+            return true;
+        }
         let tempPos1 = (this.parentTile as ComplexWorldTile).pos;
-        let tempPos2 = (spirit.parentTile as ComplexWorldTile).pos;
+        let tempPos2 = (complexSpirit.parentTile as ComplexWorldTile).pos;
         return tempPos1.isAdjacentTo(tempPos2);
     }
     
-    registerStartInspectingSpirit(spirit) {
+    registerStartInspectingSpirit(spirit: ComplexSpirit): void {
         let index = this.stopInspectionSpiritIds.indexOf(spirit.id);
         if (index >= 0) {
             this.stopInspectionSpiritIds.splice(index);
         }
     }
     
-    registerStopInspectingSpirit(spirit) {
+    registerStopInspectingSpirit(spirit: ComplexSpirit): void {
         let index = this.stopInspectionSpiritIds.indexOf(spirit.id);
         if (index < 0) {
             this.stopInspectionSpiritIds.push(spirit.id);
         }
     }
     
-    inspect(spirit) {
-        if (!this.canInspect(spirit)) {
+    inspect(spirit: Spirit): boolean {
+        if (!(spirit instanceof ComplexSpirit && this.canInspect(spirit))) {
             return false;
         }
-        if (spirit instanceof MachineSpirit) {
+        const complexSpirit = spirit as ComplexSpirit;
+        if (complexSpirit instanceof MachineSpirit) {
             this.stopInspectingMachine();
-            this.inspectedMachine = spirit;
+            this.inspectedMachine = complexSpirit;
             this.inspectedMachine.inventory.addObserver(this);
         }
-        if (spirit instanceof CircuitSpirit) {
+        if (complexSpirit instanceof CircuitSpirit) {
             this.stopInspectingCircuit();
-            this.inspectedCircuit = spirit;
+            this.inspectedCircuit = complexSpirit;
         }
-        this.registerStartInspectingSpirit(spirit);
+        this.registerStartInspectingSpirit(complexSpirit);
         return true;
     }
     
-    stopInspectingMachine() {
+    stopInspectingMachine(): void {
         if (this.inspectedMachine === null) {
             return;
         }
@@ -378,7 +384,7 @@ export class PlayerSpirit extends InventorySpirit {
         this.inspectedMachine = null;
     }
     
-    stopInspectingCircuit() {
+    stopInspectingCircuit(): void {
         if (this.inspectedCircuit === null) {
             return;
         }
@@ -386,7 +392,7 @@ export class PlayerSpirit extends InventorySpirit {
         this.inspectedCircuit = null;
     }
     
-    stopInspecting(spirit) {
+    stopInspecting(spirit: ComplexSpirit) {
         if (spirit === this.inspectedMachine) {
             this.stopInspectingMachine();
         }
@@ -395,7 +401,7 @@ export class PlayerSpirit extends InventorySpirit {
         }
     }
     
-    verifyInspectionState() {
+    verifyInspectionState(): void {
         if (this.inspectedMachine !== null && !this.canInspect(this.inspectedMachine)) {
             this.stopInspectingMachine();
         }
@@ -404,7 +410,7 @@ export class PlayerSpirit extends InventorySpirit {
         }
     }
     
-    getInventoryByParentSpiritId(parentSpiritId) {
+    getInventoryByParentSpiritId(parentSpiritId: number): Inventory {
         let tempSpirit = complexSpiritMap[parentSpiritId] as InventorySpirit;
         if (typeof tempSpirit === "undefined") {
             return null;
@@ -416,7 +422,11 @@ export class PlayerSpirit extends InventorySpirit {
         return tempSpirit.inventory;
     }
     
-    transferInventoryItem(sourceParentSpiritId, destinationParentSpiritId, spiritReference) {
+    transferInventoryItem(
+        sourceParentSpiritId: number,
+        destinationParentSpiritId: number,
+        spiritReference: SpiritReference
+    ): void {
         let sourceInventory = this.getInventoryByParentSpiritId(sourceParentSpiritId);
         let destinationInventory = this.getInventoryByParentSpiritId(destinationParentSpiritId);
         if (sourceInventory === null || destinationInventory === null) {
@@ -434,7 +444,10 @@ export class PlayerSpirit extends InventorySpirit {
         destinationInventory.increaseItemCountBySpirit(tempSpirit, tempCount);
     }
     
-    recycleInventoryItem(parentSpiritId, spiritReference) {
+    recycleInventoryItem(
+        parentSpiritId: number,
+        spiritReference: SpiritReference
+    ): void {
         let tempInventory = this.getInventoryByParentSpiritId(parentSpiritId);
         if (tempInventory === null) {
             return;
@@ -453,12 +466,12 @@ export class PlayerSpirit extends InventorySpirit {
         }
     }
     
-    placeCircuitTile(pos, spiritReference) {
+    placeCircuitTile(pos: Pos, spiritReference: SpiritReference): void {
         // TODO: Implement.
         
     }
     
-    craftCircuitTile(pos, spiritType) {
+    craftCircuitTile(pos: Pos, spiritType: SpiritType): void {
         if (this.inspectedCircuit === null) {
             return;
         }
@@ -476,7 +489,7 @@ export class MachineSpirit extends InventorySpirit {
     spiritType: MachineSpiritType;
     colorIndex: number;
     
-    constructor(spiritType, id, inventory = null) {
+    constructor(spiritType: MachineSpiritType, id: number, inventory: Inventory = null) {
         super(spiritType, id, inventory);
         this.colorIndex = this.spiritType.colorIndex;
     }
@@ -487,7 +500,7 @@ export class MachineSpirit extends InventorySpirit {
         return output;
     }
     
-    getAttributeDbJson() {
+    getAttributeDbJson(): MachineSpiritAttributeJson {
         return {
             colorIndex: this.colorIndex
         };
@@ -498,7 +511,7 @@ export abstract class TileGridSpirit<T extends Tile> extends ComplexSpirit {
     
     tileGrid: TileGrid<T>;
     
-    constructor(spiritType, id, tileGrid = null) {
+    constructor(spiritType: ComplexSpiritType, id: number, tileGrid: TileGrid<T> = null) {
         super(spiritType, id);
         if (tileGrid === null) {
             this.generateTileGrid();
@@ -508,18 +521,18 @@ export abstract class TileGridSpirit<T extends Tile> extends ComplexSpirit {
         this.tileGrid.populateParentSpirit(this);
     }
     
-    getContainerDbJson() {
+    getContainerDbJson(): TileGridSpiritContainerJson {
         return this.tileGrid.getDbJson();
     }
     
-    destroy() {
+    destroy(): void {
         for (let tile of this.tileGrid.tileList) {
             tile.spirit.destroy();
         }
         super.destroy();
     }
     
-    getRecycleProducts() {
+    getRecycleProducts(): RecipeComponent[] {
         let output = super.getRecycleProducts();
         for (let tile of this.tileGrid.tileList) {
             let tempProductList = tile.spirit.getRecycleProducts();
@@ -530,31 +543,36 @@ export abstract class TileGridSpirit<T extends Tile> extends ComplexSpirit {
         return output;
     }
     
-    getTile(pos) {
+    getTile(pos: Pos): T {
         return this.tileGrid.getTile(pos);
     }
     
-    setTile(pos, tile) {
+    setTile(pos: Pos, tile: T): void {
         this.tileGrid.setTile(pos, tile);
     }
     
-    swapTiles(pos1, pos2) {
+    swapTiles(pos1: Pos, pos2: Pos): void {
         this.tileGrid.swapTiles(pos1, pos2);
     }
     
-    abstract generateTileGrid();
+    abstract generateTileGrid(): void;
 }
 
 export class WorldSpirit extends TileGridSpirit<WorldTile> {
     
+    spiritType: WorldSpiritType;
     playerTileList: PlayerWorldTile[];
     
-    constructor(spiritType, id, tileGrid = null) {
+    constructor(
+        spiritType: WorldSpiritType,
+        id: number,
+        tileGrid: TileGrid<WorldTile> = null,
+    ) {
         super(spiritType, id, tileGrid);
         this.playerTileList = [];
     }
     
-    generateTileGrid() {
+    generateTileGrid(): void {
         this.tileGrid = createWorldTileGrid(worldSize, worldSize);
         for (let count = 0; count < 1000; count++) {
             let tempTile;
@@ -571,18 +589,18 @@ export class WorldSpirit extends TileGridSpirit<WorldTile> {
         }
     }
     
-    setTile(pos, tile) {
+    setTile(pos: Pos, tile: WorldTile): void {
         let tempOldTile = this.tileGrid.getTile(pos);
         super.setTile(pos, tile);
         tempOldTile.removeFromWorldEvent();
         tile.addToWorldEvent(this);
     }
     
-    getWindowClientJson(pos, width, height) {
+    getWindowClientJson(pos: Pos, width: number, height: number): TileClientJson[] {
         return this.tileGrid.getWindowClientJson(pos, width, height);
     }
     
-    findPlayerTile(player) {
+    findPlayerTile(player: Player): number {
         for (let index = 0; index < this.playerTileList.length; index++) {
             let tempTile = this.playerTileList[index];
             let tempPlayer = tempTile.spirit.player;
@@ -593,7 +611,7 @@ export class WorldSpirit extends TileGridSpirit<WorldTile> {
         return -1;
     }
     
-    getPlayerTile(player) {
+    getPlayerTile(player: Player): PlayerWorldTile {
         let index = this.findPlayerTile(player);
         if (index < 0) {
             return null;
@@ -601,7 +619,7 @@ export class WorldSpirit extends TileGridSpirit<WorldTile> {
         return this.playerTileList[index];
     }
     
-    getPlayerSpirit(player) {
+    getPlayerSpirit(player: Player): PlayerSpirit {
         let tempTile = this.getPlayerTile(player);
         if (tempTile === null) {
             return null;
@@ -609,7 +627,7 @@ export class WorldSpirit extends TileGridSpirit<WorldTile> {
         return tempTile.spirit;
     }
     
-    addPlayerTile(player) {
+    addPlayerTile(player: Player): Promise<PlayerSpirit> {
         let tempTile = this.getPlayerTile(player);
         if (tempTile !== null) {
             return Promise.resolve(tempTile.spirit);
@@ -638,7 +656,7 @@ export class WorldSpirit extends TileGridSpirit<WorldTile> {
         });
     }
     
-    tick() {
+    tick(): Promise<void> {
         // TODO: Put something here.
         
         return Promise.resolve();
@@ -647,7 +665,7 @@ export class WorldSpirit extends TileGridSpirit<WorldTile> {
 
 export class CircuitSpirit extends TileGridSpirit<CircuitTile> {
     
-    generateTileGrid() {
+    generateTileGrid(): void {
         this.tileGrid = createCircuitTileGrid(circuitSize, circuitSize);
         // Generate some garbage tiles for testing purposes.
         let tempPos = new Pos(0, 0);
@@ -661,7 +679,7 @@ export class CircuitSpirit extends TileGridSpirit<CircuitTile> {
     }
 }
 
-export function loadNextComplexSpiritId() {
+export function loadNextComplexSpiritId(): Promise<void> {
     return niceUtils.performDbQuery(
         "SELECT * FROM Configuration WHERE name = ?",
         ["nextComplexSpiritId"]
@@ -678,14 +696,14 @@ export function loadNextComplexSpiritId() {
     });
 }
 
-export function persistNextComplexSpiritId() {
+export function persistNextComplexSpiritId(): Promise<void> {
     return niceUtils.performDbQuery(
         "UPDATE Configuration SET value = ? WHERE name = ?",
         [nextComplexSpiritId, "nextComplexSpiritId"]
     );
 }
 
-export function persistAllComplexSpirits() {
+export function persistAllComplexSpirits(): Promise<void> {
     let operationList = [];
     for (let id in dirtyComplexSpiritMap) {
         let tempSpirit = dirtyComplexSpiritMap[id];

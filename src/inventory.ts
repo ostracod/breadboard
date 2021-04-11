@@ -265,13 +265,10 @@ export class Inventory {
     
     // Parent may be any number of steps removed.
     hasParentSpirit(spirit: Spirit): boolean {
-        if (!(spirit instanceof ComplexSpirit)) {
-            return false;
-        }
         if (this.parentSpirit === spirit) {
             return true;
         }
-        return this.parentSpirit.hasParentSpirit(spirit as ComplexSpirit);
+        return this.parentSpirit.hasParentSpirit(spirit);
     }
 }
 

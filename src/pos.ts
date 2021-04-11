@@ -1,46 +1,48 @@
 
+import {PosJson} from "./interfaces.js";
+
 export class Pos {
     
     x: number;
     y: number;
     
-    constructor(x, y) {
+    constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
     }
     
-    copy() {
+    copy(): Pos {
         return new Pos(this.x, this.y);
     }
     
-    set(pos) {
+    set(pos: Pos): void {
         this.x = pos.x;
         this.y = pos.y;
     }
     
-    add(pos) {
+    add(pos: Pos): void {
         this.x += pos.x;
         this.y += pos.y;
     }
     
-    subtract(pos) {
+    subtract(pos: Pos): void {
         this.x -= pos.x;
         this.y -= pos.y;
     }
     
-    equals(pos) {
+    equals(pos: Pos): boolean {
         return (this.x == pos.x && this.y == pos.y);
     }
     
-    isAdjacentTo(pos) {
+    isAdjacentTo(pos: Pos): boolean {
         return (Math.abs(this.x - pos.x) + Math.abs(this.y - pos.y) <= 1);
     }
     
-    toString() {
+    toString(): string {
         return "(" + this.x + ", " + this.y + ")";
     }
     
-    toJson() {
+    toJson(): PosJson {
         return {
             x: this.x,
             y: this.y
@@ -48,7 +50,7 @@ export class Pos {
     }
 }
 
-export function createPosFromJson(data) {
+export function createPosFromJson(data: PosJson): Pos {
     return new Pos(data.x, data.y);
 }
 
