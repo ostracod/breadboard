@@ -1,19 +1,21 @@
 
-import {TileClientJson, SimpleTileClientJson, ComplexTileClientJson, TileDbJson} from "./interfaces.js";
-import {Spirit} from "./spirit.js";
+import {TileClientJson, SimpleTileClientJson, ComplexTileClientJson, TileDbJson, SimpleTileDbJson, ComplexTileDbJson} from "./interfaces.js";
+import {Pos} from "./pos.js";
+import {Spirit, SimpleSpirit, ComplexSpirit} from "./spirit.js";
+import {TileGrid} from "./tileGrid.js";
 
-export abstract class Tile {
+export abstract class Tile<T extends Spirit = Spirit> {
     
-    spirit: Spirit;
+    spirit: T;
     tileComplexity: TileComplexity;
     
-    constructor(spirit, tileComplexity) {
+    constructor(spirit: T, tileComplexity: TileComplexity) {
         this.spirit = spirit;
         this.tileComplexity = tileComplexity;
         this.tileComplexity.registerTile(this);
     }
     
-    getClientJson() {
+    getClientJson(): TileClientJson {
         return this.tileComplexity.convertToClientJson(this);
     }
     
@@ -21,39 +23,39 @@ export abstract class Tile {
         return this.tileComplexity.convertToDbJson(this);
     }
     
-    addToGridEvent(tileGrid, pos) {
+    addToGridEvent(tileGrid: TileGrid, pos: Pos) {
         this.spirit.setParentTile(this);
         this.spirit.changeParentSpirit(tileGrid.parentSpirit);
     }
     
-    removeFromGridEvent() {
+    removeFromGridEvent(): void {
         this.spirit.setParentTile(null);
         this.spirit.changeParentSpirit(null);
     }
     
-    moveEvent(pos) {
+    moveEvent(pos: Pos): void {
         // Do nothing.
     }
     
-    abstract getSimpleTileSet();
+    abstract getSimpleTileSet(): {[name: string]: Tile<SimpleSpirit>};
     
-    abstract getSimpleTileMap();
+    abstract getSimpleTileMap(): {[serialInteger: string]: Tile<SimpleSpirit>};
 }
 
-abstract class TileComplexity {
+abstract class TileComplexity<T extends Spirit = Spirit> {
     
-    registerTile(tile) {
+    registerTile(tile: Tile<T>) {
         // Do nothing.
     }
     
-    abstract convertToClientJson(tile): TileClientJson;
+    abstract convertToClientJson(tile: Tile<T>): TileClientJson;
     
-    abstract convertToDbJson(tile);
+    abstract convertToDbJson(tile: Tile<T>): TileDbJson;
 }
 
-class SimpleTileComplexity extends TileComplexity {
+class SimpleTileComplexity extends TileComplexity<SimpleSpirit> {
     
-    registerTile(tile) {
+    registerTile(tile: Tile<SimpleSpirit>) {
         let tempTileSet = tile.getSimpleTileSet();
         let tempTileMap = tile.getSimpleTileMap();
         let tempSpiritType = tile.spirit.spiritType;
@@ -62,24 +64,24 @@ class SimpleTileComplexity extends TileComplexity {
         tempTileMap[tempSerialInteger] = tile;
     }
     
-    convertToClientJson(tile): SimpleTileClientJson {
+    convertToClientJson(tile: Tile<SimpleSpirit>): SimpleTileClientJson {
         return tile.spirit.serialInteger;
     }
     
-    convertToDbJson(tile) {
+    convertToDbJson(tile: Tile<SimpleSpirit>): SimpleTileDbJson {
         return tile.spirit.serialInteger;
     }
 }
 
-class ComplexTileComplexity extends TileComplexity {
+class ComplexTileComplexity extends TileComplexity<ComplexSpirit> {
     
-    convertToClientJson(tile): ComplexTileClientJson {
+    convertToClientJson(tile: Tile<ComplexSpirit>): ComplexTileClientJson {
         return {
             spirit: tile.spirit.getClientJson()
         };
     }
     
-    convertToDbJson(tile) {
+    convertToDbJson(tile: Tile<ComplexSpirit>): ComplexTileDbJson {
         return {
             spirit: tile.spirit.getNestedDbJson()
         };

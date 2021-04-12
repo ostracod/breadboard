@@ -14,7 +14,7 @@ let gameUtils = ostracodMultiplayer.gameUtils;
 // > Identify whether a spirit instance matches particular criteria
 // > Create new instances of spirits
 
-export abstract class SpiritType<T extends Spirit> {
+export abstract class SpiritType<T extends Spirit = Spirit> {
     
     baseName: string;
     
@@ -169,7 +169,7 @@ export class WireSpiritType extends SimpleSpiritType {
     }
 }
 
-export abstract class ComplexSpiritType<T extends ComplexSpirit> extends SpiritType<ComplexSpirit> {
+export abstract class ComplexSpiritType<T extends ComplexSpirit = ComplexSpirit> extends SpiritType<T> {
     
     spiritClassId: number;
     
@@ -400,7 +400,7 @@ export function convertNestedDbJsonToSpirit(
     return loadComplexSpirit(data.id, shouldPerformTransaction);
 }
 
-export function convertJsonToSpiritType(data: SpiritTypeJson): SpiritType<Spirit> {
+export function convertJsonToSpiritType(data: SpiritTypeJson): SpiritType {
     if (data.type == "simple") {
         return simpleSpiritTypeMap[(data as SimpleSpiritTypeJson).serialInteger];
     }

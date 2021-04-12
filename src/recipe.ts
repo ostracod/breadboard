@@ -8,10 +8,10 @@ let nextRecipeId = 0;
 
 export class RecipeComponent {
     
-    spiritType: SpiritType<Spirit>;
+    spiritType: SpiritType;
     count: number;
     
-    constructor(spiritType: SpiritType<Spirit>, count: number) {
+    constructor(spiritType: SpiritType, count: number) {
         this.spiritType = spiritType;
         this.count = count;
     }

@@ -2,9 +2,9 @@
 import {RecipeJson} from "./interfaces.js";
 import {SimpleSpirit, ComplexSpirit} from "./spirit.js";
 import {SimpleSpiritType, ComplexSpiritType, EmptySpiritType, BarrierSpiritType, MatteriteSpiritType, EnergiteSpiritType, BlockSpiritType, WireSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, CircuitSpiritType} from "./spiritType.js";
-import {WorldTile, SimpleWorldTile, ComplexWorldTile} from "./worldTile.js";
+import {SimpleWorldTile, ComplexWorldTile} from "./worldTile.js";
 import {CircuitTile, SimpleCircuitTile} from "./circuitTile.js";
-import {ComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory, WorldTileFactory, CircuitTileFactory, ComplexCircuitTileFactory} from "./tileFactory.js";
+import {AbstractComplexWorldTileFactory, ComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory, WorldTileFactory, CircuitTileFactory, ComplexCircuitTileFactory} from "./tileFactory.js";
 import {Recipe, RecipeComponent} from "./recipe.js";
 
 export const simpleSpiritSerialIntegerSet = {
@@ -31,20 +31,20 @@ export const circuitSize = 17;
 
 export let simpleSpiritSet: {[name: string]: SimpleSpirit} = {};
 export let simpleSpiritTypeSet: {[name: string]: SimpleSpiritType} = {};
-export let complexSpiritTypeSet: {[name: string]: ComplexSpiritType<ComplexSpirit>} = {};
-export let simpleWorldTileSet: {[name: string]: WorldTile} = {};
-export let simpleCircuitTileSet: {[name: string]: CircuitTile} = {};
+export let complexSpiritTypeSet: {[name: string]: ComplexSpiritType} = {};
+export let simpleWorldTileSet: {[name: string]: SimpleWorldTile} = {};
+export let simpleCircuitTileSet: {[name: string]: SimpleCircuitTile} = {};
 
 export let simpleSpiritMap: {[serialInteger: string]: SimpleSpirit} = {};
 export let complexSpiritMap: {[id: string]: ComplexSpirit} = {};
 export let dirtyComplexSpiritMap: {[id: string]: ComplexSpirit} = {};
 
 export let simpleSpiritTypeMap: {[serialInteger: string]: SimpleSpiritType} = {};
-export let complexSpiritTypesMap: {[classId: string]: ComplexSpiritType<ComplexSpirit>[]} = {};
+export let complexSpiritTypesMap: {[classId: string]: ComplexSpiritType[]} = {};
 
-export let simpleWorldTileMap: {[serialInteger: string]: WorldTile} = {};
-export let simpleCircuitTileMap: {[serialInteger: string]: CircuitTile} = {};
-export let complexWorldTileFactoryMap: {[classId: string]: ComplexWorldTileFactory<ComplexWorldTile>} = {};
+export let simpleWorldTileMap: {[serialInteger: string]: SimpleWorldTile} = {};
+export let simpleCircuitTileMap: {[serialInteger: string]: SimpleCircuitTile} = {};
+export let complexWorldTileFactoryMap: {[classId: string]: AbstractComplexWorldTileFactory} = {};
 export let complexCircuitTileFactoryMap: {[classId: string]: ComplexCircuitTileFactory} = {};
 
 export let recipeList: Recipe[] = [];

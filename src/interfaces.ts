@@ -102,7 +102,17 @@ export interface ComplexTileClientJson {
     spirit: ComplexSpiritClientJson;
 }
 
+export interface PlayerWorldTileClientJson extends ComplexTileClientJson {
+    walkController: WalkControllerJson;
+}
+
 export type TileDbJson = any;
+
+export type SimpleTileDbJson = number;
+
+export interface ComplexTileDbJson {
+    spirit: ComplexSpiritNestedDbJson
+}
 
 export interface InventoryItemClientJson {
     spirit: SpiritClientJson;
@@ -134,11 +144,15 @@ export interface RecipeJson {
     product: RecipeComponentJson;
 }
 
-export interface TileGridDbJson {
+export interface TileGridJson<T> {
     width: number;
     height: number;
-    tiles: TileDbJson[];
+    tiles: T[];
 }
+
+export type TileGridDbJson = TileGridJson<TileDbJson>;
+
+export type TileGridClientJson = TileGridJson<TileClientJson>;
 
 export type SpiritDbJson = any;
 

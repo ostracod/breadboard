@@ -1,85 +1,87 @@
 
 import {simpleSpiritTypeSet, simpleWorldTileSet, simpleWorldTileMap, worldTileFactory} from "./globalData.js";
-import {WalkControllerJson} from "./interfaces.js";
+import {WalkControllerJson, PlayerWorldTileClientJson, TileDbJson} from "./interfaces.js";
 import {Pos} from "./pos.js";
-import {WorldSpirit, PlayerSpirit} from "./spirit.js";
+import {Spirit, SimpleSpirit, ComplexSpirit, WorldSpirit, PlayerSpirit, MachineSpirit} from "./spirit.js";
+import {SpiritReference} from "./spiritReference.js";
 import {Tile, simpleTileComplexity, complexTileComplexity} from "./tile.js";
+import {TileGrid} from "./tileGrid.js";
 
-export class WorldTile extends Tile {
+export class WorldTile<T extends Spirit = Spirit> extends Tile<T> {
     
-    getSimpleTileSet() {
+    getSimpleTileSet(): {[name: string]: SimpleWorldTile} {
         return simpleWorldTileSet;
     }
     
-    getSimpleTileMap() {
+    getSimpleTileMap(): {[serialInteger: string]: SimpleWorldTile} {
         return simpleWorldTileMap;
     }
     
-    addToWorldEvent(worldSpirit) {
+    addToWorldEvent(worldSpirit: WorldSpirit): void {
         // Do nothing.
     }
     
-    removeFromWorldEvent() {
+    removeFromWorldEvent(): void {
         // Do nothing.
     }
     
-    canBeMined() {
+    canBeMined(): boolean {
         return this.spirit.canBeMined();
     }
 }
 
-export class SimpleWorldTile extends WorldTile {
+export class SimpleWorldTile extends WorldTile<SimpleSpirit> {
     
-    constructor(spirit) {
+    constructor(spirit: SimpleSpirit) {
         super(spirit, simpleTileComplexity);
     }
 }
 
-export class ComplexWorldTile extends WorldTile {
+export class ComplexWorldTile<T extends ComplexSpirit = ComplexSpirit> extends WorldTile<T> {
     
     worldSpirit: WorldSpirit;
     pos: Pos;
     
-    constructor(spirit) {
+    constructor(spirit: T) {
         super(spirit, complexTileComplexity);
         this.worldSpirit = null;
         this.pos = null;
     }
     
-    addToGridEvent(tileGrid, pos) {
+    addToGridEvent(tileGrid: TileGrid, pos: Pos): void {
         super.addToGridEvent(tileGrid, pos);
         this.pos = pos.copy();
     }
     
-    removeFromGridEvent() {
+    removeFromGridEvent(): void {
         super.removeFromGridEvent();
         this.pos = null;
     }
     
-    addToWorldEvent(worldSpirit) {
+    addToWorldEvent(worldSpirit: WorldSpirit): void {
         super.addToWorldEvent(worldSpirit);
         this.worldSpirit = worldSpirit;
     }
     
-    removeFromWorldEvent() {
+    removeFromWorldEvent(): void {
         super.removeFromWorldEvent();
         this.worldSpirit = null;
     }
     
-    moveEvent(pos) {
+    moveEvent(pos: Pos): void {
         super.moveEvent(pos);
         this.pos.set(pos);
     }
     
-    addToWorld(worldSpirit, pos) {
+    addToWorld(worldSpirit: WorldSpirit, pos: Pos): void {
         worldSpirit.setTile(pos, this);
     }
     
-    removeFromWorld() {
+    removeFromWorld(): void {
         this.worldSpirit.setTile(this.pos, simpleWorldTileSet.empty);
     }
     
-    move(offset) {
+    move(offset: Pos): boolean {
         let tempNextPos = this.pos.copy();
         tempNextPos.add(offset);
         let tempTile = this.worldSpirit.getTile(tempNextPos);
@@ -97,13 +99,13 @@ class TimeBudget {
     time: number;
     lastTimestamp: number;
     
-    constructor(maximumTime) {
+    constructor(maximumTime: number) {
         this.maximumTime = maximumTime;
         this.time = this.maximumTime;
         this.lastTimestamp = Date.now() / 1000;
     }
     
-    spendTime(amount) {
+    spendTime(amount: number): boolean {
         
         // Update the amount of time we can spend.
         let tempTimestamp = Date.now() / 1000;
@@ -124,42 +126,41 @@ class TimeBudget {
     }
 }
 
-export class PlayerWorldTile extends ComplexWorldTile {
+export class PlayerWorldTile extends ComplexWorldTile<PlayerSpirit> {
     
-    spirit: PlayerSpirit;
     walkControllerData: WalkControllerJson;
     walkTimeBudget: TimeBudget;
     mineTimeBudget: TimeBudget;
     
-    constructor(playerSpirit) {
+    constructor(playerSpirit: PlayerSpirit) {
         super(playerSpirit);
         this.walkControllerData = null;
         this.walkTimeBudget = new TimeBudget(6);
         this.mineTimeBudget = new TimeBudget(6);
     }
     
-    getClientJson() {
+    getClientJson(): PlayerWorldTileClientJson {
         let output = super.getClientJson();
         output.walkController = this.walkControllerData;
         return output;
     }
     
-    getDbJson() {
+    getDbJson(): TileDbJson {
         return simpleWorldTileSet.empty.getDbJson();
     }
     
-    addToWorldEvent(worldSpirit) {
+    addToWorldEvent(worldSpirit: WorldSpirit): void {
         super.addToWorldEvent(worldSpirit);
         this.worldSpirit.playerTileList.push(this);
     }
     
-    removeFromWorldEvent() {
+    removeFromWorldEvent(): void {
         let index = this.worldSpirit.findPlayerTile(this.spirit.player);
         this.worldSpirit.playerTileList.splice(index, 1);
         super.removeFromWorldEvent();
     }
     
-    walk(offset) {
+    walk(offset: Pos): void {
         let tempResult = this.walkTimeBudget.spendTime(0.08);
         if (!tempResult) {
             return;
@@ -167,7 +168,7 @@ export class PlayerWorldTile extends ComplexWorldTile {
         this.move(offset);
     }
     
-    mine(pos) {
+    mine(pos: Pos): void {
         let tempResult = this.mineTimeBudget.spendTime(1.44);
         if (!tempResult) {
             return;
@@ -180,7 +181,7 @@ export class PlayerWorldTile extends ComplexWorldTile {
         this.spirit.inventory.incrementItemCountBySpirit(tempTile.spirit);
     }
     
-    placeWorldTile(pos, spiritReference) {
+    placeWorldTile(pos: Pos, spiritReference: SpiritReference): void {
         let tempTile = this.worldSpirit.getTile(pos);
         if (tempTile.spirit.spiritType !== simpleSpiritTypeSet.empty) {
             return;
@@ -198,7 +199,7 @@ export class PlayerWorldTile extends ComplexWorldTile {
     }
 }
 
-export class MachineWorldTile extends ComplexWorldTile {
+export class MachineWorldTile extends ComplexWorldTile<MachineSpirit> {
     
 }
 

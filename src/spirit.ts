@@ -24,9 +24,9 @@ let nextComplexSpiritId: number;
 
 export abstract class Spirit {
     
-    spiritType: SpiritType<Spirit>;
+    spiritType: SpiritType;
     
-    constructor(spiritType: SpiritType<Spirit>) {
+    constructor(spiritType: SpiritType) {
         this.spiritType = spiritType;
     }
     
@@ -94,16 +94,16 @@ export class SimpleSpirit extends Spirit {
 
 export class ComplexSpirit extends Spirit {
     
-    spiritType: ComplexSpiritType<ComplexSpirit>;
+    spiritType: ComplexSpiritType;
     id: number;
     classId: number;
     parentSpirit: ComplexSpirit;
-    parentTile: Tile;
+    parentTile: Tile<ComplexSpirit>;
     reference: ComplexSpiritReference;
     hasDbRow: boolean;
     isDestroyed: boolean;
     
-    constructor(spiritType: ComplexSpiritType<ComplexSpirit>, id: number) {
+    constructor(spiritType: ComplexSpiritType, id: number) {
         super(spiritType);
         this.classId = this.spiritType.spiritClassId;
         this.parentSpirit = null;
@@ -189,7 +189,7 @@ export class ComplexSpirit extends Spirit {
         return false;
     }
     
-    setParentTile(tile: Tile): void {
+    setParentTile(tile: Tile<ComplexSpirit>): void {
         this.parentTile = tile;
     }
     
@@ -476,7 +476,7 @@ export class PlayerSpirit extends InventorySpirit {
         
     }
     
-    craftCircuitTile(pos: Pos, spiritType: SpiritType<Spirit>): void {
+    craftCircuitTile(pos: Pos, spiritType: SpiritType): void {
         if (this.inspectedCircuit === null) {
             return;
         }
