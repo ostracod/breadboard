@@ -93,7 +93,7 @@ class ComplexSpirit extends Spirit {
         }
         complexSpiritCache.push({
             spirit: this,
-            updateRequestCount: updateRequestCount
+            updateRequestCount,
         });
     }
     
@@ -125,7 +125,7 @@ class CircuitSpirit extends ComplexSpirit {
     
 }
 
-function findComplexSpiritInCache(spiritId) {
+const findComplexSpiritInCache = (spiritId) => {
     for (let index = 0; index < complexSpiritCache.length; index++) {
         let tempItem = complexSpiritCache[index];
         if (tempItem.spirit.id === spiritId) {
@@ -133,15 +133,15 @@ function findComplexSpiritInCache(spiritId) {
         }
     }
     return -1;
-}
+};
 
-function removeStaleSpiritsInCache() {
+const removeStaleSpiritsInCache = () => {
     for (let index = complexSpiritCache.length - 1; index >= 0; index--) {
         let tempItem = complexSpiritCache[index];
         if (tempItem.updateRequestCount < updateRequestCount - 10) {
             complexSpiritCache.splice(index, 1);
         }
     }
-}
+};
 
 

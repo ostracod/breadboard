@@ -122,7 +122,7 @@ const spiritColorSet = [
     new NamedColor(64, 64, 192, "Dark Blue"),
     new NamedColor(128, 128, 255, "Blue"),
     new NamedColor(128, 32, 160, "Dark Magenta"),
-    new NamedColor(224, 32, 255, "Magenta")
+    new NamedColor(224, 32, 255, "Magenta"),
 ];
 const spiritColorAmount = spiritColorSet.length;
 let colorPaletteList = [];
@@ -135,7 +135,7 @@ const blockSpriteSet = new SpriteSet(0, 0, colorPaletteList);
 const machineSpriteSet = new SpriteSet(1, 1, colorPaletteList);
 const resourceSpriteSet = new SpriteSet(2, 2, [
     colorPaletteList[10],
-    colorPaletteList[7]
+    colorPaletteList[7],
 ]);
 const playerSpriteSet = new SpriteSet(3, 3, [colorPaletteList[13]]);
 const circuitSpriteSet = new SpriteSet(4, 4, [colorPaletteList[9]]);
@@ -143,7 +143,7 @@ const loadingSpriteSet = new SpriteSet(5, 5, [colorPaletteList[0]]);
 const barrierSpriteSet = new SpriteSet(6, 6, [colorPaletteList[1]]);
 const wireSpriteSet = new SpriteSet(20, 30, [
     colorPaletteList[5],
-    colorPaletteList[7]
+    colorPaletteList[7],
 ]);
 const chipSpriteSet = new SpriteSet(40, 40, [
     colorPaletteList[2],
@@ -152,17 +152,17 @@ const chipSpriteSet = new SpriteSet(40, 40, [
     colorPaletteList[8],
     colorPaletteList[10],
     colorPaletteList[12],
-    colorPaletteList[14]
+    colorPaletteList[14],
 ]);
 const portSpriteSet = new SpriteSet(41, 45, [
     colorPaletteList[3],
-    colorPaletteList[13]
+    colorPaletteList[13],
 ]);
 const characterSpriteSet = new SpriteSet(60, 159, [
-    new ColorPalette([new Color(0, 0, 255), null])
+    new ColorPalette([new Color(0, 0, 255), null]),
 ]);
 const crackSpriteSet = new SpriteSet(160, 163, [
-    new ColorPalette([new Color(0, 0, 0), null])
+    new ColorPalette([new Color(0, 0, 0), null]),
 ]);
 
 class Sprite {
@@ -182,7 +182,7 @@ let loadingSprite = new Sprite(loadingSpriteSet, 0, 0);
 let barrierSprite = new Sprite(barrierSpriteSet, 0, 0);
 let playerSprite = new Sprite(playerSpriteSet, 0, 0);
 
-function createCanvasWithSprites(parentTag, spriteList, inputPixelSize) {
+const createCanvasWithSprites = (parentTag, spriteList, inputPixelSize) => {
     let output = document.createElement("canvas");
     let tempSize = spriteSize * inputPixelSize;
     output.width = tempSize;
@@ -195,9 +195,9 @@ function createCanvasWithSprites(parentTag, spriteList, inputPixelSize) {
         sprite.draw(tempContext, new Pos(0, 0), inputPixelSize);
     }
     return output;
-}
+};
 
-function initializeSpriteSheet(done) {
+const initializeSpriteSheet = (done) => {
     
     spriteSheetCanvas = document.createElement("canvas");
     spriteSheetCanvas.width = spriteSheetSize;
@@ -210,7 +210,7 @@ function initializeSpriteSheet(done) {
     spriteContext = spriteCanvas.getContext("2d");
     
     spriteSheetImage = new Image();
-    spriteSheetImage.onload = function() {
+    spriteSheetImage.onload = () => {
         
         spriteSheetContext.drawImage(spriteSheetImage, 0, 0);
         spriteSheetImageData = spriteSheetContext.getImageData(
@@ -230,8 +230,8 @@ function initializeSpriteSheet(done) {
         
         spritesHaveLoaded = true;
         done();
-    }
+    };
     spriteSheetImage.src = "/images/sprites.png";
-}
+};
 
 

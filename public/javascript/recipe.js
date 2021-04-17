@@ -76,14 +76,14 @@ class Recipe {
     }
 }
 
-function convertJsonToRecipeComponent(data) {
-    return new RecipeComponent(
+const convertJsonToRecipeComponent = (data) => (
+    new RecipeComponent(
         convertJsonToSpiritType(data.spiritType),
         data.count
-    );
-}
+    )
+);
 
-function convertJsonToRecipe(data) {
+const convertJsonToRecipe = (data) => {
     let tempComponentList = [];
     for (let tempData of data.ingredients) {
         tempComponentList.push(convertJsonToRecipeComponent(tempData));
@@ -93,16 +93,16 @@ function convertJsonToRecipe(data) {
         tempComponentList,
         convertJsonToRecipeComponent(data.product)
     );
-}
+};
 
-function drawAllRecipes() {
+const drawAllRecipes = () => {
     for (let recipe of recipeList) {
         recipe.draw();
     }
-}
+};
 
-function craftSelectedRecipe() {
+const craftSelectedRecipe = () => {
     localPlayerInventory.craftRecipe(selectedRecipe);
-}
+};
 
 

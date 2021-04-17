@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "lint": "eslint . --ext .ts",
+        "lint": "eslint . --ext .ts --ext .js",
         "build": "tsc"
     },
     "dependencies": {

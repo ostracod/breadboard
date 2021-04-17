@@ -23,13 +23,13 @@ class SimpleSpiritReference extends SpiritReference {
         if (!(spiritReference instanceof SimpleSpiritReference)) {
             return false;
         }
-        return (this.serialInteger == spiritReference.serialInteger);
+        return (this.serialInteger === spiritReference.serialInteger);
     }
     
     getJson() {
         return {
             type: "simple",
-            serialInteger: this.serialInteger
+            serialInteger: this.serialInteger,
         };
     }
     
@@ -55,7 +55,7 @@ class ComplexSpiritReference extends SpiritReference {
     getJson() {
         return {
             type: "complex",
-            id: this.id
+            id: this.id,
         };
     }
     
@@ -69,12 +69,12 @@ class ComplexSpiritReference extends SpiritReference {
     }
 }
 
-function convertJsonToSpiritReference(data) {
+const convertJsonToSpiritReference = (data) => {
     if (data.type === "simple") {
         return new SimpleSpiritReference(data.serialInteger);
     } else {
         return new ComplexSpiritReference(data.id);
     }
-}
+};
 
 

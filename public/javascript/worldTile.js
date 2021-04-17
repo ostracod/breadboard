@@ -52,7 +52,7 @@ class PlayerWorldTile extends ComplexWorldTile {
         super(spirit);
         if (this.spirit.username === localPlayerUsername) {
             if (localPlayerWorldTile !== null) {
-                walkController = localPlayerWorldTile.walkController;
+                ({ walkController } = localPlayerWorldTile);
             }
             localPlayerWorldTile = this;
         }

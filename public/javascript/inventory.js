@@ -36,7 +36,7 @@ class InventoryItem {
     }
     
     setCount(count) {
-        if (count == this.count) {
+        if (count === this.count) {
             return;
         }
         this.count = count;
@@ -367,7 +367,7 @@ class InventoryUpdate {
     getClientJson(shouldUseReference = true) {
         let output = {
             parentSpiritId: this.inventory.parentSpiritId,
-            count: this.count
+            count: this.count,
         };
         if (shouldUseReference) {
             let tempReference = this.spirit.getReference();
@@ -383,11 +383,9 @@ class InventoryUpdate {
     }
 }
 
-function capitalize(text) {
-    return text.charAt(0).toUpperCase() + text.substring(1, text.length);
-}
+const capitalize = (text) => text.charAt(0).toUpperCase() + text.substring(1, text.length);
 
-function convertClientJsonToInventoryUpdate(data) {
+const convertClientJsonToInventoryUpdate = (data) => {
     let tempInventory = parentSpiritInventoryMap[data.parentSpiritId];
     if (typeof tempInventory === "undefined") {
         return null;
@@ -403,9 +401,9 @@ function convertClientJsonToInventoryUpdate(data) {
         }
     }
     return new InventoryUpdate(tempInventory, tempSpirit, data.count);
-}
+};
 
-function pushInventoryUpdate(destination, update) {
+const pushInventoryUpdate = (destination, update) => {
     for (let index = destination.length - 1; index >= 0; index--) {
         let tempUpdate = destination[index];
         if (tempUpdate.inventory === update.inventory
@@ -414,12 +412,12 @@ function pushInventoryUpdate(destination, update) {
         }
     }
     destination.push(update);
-}
+};
 
-function pushInventoryUpdates(destination, updateList) {
+const pushInventoryUpdates = (destination, updateList) => {
     for (let update of updateList) {
         pushInventoryUpdate(destination, update);
     }
-}
+};
 
 

@@ -6,7 +6,7 @@ class SpiritType {
     // craft, getDisplayName
     
     constructor(spriteList, baseName) {
-        this.spriteList = spriteList
+        this.spriteList = spriteList;
         this.baseName = baseName;
     }
     
@@ -45,7 +45,7 @@ class SimpleSpiritType extends SpiritType {
     getJson() {
         return {
             type: "simple",
-            serialInteger: this.serialInteger
+            serialInteger: this.serialInteger,
         };
     }
     
@@ -164,7 +164,7 @@ class WireSpiritType extends SimpleSpiritType {
         } else {
             tempSpriteList = [
                 new Sprite(wireSpriteSet, 0, 0),
-                new Sprite(wireSpriteSet, 1, 0)
+                new Sprite(wireSpriteSet, 1, 0),
             ];
         }
         super(tempSpriteList, "wire", arrangement);
@@ -204,7 +204,7 @@ class ComplexSpiritType extends SpiritType {
     getJson() {
         return {
             type: "complex",
-            classId: this.spiritClassId
+            classId: this.spiritClassId,
         };
     }
     
@@ -312,7 +312,7 @@ class CircuitSpiritType extends ComplexSpiritType {
     }
 }
 
-function convertClientJsonToSpirit(data) {
+const convertClientJsonToSpirit = (data) => {
     let tempType;
     if (typeof data === "number") {
         tempType = simpleSpiritTypeMap[data];
@@ -326,13 +326,13 @@ function convertClientJsonToSpirit(data) {
         }
     }
     return tempType.convertClientJsonToSpirit(data);
-}
+};
 
-function convertJsonToSpiritType(data) {
-    if (data.type == "simple") {
+const convertJsonToSpiritType = (data) => {
+    if (data.type === "simple") {
         return simpleSpiritTypeMap[data.serialInteger];
     }
-    if (data.type == "complex") {
+    if (data.type === "complex") {
         let tempTypeList = complexSpiritTypesMap[data.classId];
         for (let spiritType of tempTypeList) {
             if (spiritType.matchesJson(data)) {
@@ -341,6 +341,6 @@ function convertJsonToSpiritType(data) {
         }
     }
     return null;
-}
+};
 
 

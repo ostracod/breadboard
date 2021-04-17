@@ -5,7 +5,7 @@ const tileActionOffsetSet = [
     new Pos(-1, 0),
     new Pos(1, 0),
     new Pos(0, -1),
-    new Pos(0, 1)
+    new Pos(0, 1),
 ];
 const worldTileActionNameSet = ["remove", "place", "inspect", "attack"];
 const circuitTileActionNameSet = ["remove", "place", "inspect"];
@@ -22,7 +22,7 @@ let tileActionNameSet;
 let selectedTileAction = "remove";
 let updateRequestCount = 0;
 
-function drawMineCrack() {
+const drawMineCrack = () => {
     if (!isMining) {
         return;
     }
@@ -37,9 +37,9 @@ function drawMineCrack() {
         tempIndex = 3;
     }
     crackSpriteSet.draw(context, tempPos, tempIndex, 0, pixelSize);
-}
+};
 
-function drawTileBorder(pos, color) {
+const drawTileBorder = (pos, color) => {
     if (pos === null) {
         return;
     }
@@ -62,26 +62,26 @@ function drawTileBorder(pos, color) {
         tempPosX + spritePixelSize, tempPosY,
         pixelSize, spritePixelSize
     );
-}
+};
 
-function drawWorld() {
+const drawWorld = () => {
     cameraPos.set(localPlayerWorldTile.pos);
     cameraPos.x -= Math.floor(canvasTileWidth / 2);
     cameraPos.y -= Math.floor(canvasTileHeight / 2);
     worldTileGrid.drawLayer(cameraPos, 0);
     drawMineCrack();
     worldTileGrid.drawLayer(cameraPos, 1);
-}
+};
 
-function drawInspectedCircuit() {
+const drawInspectedCircuit = () => {
     cameraPos.x = 0;
     cameraPos.y = 0;
     circuitTileGrid.drawLayer(cameraPos, 0);
     drawTileBorder(cursorCircuitTilePos, "#A0A0A0");
     drawTileBorder(inspectedCircuitTilePos, "#000000");
-}
+};
 
-function drawEverything() {
+const drawEverything = () => {
     clearCanvas();
     if (!spritesHaveLoaded) {
         return;
@@ -94,9 +94,9 @@ function drawEverything() {
     } else {
         drawInspectedCircuit();
     }
-}
+};
 
-function startMining(pos) {
+const startMining = (pos) => {
     if (isMining && mineTargetPos.equals(pos)) {
         return;
     }
@@ -108,9 +108,9 @@ function startMining(pos) {
     mineTargetPos = pos;
     mineDelay = 36;
     isMining = true;
-}
+};
 
-function processMineTick() {
+const processMineTick = () => {
     if (!isMining) {
         return;
     }
@@ -131,12 +131,12 @@ function processMineTick() {
     localPlayerInventory.incrementItemCountBySpirit(tempSpirit);
     addMineCommand(mineTargetPos, tempSpirit);
     isMining = false;
-}
+};
 
-function placeWorldTile(pos) {
+const placeWorldTile = (pos) => {
     let tempTile = worldTileGrid.getTile(pos);
     if (tempTile.spirit.spiritType !== simpleSpiritTypeSet.empty) {
-        return
+        return;
     }
     let tempItem = localPlayerInventory.selectedItem;
     if (tempItem === null) {
@@ -153,73 +153,73 @@ function placeWorldTile(pos) {
     tempTile = worldTileFactory.getTileWithSpirit(tempSpirit);
     worldTileGrid.setTile(pos, tempTile);
     addPlaceWorldTileCommand(pos, tempSpirit);
-}
+};
 
-function inspectWorldTile(pos) {
+const inspectWorldTile = (pos) => {
     let tempTile = worldTileGrid.getTile(pos);
     let tempSpirit = tempTile.spirit;
     inspectSpirit(tempSpirit);
-}
+};
 
-function placeCircuitTile() {
+const placeCircuitTile = () => {
     // TODO: Implement.
     
-}
+};
 
-function craftCircuitTile(pos, spiritType, shouldAddCommand = true) {
+const craftCircuitTile = (pos, spiritType, shouldAddCommand = true) => {
     let tempSpirit = spiritType.craft();
     let tempTile = circuitTileFactory.getTileWithSpirit(tempSpirit);
     circuitTileGrid.setTile(pos, tempTile);
     if (shouldAddCommand) {
         addCraftCircuitTileCommand(pos, spiritType);
     }
-}
+};
 
-function craftOrPlaceCircuitTile() {
+const craftOrPlaceCircuitTile = () => {
     // TODO: Allow placing circuit in inventory.
     let tempSpiritType = selectedCircuitTileOptionRow.spiritType;
     craftCircuitTile(cursorCircuitTilePos, tempSpiritType, true);
-}
+};
 
-function removeCircuitTile() {
+const removeCircuitTile = () => {
     craftCircuitTile(cursorCircuitTilePos, simpleSpiritTypeSet.empty, true);
-}
+};
 
-function tileActionIsAvailable(name) {
+const tileActionIsAvailable = (name) => {
     if (inspectedCircuitSpiritId === null) {
         return (worldTileActionNameSet.indexOf(name) >= 0);
     } else {
         return (circuitTileActionNameSet.indexOf(name) >= 0);
     }
-}
+};
 
-function selectTileAction(name) {
+const selectTileAction = (name) => {
     if (selectedTileAction === name || !tileActionIsAvailable(name)) {
         return;
     }
     let tempTag = document.getElementById(name + "TileAction");
     tempTag.checked = true;
     selectedTileAction = name;
-}
+};
 
-function selectTileActionByIndex(index) {
+const selectTileActionByIndex = (index) => {
     let tempName = tileActionNameSet[index];
     selectTileAction(tempName);
-}
+};
 
-function setUpTileActionTags(name) {
-    let tempTag = document.getElementById(name + "TileActionContainer")
+const setUpTileActionTags = (name) => {
+    let tempTag = document.getElementById(name + "TileActionContainer");
     tempTag.style.cursor = "pointer";
     tempTag.onclick = () => {
         selectTileAction(name);
-    }
+    };
     tempTag = document.getElementById(name + "TileAction");
     tempTag.onchange = () => {
         selectTileAction(name);
-    }
-}
+    };
+};
 
-function updateTileActionTags() {
+const updateTileActionTags = () => {
     for (let name of tileActionNameSet) {
         let tempTag = document.getElementById("attackTileActionContainer");
         if (tileActionIsAvailable(name)) {
@@ -231,9 +231,9 @@ function updateTileActionTags() {
             }
         }
     }
-}
+};
 
-function inspectSpirit(spirit, shouldAddCommand = true) {
+const inspectSpirit = (spirit, shouldAddCommand = true) => {
     if (spirit === null || !spirit.canBeInspected()) {
         return;
     }
@@ -246,9 +246,9 @@ function inspectSpirit(spirit, shouldAddCommand = true) {
     if (shouldAddCommand) {
         addInspectCommand(spirit);
     }
-}
+};
 
-function inspectMachine(spirit) {
+const inspectMachine = (spirit) => {
     if (inspectedMachineInventory !== null) {
         if (inspectedMachineInventory.parentSpiritId === spirit.id) {
             return;
@@ -260,9 +260,9 @@ function inspectMachine(spirit) {
     document.getElementById("machineInfoPlaceholder").style.display = "none";
     document.getElementById("machineInfo").style.display = "block";
     showModuleByName("machine");
-}
+};
 
-function inspectCircuit(spirit) {
+const inspectCircuit = (spirit) => {
     if (inspectedCircuitSpiritId === spirit.id) {
         return;
     }
@@ -274,9 +274,9 @@ function inspectCircuit(spirit) {
     cursorCircuitTilePos = null;
     inspectedCircuitTilePos = null;
     updateTileActionTags();
-}
+};
 
-function stopInspectingSpirit(spiritId, shouldAddCommand = true) {
+const stopInspectingSpirit = (spiritId, shouldAddCommand = true) => {
     if (spiritId === null) {
         return;
     }
@@ -290,143 +290,143 @@ function stopInspectingSpirit(spiritId, shouldAddCommand = true) {
     if (shouldAddCommand) {
         addStopInspectingCommand(spiritId);
     }
-}
+};
 
-function stopInspectingMachine() {
+const stopInspectingMachine = () => {
     document.getElementById("machineInfoPlaceholder").style.display = "block";
     document.getElementById("machineInfo").style.display = "none";
     hideModuleByName("machine");
     inspectedMachineInventory.cleanUp();
     inspectedMachineInventory = null;
-}
+};
 
-function stopInspectingCircuit() {
+const stopInspectingCircuit = () => {
     document.getElementById("circuitInfoPlaceholder").style.display = "block";
     document.getElementById("circuitInfo").style.display = "none";
     hideModuleByName("circuit");
     inspectedCircuitSpiritId = null;
     worldTileGrid.clear();
     updateTileActionTags();
-}
+};
 
-function addInventoryCommand(command, inventoryUpdateList) {
+const addInventoryCommand = (command, inventoryUpdateList) => {
     for (let update of inventoryUpdateList) {
         update.spirit.addToCache();
     }
-    command.inventoryUpdates = inventoryUpdateList.map(update => update.getClientJson());
+    command.inventoryUpdates = inventoryUpdateList.map((update) => update.getClientJson());
     gameUpdateCommandList.push(command);
-}
+};
 
-function addEnterWorldCommand() {
+const addEnterWorldCommand = () => {
     gameUpdateCommandList.push({
-        commandName: "enterWorld"
+        commandName: "enterWorld",
     });
-}
+};
 
-function addSetWalkControllerCommand(offset) {
+const addSetWalkControllerCommand = (offset) => {
     if (localPlayerWorldTile === null) {
         return;
     }
     gameUpdateCommandList.push({
         commandName: "setWalkController",
-        walkController: localPlayerWorldTile.walkController.toJson()
+        walkController: localPlayerWorldTile.walkController.toJson(),
     });
-}
+};
 
-function addGetStateCommand() {
+const addGetStateCommand = () => {
     gameUpdateCommandList.push({
-        commandName: "getState"
+        commandName: "getState",
     });
-}
+};
 
-function addWalkCommand(offset) {
+const addWalkCommand = (offset) => {
     gameUpdateCommandList.push({
         commandName: "walk",
-        offset: offset.toJson()
+        offset: offset.toJson(),
     });
-}
+};
 
-function addMineCommand(pos, spirit) {
+const addMineCommand = (pos, spirit) => {
     addInventoryCommand({
         commandName: "mine",
-        pos: pos.toJson()
-    }, [
-        localPlayerInventory.getInventoryUpdate(spirit)
-    ]);
-}
-
-function addPlaceTileCommand(commandName, pos, spirit) {
-    addInventoryCommand({
-        commandName: commandName,
         pos: pos.toJson(),
-        spiritReference: spirit.getReference().getJson()
     }, [
-        localPlayerInventory.getInventoryUpdate(spirit)
+        localPlayerInventory.getInventoryUpdate(spirit),
+    ]);
+};
+
+const addPlaceTileCommand = (commandName, pos, spirit) => {
+    addInventoryCommand({
+        commandName,
+        pos: pos.toJson(),
+        spiritReference: spirit.getReference().getJson(),
+    }, [
+        localPlayerInventory.getInventoryUpdate(spirit),
     ]);
     spirit.addToCache();
-}
+};
 
-function addPlaceWorldTileCommand(pos, spirit) {
+const addPlaceWorldTileCommand = (pos, spirit) => {
     addPlaceTileCommand("placeWorldTile", pos, spirit);
-}
+};
 
-function addPlaceCircuitTileCommand(pos, spirit) {
+const addPlaceCircuitTileCommand = (pos, spirit) => {
     addPlaceTileCommand("placeCircuitTile", pos, spirit);
-}
+};
 
-function addCraftCircuitTileCommand(pos, spiritType) {
+const addCraftCircuitTileCommand = (pos, spiritType) => {
     gameUpdateCommandList.push({
         commandName: "craftCircuitTile",
         pos: pos.toJson(),
-        spiritType: spiritType.getJson()
+        spiritType: spiritType.getJson(),
     });
-}
+};
 
-function addCraftCommand(recipe, inventoryUpdateList) {
+const addCraftCommand = (recipe, inventoryUpdateList) => {
     addInventoryCommand({
         commandName: "craft",
-        recipeId: recipe.id
+        recipeId: recipe.id,
     }, inventoryUpdateList);
-}
+};
 
-function addInspectCommand(spirit) {
+const addInspectCommand = (spirit) => {
     gameUpdateCommandList.push({
         commandName: "inspect",
-        spiritReference: spirit.getReference().getJson()
+        spiritReference: spirit.getReference().getJson(),
     });
     spirit.addToCache();
-}
+};
 
-function addTransferCommand(sourceInventory, destinationInventory, spirit) {
+const addTransferCommand = (sourceInventory, destinationInventory, spirit) => {
     addInventoryCommand({
         commandName: "transfer",
         sourceParentSpiritId: sourceInventory.parentSpiritId,
         destinationParentSpiritId: destinationInventory.parentSpiritId,
-        spiritReference: spirit.getReference().getJson()
+        spiritReference: spirit.getReference().getJson(),
     }, [
         sourceInventory.getInventoryUpdate(spirit),
-        destinationInventory.getInventoryUpdate(spirit)
+        destinationInventory.getInventoryUpdate(spirit),
     ]);
-}
+};
 
-function addRecycleCommand(inventoryItem, inventoryUpdateList) {
+const addRecycleCommand = (inventoryItem, inventoryUpdateList) => {
     let tempReference = inventoryItem.spirit.getReference();
     addInventoryCommand({
         commandName: "recycle",
         parentSpiritId: inventoryItem.inventory.parentSpiritId,
-        spiritReference: tempReference.getJson()
+        spiritReference: tempReference.getJson(),
     }, inventoryUpdateList);
-}
+};
 
-function addStopInspectingCommand(spiritId) {
+const addStopInspectingCommand = (spiritId) => {
     gameUpdateCommandList.push({
         commandName: "stopInspecting",
-        spiritId: spiritId
+        spiritId,
     });
-}
+};
 
-function addInventoryCommandRepeater(commandName, handler = null) {
-    addCommandRepeater(commandName, command => {
+const addInventoryCommandRepeater = (commandName, handler = null) => {
+    addCommandRepeater(commandName, (command) => {
         for (let updateData of command.inventoryUpdates) {
             let tempUpdate = convertClientJsonToInventoryUpdate(updateData);
             tempUpdate.applyToInventory();
@@ -435,9 +435,9 @@ function addInventoryCommandRepeater(commandName, handler = null) {
             handler(command);
         }
     });
-}
+};
 
-addCommandRepeater("walk", command => {
+addCommandRepeater("walk", (command) => {
     if (localPlayerWorldTile === null) {
         return;
     }
@@ -445,25 +445,25 @@ addCommandRepeater("walk", command => {
     localPlayerWorldTile.move(tempOffset);
 });
 
-addInventoryCommandRepeater("mine", command => {
+addInventoryCommandRepeater("mine", (command) => {
     let tempPos = createPosFromJson(command.pos);
     worldTileGrid.setTile(tempPos, simpleWorldTileSet.empty);
 });
 
-function addPlaceTileCommandRepeater(commandName, tileGrid) {
-    addInventoryCommandRepeater(commandName, command => {
+const addPlaceTileCommandRepeater = (commandName, tileGrid) => {
+    addInventoryCommandRepeater(commandName, (command) => {
         let tempPos = createPosFromJson(command.pos);
         let tempSpiritReference = convertJsonToSpiritReference(command.spiritReference);
         let tempSpirit = tempSpiritReference.getCachedSpirit();
         let tempTile = tileGrid.tileFactory.getTileWithSpirit(tempSpirit);
         tileGrid.setTile(tempPos, tempTile);
     });
-}
+};
 
 addPlaceTileCommandRepeater("placeWorldTile", worldTileGrid);
 addPlaceTileCommandRepeater("placeCircuitTile", circuitTileGrid);
 
-addCommandRepeater("craftCircuitTile", command => {
+addCommandRepeater("craftCircuitTile", (command) => {
     let tempPos = createPosFromJson(command.pos);
     let tempSpiritType = convertJsonToSpiritType(command.spiritType);
     craftCircuitTile(tempPos, tempSpiritType, false);
@@ -473,33 +473,33 @@ addInventoryCommandRepeater("craft");
 addInventoryCommandRepeater("transfer");
 addInventoryCommandRepeater("recycle");
 
-addCommandRepeater("inspect", command => {
+addCommandRepeater("inspect", (command) => {
     let tempReference = convertJsonToSpiritReference(command.spiritReference);
     tempSpirit = tempReference.getCachedSpirit();
     inspectSpirit(tempSpirit, false);
 });
 
-addCommandRepeater("stopInspecting", command => {
+addCommandRepeater("stopInspecting", (command) => {
     stopInspectingSpirit(command.spiritId, false);
 });
 
-addCommandListener("setWorldTileGrid", command => {
+addCommandListener("setWorldTileGrid", (command) => {
     worldTileGrid.windowOffset = createPosFromJson(command.pos);
     playerWorldTileList = [];
-    tempTileList = command.tiles.map(data => {
-        return worldTileFactory.convertClientJsonToTile(data)
-    });
+    tempTileList = command.tiles.map((data) => (
+        worldTileFactory.convertClientJsonToTile(data)
+    ));
     worldTileGrid.setTiles(tempTileList, command.width, command.height);
 });
 
-addCommandListener("setCircuitTileGrid", command => {
-    tempTileList = command.tiles.map(data => {
-        return circuitTileFactory.convertClientJsonToTile(data)
-    });
+addCommandListener("setCircuitTileGrid", (command) => {
+    tempTileList = command.tiles.map((data) => (
+        circuitTileFactory.convertClientJsonToTile(data)
+    ));
     circuitTileGrid.setTiles(tempTileList, circuitSize, circuitSize);
 });
 
-addCommandListener("updateInventoryItem", command => {
+addCommandListener("updateInventoryItem", (command) => {
     let tempUpdateData = command.inventoryUpdate;
     let tempUpdate = convertClientJsonToInventoryUpdate(tempUpdateData);
     if (tempUpdate === null) {
@@ -508,7 +508,7 @@ addCommandListener("updateInventoryItem", command => {
     tempUpdate.applyToInventory();
 });
 
-addCommandListener("stopInspecting", command => {
+addCommandListener("stopInspecting", (command) => {
     stopInspectingSpirit(command.spiritId, false);
 });
 
@@ -537,14 +537,14 @@ class ClientDelegate {
             setUpTileActionTags(name);
         }
         
-        canvas.onmousemove = event => {
+        canvas.onmousemove = (event) => {
             let tempPos = convertMouseEventToPos(event);
             if (tempPos !== null) {
                 mouseMoveEvent(tempPos);
             }
         };
         
-        canvas.onmousedown = event => {
+        canvas.onmousedown = (event) => {
             let tempPos = convertMouseEventToPos(event);
             if (tempPos !== null) {
                 mouseDownEvent(tempPos);
@@ -554,11 +554,11 @@ class ClientDelegate {
         
         canvas.onmouseleave = () => {
             cursorCircuitTilePos = null;
-        }
+        };
         
-        document.getElementsByTagName("body")[0].onmouseup = event => {
+        document.getElementsByTagName("body")[0].onmouseup = (event) => {
             mouseUpEvent();
-        }
+        };
     }
     
     setLocalPlayerInfo(command) {
@@ -646,7 +646,7 @@ class ClientDelegate {
 
 clientDelegate = new ClientDelegate();
 
-function startWorldTileAction(offsetIndex) {
+const startWorldTileAction = (offsetIndex) => {
     if (localPlayerWorldTile === null) {
         return;
     }
@@ -664,26 +664,26 @@ function startWorldTileAction(offsetIndex) {
     } else {
         localPlayerWorldTile.walkController.startWalk(offset);
     }
-}
+};
 
-function stopWorldTileAction(offsetIndex) {
+const stopWorldTileAction = (offsetIndex) => {
     if (localPlayerWorldTile === null) {
         return;
     }
     let offset = tileActionOffsetSet[offsetIndex];
     localPlayerWorldTile.walkController.stopWalk(offset);
-}
+};
 
-function convertMouseEventToPos(event) {
+const convertMouseEventToPos = (event) => {
     let tempX = Math.floor((event.offsetX - 3) / (spritePixelSize / 2));
     let tempY = Math.floor((event.offsetY - 3) / (spritePixelSize / 2));
     if (tempX < 0 || tempX >= canvasTileWidth || tempY < 0 || tempY >= canvasTileHeight) {
         return null;
     }
     return new Pos(tempX, tempY);
-}
+};
 
-function performCircuitTileAction() {
+const performCircuitTileAction = () => {
     if (inspectedCircuitSpiritId === null || cursorCircuitTilePos === null) {
         return;
     }
@@ -694,9 +694,9 @@ function performCircuitTileAction() {
     } else if (selectedTileAction === "inspect") {
         inspectedCircuitTilePos = cursorCircuitTilePos;
     }
-}
+};
 
-function mouseMoveEvent(pos) {
+const mouseMoveEvent = (pos) => {
     if (pos !== null && cursorCircuitTilePos !== null
             && pos.equals(cursorCircuitTilePos)) {
         return;
@@ -705,16 +705,16 @@ function mouseMoveEvent(pos) {
     if (mouseIsHeld) {
         performCircuitTileAction();
     }
-}
+};
 
-function mouseDownEvent(pos) {
+const mouseDownEvent = (pos) => {
     mouseIsHeld = true;
     cursorCircuitTilePos = pos;
     performCircuitTileAction();
-}
+};
 
-function mouseUpEvent() {
+const mouseUpEvent = () => {
     mouseIsHeld = false;
-}
+};
 
 

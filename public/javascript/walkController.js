@@ -12,7 +12,7 @@ class WalkController {
         return {
             offset: this.offset.toJson(),
             delay: this.delay,
-            repeatDelay: this.repeatDelay
+            repeatDelay: this.repeatDelay,
         };
     }
     
@@ -48,7 +48,7 @@ class WalkController {
         if (this.delay > 0) {
             this.delay -= 1;
         }
-        if (this.offset.x != 0 || this.offset.y != 0) {
+        if (this.offset.x !== 0 || this.offset.y !== 0) {
             if (this.repeatDelay > 0) {
                 this.repeatDelay -= 1;
             } else {
@@ -58,11 +58,11 @@ class WalkController {
     }
 }
 
-function createDefaultWalkController() {
-    return new WalkController(new Pos(0, 0), 0, 0);
-}
+const createDefaultWalkController = () => (
+    new WalkController(new Pos(0, 0), 0, 0)
+);
 
-function convertJsonToWalkController(data) {
+const convertJsonToWalkController = (data) => {
     if (data === null) {
         return createDefaultWalkController();
     }
@@ -71,6 +71,6 @@ function convertJsonToWalkController(data) {
         data.delay,
         data.repeatDelay
     );
-}
+};
 
 

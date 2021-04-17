@@ -52,7 +52,13 @@
         "object-shorthand": 1,
         "one-var": ["warn", "never"],
         "prefer-arrow-callback": 1,
-        "prefer-destructuring": 1,
+        "prefer-destructuring": [
+            "warn",
+            {
+                "array": false,
+                "object": true
+            }
+        ],
         "quotes": ["warn", "double"],
         "radix": 1,
         "semi": ["warn", "always"],
@@ -68,5 +74,12 @@
                 "args": "none"
             }
         ]
-    }
+    },
+    "overrides": [{
+        "files": [ "**/*.js"],
+        "rules": {
+            "no-undef": 0,
+            "@typescript-eslint/no-unused-vars": 0
+        }
+    }]
 }

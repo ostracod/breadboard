@@ -9,7 +9,7 @@ class OptionRow {
         this.tag.style.cursor = "pointer";
         this.tag.onclick = () => {
             this.clickEvent();
-        }
+        };
         
         if (typeof spriteList !== "undefined") {
             let tempCanvas = createCanvasWithSprites(this.tag, spriteList, 4);
