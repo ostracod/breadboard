@@ -243,7 +243,7 @@ export class MachineSpiritType extends ComplexSpiritType<MachineSpirit> {
     
     matchesSpiritDbJson(data: SpiritDbJson): boolean {
         return (super.matchesSpiritDbJson(data)
-            && this.colorIndex === data.attributeData.colorIndex);
+            && this.colorIndex === (data as ComplexSpiritDbJson).attributeData.colorIndex);
     }
     
     getJson(): MachineSpiritTypeJson {
@@ -379,6 +379,7 @@ export const loadComplexSpirit = (
             const [tempRow] = results;
             return convertDbJsonToSpirit({
                 id: tempRow.id,
+                parentId: tempRow.parentId,
                 classId: tempRow.classId,
                 attributeData: JSON.parse(tempRow.attributeData),
                 containerData: JSON.parse(tempRow.containerData),
@@ -391,13 +392,24 @@ export const loadComplexSpirit = (
 };
 
 export const convertNestedDbJsonToSpirit = (
-    data: SpiritNestedDbJson,
+    nestedData: SpiritNestedDbJson,
     shouldPerformTransaction = true,
 ): Promise<Spirit> => {
-    if (typeof data === "number" || "classId" in data) {
-        return Promise.resolve(convertDbJsonToSpirit(data, shouldPerformTransaction));
+    let tempData: SpiritDbJson;
+    if (typeof nestedData === "number") {
+        tempData = nestedData;
+    } else if ("classId" in nestedData) {
+        tempData = {
+            id: nestedData.id,
+            parentId: null,
+            classId: nestedData.classId,
+            attributeData: nestedData.attributeData,
+            containerData: nestedData.containerData,
+        };
+    } else {
+        return loadComplexSpirit(nestedData.id, shouldPerformTransaction);
     }
-    return loadComplexSpirit(data.id, shouldPerformTransaction);
+    return Promise.resolve(convertDbJsonToSpirit(tempData, shouldPerformTransaction));
 };
 
 export const convertJsonToSpiritType = (data: SpiritTypeJson): SpiritType => {

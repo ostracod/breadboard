@@ -2,7 +2,7 @@
 import { complexSpiritMap } from "./globalData.js";
 import { InventoryItemClientJson, InventoryItemDbJson, InventoryUpdateClientJson, InventoryDbJson } from "./interfaces.js";
 import { Spirit, InventorySpirit } from "./spirit.js";
-import { SimpleSpiritType, convertDbJsonToSpirit } from "./spiritType.js";
+import { SimpleSpiritType, convertNestedDbJsonToSpirit } from "./spiritType.js";
 import { SpiritReference, convertJsonToSpiritReference } from "./spiritReference.js";
 import { Recipe, RecipeComponent } from "./recipe.js";
 import { niceUtils } from "./niceUtils.js";
@@ -311,7 +311,7 @@ export const convertDbJsonToInventory = (
     return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => (
         data.reduce((accumulator, itemData) => (
             accumulator.then(() => (
-                convertDbJsonToSpirit(itemData.spirit, false)
+                convertNestedDbJsonToSpirit(itemData.spirit, false)
             )).then((spirit) => {
                 new InventoryItem(output, spirit, itemData.count);
             })

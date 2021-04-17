@@ -103,7 +103,7 @@ export class TileGrid<T extends Tile = Tile> {
         this.markParentSpiritAsDirty();
     }
     
-    getWindowClientJson(pos: Pos, width: number, height: number): TileClientJson {
+    getWindowClientJson(pos: Pos, width: number, height: number): TileClientJson[] {
         const output = [];
         const tempOffset = new Pos(0, 0);
         const tempPos = new Pos(0, 0);

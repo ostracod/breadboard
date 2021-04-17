@@ -37,7 +37,7 @@ export interface MachineSpiritTypeJson extends ComplexSpiritTypeJson {
     colorIndex: number;
 }
 
-export type SpiritClientJson = any;
+export type SpiritClientJson = SimpleSpiritClientJson | ComplexSpiritClientJson;
 
 export type SimpleSpiritClientJson = number;
 
@@ -54,7 +54,7 @@ export interface MachineSpiritClientJson extends ComplexSpiritClientJson {
     colorIndex: number;
 }
 
-export type SpiritNestedDbJson = any;
+export type SpiritNestedDbJson = SimpleSpiritNestedDbJson | ComplexSpiritNestedDbJson;
 
 export type SimpleSpiritNestedDbJson = SimpleSpiritDbJson;
 
@@ -81,7 +81,7 @@ export interface ComplexSpiritNestedDbJson<T extends ComplexSpirit = ComplexSpir
     containerData?: ReturnType<T["getContainerDbJson"]>;
 }
 
-export type SpiritDbJson = any;
+export type SpiritDbJson = SimpleSpiritDbJson | ComplexSpiritDbJson;
 
 export type SimpleSpiritDbJson = number;
 
@@ -105,7 +105,7 @@ export interface ComplexSpiritReferenceJson extends SpiritReferenceJson {
     id: number;
 }
 
-export type TileClientJson = any;
+export type TileClientJson = SimpleTileClientJson | ComplexTileClientJson;
 
 export type SimpleTileClientJson = number;
 
@@ -117,13 +117,12 @@ export interface PlayerWorldTileClientJson extends ComplexTileClientJson {
     walkController: WalkControllerJson;
 }
 
-export type TileDbJson = any;
+export type TileDbJson = SimpleTileDbJson | ComplexTileDbJson;
 
 export type SimpleTileDbJson = number;
 
-// TODO: This type should be parameterized.
-export interface ComplexTileDbJson {
-    spirit: ComplexSpiritNestedDbJson
+export interface ComplexTileDbJson<T extends ComplexSpirit = ComplexSpirit> {
+    spirit: ComplexSpiritNestedDbJson<T>
 }
 
 export interface InventoryItemClientJson {

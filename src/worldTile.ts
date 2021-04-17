@@ -48,7 +48,7 @@ export class ComplexWorldTile<T extends ComplexSpirit = ComplexSpirit> extends W
         this.pos = null;
     }
     
-    addToGridEvent(tileGrid: TileGrid, pos: Pos): void {
+    addToGridEvent(tileGrid: TileGrid<WorldTile>, pos: Pos): void {
         super.addToGridEvent(tileGrid, pos);
         this.pos = pos.copy();
     }
@@ -140,7 +140,7 @@ export class PlayerWorldTile extends ComplexWorldTile<PlayerSpirit> {
     }
     
     getClientJson(): PlayerWorldTileClientJson {
-        const output = super.getClientJson();
+        const output = super.getClientJson() as PlayerWorldTileClientJson;
         output.walkController = this.walkControllerData;
         return output;
     }

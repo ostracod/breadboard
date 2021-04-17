@@ -1,6 +1,6 @@
 
 import { complexSpiritClassIdSet, simpleWorldTileMap, simpleCircuitTileMap, complexWorldTileFactoryMap, complexCircuitTileFactoryMap } from "./globalData.js";
-import { TileDbJson, ComplexTileDbJson } from "./interfaces.js";
+import { TileDbJson, SimpleTileDbJson, ComplexTileDbJson } from "./interfaces.js";
 import { convertNestedDbJsonToSpirit } from "./spiritType.js";
 import { Spirit, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit } from "./spirit.js";
 import { Tile } from "./tile.js";
@@ -15,7 +15,10 @@ abstract class ComplexTileFactory<T extends Tile<ComplexSpirit> = Tile<ComplexSp
         this.baseName = baseName;
     }
     
-    abstract convertDbJsonToTile(data: ReturnType<T["getDbJson"]>, spirit: T["spirit"]): T;
+    abstract convertDbJsonToTile(
+        data: ComplexTileDbJson<T["spirit"]>,
+        spirit: T["spirit"],
+    ): T;
     
     abstract createTileWithSpirit(spirit: T["spirit"]): T;
 }
@@ -46,7 +49,10 @@ export class PlayerWorldTileFactory extends ComplexWorldTileFactory<PlayerWorldT
         super("player");
     }
     
-    convertDbJsonToTile(data: ComplexTileDbJson, spirit: PlayerSpirit): PlayerWorldTile {
+    convertDbJsonToTile(
+        data: ComplexTileDbJson<PlayerSpirit>,
+        spirit: PlayerSpirit,
+    ): PlayerWorldTile {
         throw new Error("Player should not be persisted as world tile.");
     }
     
@@ -61,7 +67,10 @@ export class MachineWorldTileFactory extends ComplexWorldTileFactory<MachineWorl
         super("machine");
     }
     
-    convertDbJsonToTile(data: ComplexTileDbJson, spirit: MachineSpirit): MachineWorldTile {
+    convertDbJsonToTile(
+        data: ComplexTileDbJson<MachineSpirit>,
+        spirit: MachineSpirit,
+    ): MachineWorldTile {
         return new MachineWorldTile(spirit);
     }
     
@@ -89,13 +98,12 @@ export class ComplexCircuitTileFactory extends ComplexTileFactory<ComplexCircuit
 
 export class TileFactory<T extends Tile> {
     
-    // TODO: Figure out how to express these types in terms of T.
-    simpleTileMap: {[serialInteger: string]: Tile<SimpleSpirit>};
-    complexTileFactoryMap: {[classId: string]: ComplexTileFactory};
+    simpleTileMap: {[serialInteger: string]: T & Tile<SimpleSpirit>};
+    complexTileFactoryMap: {[classId: string]: ComplexTileFactory<T & Tile<ComplexSpirit>>};
     
     constructor(
-        simpleTileMap: {[serialInteger: string]: Tile<SimpleSpirit>},
-        complexTileFactoryMap: {[classId: string]: ComplexTileFactory},
+        simpleTileMap: {[serialInteger: string]: (T & Tile<SimpleSpirit>)},
+        complexTileFactoryMap: {[classId: string]: ComplexTileFactory<T & Tile<ComplexSpirit>>},
     ) {
         this.simpleTileMap = simpleTileMap;
         this.complexTileFactoryMap = complexTileFactoryMap;
@@ -103,14 +111,15 @@ export class TileFactory<T extends Tile> {
     
     convertDbJsonToTile(data: TileDbJson, shouldPerformTransaction: boolean): Promise<T> {
         if (typeof data === "number") {
-            return Promise.resolve(this.simpleTileMap[data] as unknown as T);
+            return Promise.resolve(this.simpleTileMap[data as SimpleTileDbJson]);
         } else {
+            const complexData = (data as ComplexTileDbJson<(T & Tile<ComplexSpirit>)["spirit"]>);
             return convertNestedDbJsonToSpirit(
-                data.spirit,
+                complexData.spirit,
                 shouldPerformTransaction
             ).then((spirit: ComplexSpirit) => {
-                const tempFactory = this.complexTileFactoryMap[spirit.classId];
-                return tempFactory.convertDbJsonToTile(data, spirit) as unknown as T;
+                const tempFactory = this.complexTileFactoryMap[spirit.classId] as ComplexTileFactory<T & Tile<ComplexSpirit>>;
+                return tempFactory.convertDbJsonToTile(complexData, spirit);
             });
         }
     }

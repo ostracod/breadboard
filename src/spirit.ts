@@ -46,7 +46,7 @@ export abstract class Spirit {
         // Do nothing.
     }
     
-    setParentTile(tile: Tile): void {
+    setParentTile(tile: Tile<Spirit>): void {
         // Do nothing.
     }
     
@@ -93,7 +93,7 @@ export class SimpleSpirit extends Spirit {
         return this.serialInteger;
     }
     
-    getReference(): SpiritReference {
+    getReference(): SimpleSpiritReference {
         return this.reference;
     }
 }
@@ -174,7 +174,7 @@ export class ComplexSpirit extends Spirit {
         };
     }
     
-    getReference(): SpiritReference {
+    getReference(): ComplexSpiritReference {
         return this.reference;
     }
     

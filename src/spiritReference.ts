@@ -6,7 +6,7 @@ import { Spirit, SimpleSpirit, ComplexSpirit } from "./spirit.js";
 // A SpiritReference is used to identify unique
 // instances of Spirits.
 
-export abstract class SpiritReference {
+export abstract class SpiritReference<T extends Spirit = Spirit> {
     
     constructor() {
         
@@ -16,10 +16,10 @@ export abstract class SpiritReference {
     
     abstract equals(spiritReference: SpiritReference): boolean;
     
-    abstract getSpirit(): Spirit;
+    abstract getSpirit(): T;
 }
 
-export class SimpleSpiritReference extends SpiritReference {
+export class SimpleSpiritReference extends SpiritReference<SimpleSpirit> {
     
     serialInteger: number;
     
@@ -47,7 +47,7 @@ export class SimpleSpiritReference extends SpiritReference {
     }
 }
 
-export class ComplexSpiritReference extends SpiritReference {
+export class ComplexSpiritReference extends SpiritReference<ComplexSpirit> {
     
     id: number;
     
