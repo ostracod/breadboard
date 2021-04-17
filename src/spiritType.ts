@@ -1,6 +1,6 @@
 
 import { simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, simpleSpiritTypeSet, complexSpiritTypeSet, dirtyComplexSpiritMap, simpleSpiritTypeMap, complexSpiritTypesMap } from "./globalData.js";
-import { SpiritTypeJson, SimpleSpiritTypeJson, ComplexSpiritTypeJson, MachineSpiritTypeJson, SpiritDbJson, SimpleSpiritDbJson, PlayerSpiritDbJson, MachineSpiritDbJson, WorldSpiritDbJson, CircuitSpiritDbJson, SpiritNestedDbJson, Player } from "./interfaces.js";
+import { SpiritTypeJson, SimpleSpiritTypeJson, ComplexSpiritTypeJson, MachineSpiritTypeJson, SpiritDbJson, SimpleSpiritDbJson, ComplexSpiritDbJson, SpiritNestedDbJson, Player } from "./interfaces.js";
 import { Spirit, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit, WorldSpirit, CircuitSpirit } from "./spirit.js";
 import { convertDbJsonToInventory } from "./inventory.js";
 import { RecipeComponent } from "./recipe.js";
@@ -49,7 +49,7 @@ export abstract class SpiritType<T extends Spirit = Spirit> {
     abstract matchesJson(data: SpiritTypeJson): boolean;
     
     abstract convertDbJsonToSpirit(
-        data: SpiritDbJson,
+        data: ReturnType<T["getDbJson"]>,
         shouldPerformTransaction: boolean,
     ): Promise<T>;
     
@@ -207,7 +207,7 @@ export class PlayerSpiritType extends ComplexSpiritType<PlayerSpirit> {
     }
     
     convertDbJsonToSpirit(
-        data: PlayerSpiritDbJson,
+        data: ComplexSpiritDbJson<PlayerSpirit>,
         shouldPerformTransaction: boolean,
     ): Promise<PlayerSpirit> {
         const tempPlayer = gameUtils.getPlayerByUsername(data.attributeData.username);
@@ -258,7 +258,7 @@ export class MachineSpiritType extends ComplexSpiritType<MachineSpirit> {
     }
     
     convertDbJsonToSpirit(
-        data: MachineSpiritDbJson,
+        data: ComplexSpiritDbJson<MachineSpirit>,
         shouldPerformTransaction: boolean,
     ): Promise<MachineSpirit> {
         return convertDbJsonToInventory(
@@ -293,7 +293,7 @@ export class WorldSpiritType extends ComplexSpiritType<WorldSpirit> {
     }
     
     convertDbJsonToSpirit(
-        data: WorldSpiritDbJson,
+        data: ComplexSpiritDbJson<WorldSpirit>,
         shouldPerformTransaction: boolean,
     ): Promise<WorldSpirit> {
         return convertDbJsonToWorldTileGrid(
@@ -316,7 +316,7 @@ export class CircuitSpiritType extends ComplexSpiritType<CircuitSpirit> {
     }
     
     convertDbJsonToSpirit(
-        data: CircuitSpiritDbJson,
+        data: ComplexSpiritDbJson<CircuitSpirit>,
         shouldPerformTransaction: boolean,
     ): Promise<CircuitSpirit> {
         return convertDbJsonToCircuitTileGrid(

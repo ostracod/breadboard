@@ -4,7 +4,7 @@ import { SimpleSpirit, ComplexSpirit } from "./spirit.js";
 import { SimpleSpiritType, ComplexSpiritType, EmptySpiritType, BarrierSpiritType, MatteriteSpiritType, EnergiteSpiritType, BlockSpiritType, WireSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, CircuitSpiritType } from "./spiritType.js";
 import { SimpleWorldTile } from "./worldTile.js";
 import { SimpleCircuitTile } from "./circuitTile.js";
-import { AbstractComplexWorldTileFactory, ComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory, WorldTileFactory, CircuitTileFactory, ComplexCircuitTileFactory } from "./tileFactory.js";
+import { ComplexWorldTileFactory, GenericComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory, WorldTileFactory, CircuitTileFactory, ComplexCircuitTileFactory } from "./tileFactory.js";
 import { Recipe, RecipeComponent } from "./recipe.js";
 
 export const simpleSpiritSerialIntegerSet = {
@@ -44,7 +44,7 @@ export const complexSpiritTypesMap: {[classId: string]: ComplexSpiritType[]} = {
 
 export const simpleWorldTileMap: {[serialInteger: string]: SimpleWorldTile} = {};
 export const simpleCircuitTileMap: {[serialInteger: string]: SimpleCircuitTile} = {};
-export const complexWorldTileFactoryMap: {[classId: string]: AbstractComplexWorldTileFactory} = {};
+export const complexWorldTileFactoryMap: {[classId: string]: ComplexWorldTileFactory} = {};
 export const complexCircuitTileFactoryMap: {[classId: string]: ComplexCircuitTileFactory} = {};
 
 export const recipeList: Recipe[] = [];
@@ -76,7 +76,7 @@ for (const serialInteger in simpleSpiritMap) {
 
 new PlayerWorldTileFactory();
 new MachineWorldTileFactory();
-new ComplexWorldTileFactory("circuit");
+new GenericComplexWorldTileFactory("circuit");
 
 export const worldTileFactory = new WorldTileFactory();
 export const circuitTileFactory = new CircuitTileFactory();

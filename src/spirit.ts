@@ -1,6 +1,6 @@
 
 import { simpleSpiritSerialIntegerSet, wireArrangementAmount, worldSize, circuitSize, simpleSpiritSet, simpleSpiritTypeSet, complexSpiritTypeSet, simpleWorldTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap, simpleCircuitTileMap, circuitTileFactory } from "./globalData.js";
-import { Player, ConfigDbJson, SpiritClientJson, SimpleSpiritClientJson, ComplexSpiritClientJson, PlayerSpiritClientJson, MachineSpiritClientJson, SpiritNestedDbJson, SimpleSpiritNestedDbJson, ComplexSpiritNestedDbJson, ComplexSpiritContainerJson, InventorySpiritContainerJson, TileGridSpiritContainerJson, ComplexSpiritAttributeJson, PlayerSpiritAttributeJson, MachineSpiritAttributeJson, TileClientJson } from "./interfaces.js";
+import { Player, ConfigDbJson, SpiritClientJson, SimpleSpiritClientJson, ComplexSpiritClientJson, PlayerSpiritClientJson, MachineSpiritClientJson, SpiritNestedDbJson, SimpleSpiritNestedDbJson, ComplexSpiritNestedDbJson, SpiritDbJson, SimpleSpiritDbJson, ComplexSpiritDbJson, ComplexSpiritContainerJson, InventorySpiritContainerJson, TileGridSpiritContainerJson, ComplexSpiritAttributeJson, PlayerSpiritAttributeJson, MachineSpiritAttributeJson, TileClientJson } from "./interfaces.js";
 import { Pos } from "./pos.js";
 import { SpiritType, SimpleSpiritType, ComplexSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, loadComplexSpirit } from "./spiritType.js";
 import { SpiritReference } from "./spiritReference.js";
@@ -62,6 +62,8 @@ export abstract class Spirit {
     
     abstract getNestedDbJson(): SpiritNestedDbJson;
     
+    abstract getDbJson(): SpiritDbJson;
+    
     abstract getReference(): SpiritReference;
 }
 
@@ -84,6 +86,10 @@ export class SimpleSpirit extends Spirit {
     }
     
     getNestedDbJson(): SimpleSpiritNestedDbJson {
+        return this.serialInteger;
+    }
+    
+    getDbJson(): SimpleSpiritDbJson {
         return this.serialInteger;
     }
     
@@ -143,7 +149,7 @@ export class ComplexSpirit extends Spirit {
         return null;
     }
     
-    getNestedDbJson(): ComplexSpiritNestedDbJson {
+    getNestedDbJson(): ComplexSpiritNestedDbJson<this> {
         if (this.shouldHaveDbRow()) {
             return {
                 id: this.id,
@@ -156,6 +162,16 @@ export class ComplexSpirit extends Spirit {
                 containerData: this.getContainerDbJson(),
             };
         }
+    }
+    
+    getDbJson(): ComplexSpiritDbJson<this> {
+        return {
+            id: this.id,
+            parentId: (this.parentSpirit === null) ? null : this.parentSpirit.id,
+            classId: this.classId,
+            attributeData: this.getAttributeDbJson(),
+            containerData: this.getContainerDbJson(),
+        };
     }
     
     getReference(): SpiritReference {
@@ -326,7 +342,7 @@ export class PlayerSpirit extends InventorySpirit {
         };
     }
     
-    getNestedDbJson(): ComplexSpiritNestedDbJson {
+    getNestedDbJson(): ComplexSpiritNestedDbJson<PlayerSpirit> {
         // Player spirit should never be persisted in a container.
         return null;
     }

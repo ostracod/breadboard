@@ -1,4 +1,5 @@
 
+import { ComplexSpirit } from "./spirit.js";
 import { PlayerWorldTile } from "./worldTile.js";
 
 // TODO: Export this type from OstracodMultiplayer.
@@ -73,14 +74,24 @@ export type InventorySpiritContainerJson = InventoryDbJson;
 
 export type TileGridSpiritContainerJson = TileGridDbJson;
 
-interface ComplexSpiritNestedDbJsonHelper<T1 extends ComplexSpiritAttributeJson, T2 extends ComplexSpiritContainerJson> {
+export interface ComplexSpiritNestedDbJson<T extends ComplexSpirit = ComplexSpirit> {
     id: number;
     classId?: number;
-    attributeData?: T1;
-    containerData?: T2;
+    attributeData?: ReturnType<T["getAttributeDbJson"]>;
+    containerData?: ReturnType<T["getContainerDbJson"]>;
 }
 
-export type ComplexSpiritNestedDbJson = ComplexSpiritNestedDbJsonHelper<any, any>;
+export type SpiritDbJson = any;
+
+export type SimpleSpiritDbJson = number;
+
+export interface ComplexSpiritDbJson<T extends ComplexSpirit = ComplexSpirit> {
+    id: number;
+    parentId: number;
+    classId: number;
+    attributeData: ReturnType<T["getAttributeDbJson"]>;
+    containerData: ReturnType<T["getContainerDbJson"]>;
+}
 
 export interface SpiritReferenceJson {
     type: string;
@@ -110,6 +121,7 @@ export type TileDbJson = any;
 
 export type SimpleTileDbJson = number;
 
+// TODO: This type should be parameterized.
 export interface ComplexTileDbJson {
     spirit: ComplexSpiritNestedDbJson
 }
@@ -153,30 +165,6 @@ export interface TileGridJson<T> {
 export type TileGridDbJson = TileGridJson<TileDbJson>;
 
 export type TileGridClientJson = TileGridJson<TileClientJson>;
-
-export type SpiritDbJson = any;
-
-export type SimpleSpiritDbJson = number;
-
-interface ComplexSpiritDbJsonHelper<T1 extends ComplexSpiritAttributeJson, T2 extends ComplexSpiritContainerJson> {
-    id: number;
-    parentId: number;
-    classId: number;
-    attributeData: T1;
-    containerData: T2;
-}
-
-export type ComplexSpiritDbJson = ComplexSpiritDbJsonHelper<any, any>;
-
-// TODO: Think about how to clean up these type definitions.
-
-export type PlayerSpiritDbJson = ComplexSpiritDbJsonHelper<PlayerSpiritAttributeJson, InventorySpiritContainerJson>;
-
-export type MachineSpiritDbJson = ComplexSpiritDbJsonHelper<MachineSpiritAttributeJson, InventorySpiritContainerJson>;
-
-export type WorldSpiritDbJson = ComplexSpiritDbJsonHelper<ComplexSpiritAttributeJson, TileGridSpiritContainerJson>;
-
-export type CircuitSpiritDbJson = ComplexSpiritDbJsonHelper<ComplexSpiritAttributeJson, TileGridSpiritContainerJson>;
 
 export interface ConfigDbJson {
     name: string;

@@ -15,13 +15,12 @@ abstract class ComplexTileFactory<T extends Tile<ComplexSpirit> = Tile<ComplexSp
         this.baseName = baseName;
     }
     
-    // TODO: The types of data and spirit should be related to T somehow.
-    abstract convertDbJsonToTile(data: ComplexTileDbJson, spirit: ComplexSpirit): T;
+    abstract convertDbJsonToTile(data: ReturnType<T["getDbJson"]>, spirit: T["spirit"]): T;
     
-    abstract createTileWithSpirit(spirit: ComplexSpirit): T;
+    abstract createTileWithSpirit(spirit: T["spirit"]): T;
 }
 
-export abstract class AbstractComplexWorldTileFactory<T extends ComplexWorldTile = ComplexWorldTile> extends ComplexTileFactory<T> {
+export abstract class ComplexWorldTileFactory<T extends ComplexWorldTile = ComplexWorldTile> extends ComplexTileFactory<T> {
     
     constructor(baseName: string) {
         super(baseName);
@@ -30,7 +29,7 @@ export abstract class AbstractComplexWorldTileFactory<T extends ComplexWorldTile
     }
 }
 
-export class ComplexWorldTileFactory extends AbstractComplexWorldTileFactory {
+export class GenericComplexWorldTileFactory extends ComplexWorldTileFactory {
     
     convertDbJsonToTile(data: ComplexTileDbJson, spirit: ComplexSpirit): ComplexWorldTile {
         return new ComplexWorldTile(spirit);
@@ -41,7 +40,7 @@ export class ComplexWorldTileFactory extends AbstractComplexWorldTileFactory {
     }
 }
 
-export class PlayerWorldTileFactory extends AbstractComplexWorldTileFactory<PlayerWorldTile> {
+export class PlayerWorldTileFactory extends ComplexWorldTileFactory<PlayerWorldTile> {
     
     constructor() {
         super("player");
@@ -56,7 +55,7 @@ export class PlayerWorldTileFactory extends AbstractComplexWorldTileFactory<Play
     }
 }
 
-export class MachineWorldTileFactory extends AbstractComplexWorldTileFactory<MachineWorldTile> {
+export class MachineWorldTileFactory extends ComplexWorldTileFactory<MachineWorldTile> {
     
     constructor() {
         super("machine");
