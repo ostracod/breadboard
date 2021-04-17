@@ -1,7 +1,7 @@
 
-import {simpleCircuitTileSet, simpleCircuitTileMap} from "./globalData.js";
-import {Spirit, SimpleSpirit, ComplexSpirit} from "./spirit.js";
-import {Tile, simpleTileComplexity, complexTileComplexity} from "./tile.js";
+import { simpleCircuitTileSet, simpleCircuitTileMap } from "./globalData.js";
+import { Spirit, SimpleSpirit, ComplexSpirit } from "./spirit.js";
+import { Tile, simpleTileComplexity, complexTileComplexity } from "./tile.js";
 
 export class CircuitTile<T extends Spirit = Spirit> extends Tile<T> {
     

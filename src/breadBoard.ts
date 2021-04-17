@@ -3,26 +3,27 @@ import * as pathUtils from "path";
 import express from "express";
 import ostracodMultiplayer from "ostracod-multiplayer";
 
-import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, recipeDataList} from "./globalData.js";
-import {loadNextComplexSpiritId} from "./spirit.js";
-import {gameDelegate, loadOrCreateWorldSpirit} from "./gameDelegate.js";
-import {niceUtils} from "./niceUtils.js";
+import { simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, recipeDataList } from "./globalData.js";
+import { loadNextComplexSpiritId } from "./spirit.js";
+import { gameDelegate, loadOrCreateWorldSpirit } from "./gameDelegate.js";
+import { niceUtils } from "./niceUtils.js";
 
-let ostracodMultiplayerInstance = ostracodMultiplayer.ostracodMultiplayer;
+const ostracodMultiplayerInstance = ostracodMultiplayer.ostracodMultiplayer;
 
-let router = express.Router();
+// eslint-disable-next-line new-cap
+const router = express.Router();
 
 router.get("/javascript/gameConstants.js", (req, res, next) => {
-    let tempLineList = [
+    const tempLineList = [
         `let simpleSpiritSerialIntegerSet = ${JSON.stringify(simpleSpiritSerialIntegerSet)};`,
         `let complexSpiritClassIdSet = ${JSON.stringify(complexSpiritClassIdSet)};`,
-        `let recipeDataList = ${JSON.stringify(recipeDataList)};`
+        `let recipeDataList = ${JSON.stringify(recipeDataList)};`,
     ];
     res.send(tempLineList.join("\n"));
 });
 
 console.log("Starting BreadBoard server...");
-let tempResult = ostracodMultiplayerInstance.initializeServer(
+const tempResult = ostracodMultiplayerInstance.initializeServer(
     pathUtils.resolve(),
     gameDelegate,
     [router]
@@ -33,9 +34,9 @@ if (!tempResult) {
 
 console.log("Loading world...");
 // TODO: Disable web requests until this promise finishes.
-niceUtils.performDbTransaction(() => {
-    return loadNextComplexSpiritId().then(loadOrCreateWorldSpirit)
-}).then(() => {
+niceUtils.performDbTransaction(() => (
+    loadNextComplexSpiritId().then(loadOrCreateWorldSpirit)
+)).then(() => {
     console.log("Finished loading world.");
 });
 

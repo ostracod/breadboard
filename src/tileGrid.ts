@@ -1,13 +1,13 @@
 
-import {simpleSpiritSet, worldTileFactory, circuitTileFactory} from "./globalData.js";
-import {TileGridJson, TileGridClientJson, TileGridDbJson, TileClientJson} from "./interfaces.js";
-import {Pos} from "./pos.js";
-import {niceUtils} from "./niceUtils.js";
-import {ComplexSpirit} from "./spirit.js";
-import {Tile} from "./tile.js";
-import {WorldTile} from "./worldTile.js";
-import {CircuitTile} from "./circuitTile.js";
-import {TileFactory} from "./tileFactory.js";
+import { simpleSpiritSet, worldTileFactory, circuitTileFactory } from "./globalData.js";
+import { TileGridJson, TileGridClientJson, TileGridDbJson, TileClientJson } from "./interfaces.js";
+import { Pos } from "./pos.js";
+import { niceUtils } from "./niceUtils.js";
+import { ComplexSpirit } from "./spirit.js";
+import { Tile } from "./tile.js";
+import { WorldTile } from "./worldTile.js";
+import { CircuitTile } from "./circuitTile.js";
+import { TileFactory } from "./tileFactory.js";
 
 export class TileGrid<T extends Tile = Tile> {
     
@@ -32,7 +32,7 @@ export class TileGrid<T extends Tile = Tile> {
         while (this.tileList.length < this.length) {
             this.tileList.push(null);
         }
-        let tempPos = new Pos(0, 0);
+        const tempPos = new Pos(0, 0);
         while (tempPos.y < this.height) {
             this.setTile(tempPos, this.fillTile);
             this.advancePos(tempPos);
@@ -41,7 +41,7 @@ export class TileGrid<T extends Tile = Tile> {
     
     populateParentSpirit(spirit: ComplexSpirit): void {
         this.parentSpirit = spirit;
-        for (let tile of this.tileList) {
+        for (const tile of this.tileList) {
             tile.spirit.populateParentSpirit(this.parentSpirit);
         }
     }
@@ -70,7 +70,7 @@ export class TileGrid<T extends Tile = Tile> {
     }
     
     getTile(pos: Pos): T {
-        let index = this.convertPosToIndex(pos);
+        const index = this.convertPosToIndex(pos);
         if (index === null) {
             return this.outsideTile;
         }
@@ -78,11 +78,11 @@ export class TileGrid<T extends Tile = Tile> {
     }
     
     setTile(pos: Pos, tile: T): void {
-        let index = this.convertPosToIndex(pos);
+        const index = this.convertPosToIndex(pos);
         if (index === null) {
             return;
         }
-        let oldTile = this.tileList[index];
+        const oldTile = this.tileList[index];
         if (oldTile !== null) {
             oldTile.removeFromGridEvent();
         }
@@ -92,10 +92,10 @@ export class TileGrid<T extends Tile = Tile> {
     }
     
     swapTiles(pos1: Pos, pos2: Pos): void {
-        let index1 = this.convertPosToIndex(pos1);
-        let index2 = this.convertPosToIndex(pos2);
-        let tempTile1 = this.tileList[index1];
-        let tempTile2 = this.tileList[index2];
+        const index1 = this.convertPosToIndex(pos1);
+        const index2 = this.convertPosToIndex(pos2);
+        const tempTile1 = this.tileList[index1];
+        const tempTile2 = this.tileList[index2];
         this.tileList[index1] = tempTile2;
         this.tileList[index2] = tempTile1;
         tempTile1.moveEvent(pos2);
@@ -104,13 +104,13 @@ export class TileGrid<T extends Tile = Tile> {
     }
     
     getWindowClientJson(pos: Pos, width: number, height: number): TileClientJson {
-        let output = [];
-        let tempOffset = new Pos(0, 0);
-        let tempPos = new Pos(0, 0);
+        const output = [];
+        const tempOffset = new Pos(0, 0);
+        const tempPos = new Pos(0, 0);
         while (tempOffset.y < height) {
             tempPos.set(pos);
             tempPos.add(tempOffset);
-            let tempTile = this.getTile(tempPos);
+            const tempTile = this.getTile(tempPos);
             output.push(tempTile.getClientJson());
             tempOffset.x += 1;
             if (tempOffset.x >= width) {
@@ -125,66 +125,69 @@ export class TileGrid<T extends Tile = Tile> {
         return {
             width: this.width,
             height: this.height,
-            tiles: this.tileList.map(tile => getTileJson(tile))
+            tiles: this.tileList.map((tile) => getTileJson(tile)),
         };
     }
     
     getClientJson(): TileGridClientJson {
-        return this.getJson(tile => tile.getClientJson());
+        return this.getJson((tile) => tile.getClientJson());
     }
     
     getDbJson(): TileGridDbJson {
-        return this.getJson(tile => tile.getDbJson());
+        return this.getJson((tile) => tile.getDbJson());
     }
 }
 
-export function createWorldTileGrid(width: number, height: number): TileGrid<WorldTile> {
-    return new TileGrid<WorldTile>(width, height, worldTileFactory);
-}
+export const createWorldTileGrid = (width: number, height: number): TileGrid<WorldTile> => (
+    new TileGrid<WorldTile>(width, height, worldTileFactory)
+);
 
-export function createCircuitTileGrid(width: number, height: number): TileGrid<CircuitTile> {
-    return new TileGrid<CircuitTile>(width, height, circuitTileFactory);
-}
+export const createCircuitTileGrid = (
+    width: number,
+    height: number,
+): TileGrid<CircuitTile> => (
+    new TileGrid<CircuitTile>(width, height, circuitTileFactory)
+);
 
-function convertDbJsonToTileGrid<T extends Tile>(
+const convertDbJsonToTileGrid = <T extends Tile>(
     data: TileGridDbJson,
     tileFactory: TileFactory<T>,
-    shouldPerformTransaction: boolean
-): Promise<TileGrid<T>> {
-    let output = new TileGrid<T>(data.width, data.height, tileFactory);
+    shouldPerformTransaction: boolean,
+): Promise<TileGrid<T>> => {
+    const output = new TileGrid<T>(data.width, data.height, tileFactory);
     return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => {
-        let tempPos = new Pos(0, 0);
-        return data.tiles.reduce((accumulator, tileData) => {
-            return accumulator.then(() => {
-                return tileFactory.convertDbJsonToTile(tileData, false);
-            }).then(tile => {
+        const tempPos = new Pos(0, 0);
+        return data.tiles.reduce((accumulator, tileData) => (
+            accumulator.then(() => (
+                tileFactory.convertDbJsonToTile(tileData, false)
+            )).then((tile) => {
                 output.setTile(tempPos, tile);
                 output.advancePos(tempPos);
-            });
-        }, Promise.resolve());
+            })
+        ), Promise.resolve());
     }).then(() => output);
-}
+};
 
-export function convertDbJsonToWorldTileGrid(
+export const convertDbJsonToWorldTileGrid = (
     data: TileGridDbJson,
     shouldPerformTransaction = true,
-): Promise<TileGrid<WorldTile>> {
-    return convertDbJsonToTileGrid<WorldTile>(
+): Promise<TileGrid<WorldTile>> => (
+    convertDbJsonToTileGrid<WorldTile>(
         data,
         worldTileFactory,
         shouldPerformTransaction,
-    );
-}
+    )
+);
 
-export function convertDbJsonToCircuitTileGrid(
+export const convertDbJsonToCircuitTileGrid = (
     data: TileGridDbJson,
     shouldPerformTransaction = true,
-): Promise<TileGrid<CircuitTile>> {
-    return convertDbJsonToTileGrid<CircuitTile>(
+): Promise<TileGrid<CircuitTile>> => (
+    convertDbJsonToTileGrid<CircuitTile>(
         data,
         circuitTileFactory,
         shouldPerformTransaction,
-    );
-}
+    )
+);
 
 

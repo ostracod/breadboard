@@ -1,5 +1,5 @@
 
-import {PlayerWorldTile} from "./worldTile.js";
+import { PlayerWorldTile } from "./worldTile.js";
 
 // TODO: Export this type from OstracodMultiplayer.
 export interface Player {

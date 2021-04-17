@@ -1,17 +1,17 @@
 
-import {simpleSpiritSerialIntegerSet, wireArrangementAmount, worldSize, circuitSize, simpleSpiritSet, simpleSpiritTypeSet, complexSpiritTypeSet, simpleWorldTileSet, simpleCircuitTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap, simpleCircuitTileMap, circuitTileFactory} from "./globalData.js";
-import {Player, ConfigDbJson, SpiritClientJson, SimpleSpiritClientJson, ComplexSpiritClientJson, PlayerSpiritClientJson, MachineSpiritClientJson, SpiritNestedDbJson, SimpleSpiritNestedDbJson, ComplexSpiritNestedDbJson, ComplexSpiritContainerJson, InventorySpiritContainerJson, TileGridSpiritContainerJson, ComplexSpiritAttributeJson, PlayerSpiritAttributeJson, MachineSpiritAttributeJson, TileClientJson} from "./interfaces.js";
-import {Pos} from "./pos.js";
-import {SpiritType, SimpleSpiritType, ComplexSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, loadComplexSpirit} from "./spiritType.js";
-import {SpiritReference} from "./spiritReference.js";
-import {SimpleSpiritReference, ComplexSpiritReference} from "./spiritReference.js";
-import {Inventory, InventoryItem, InventoryObserver, InventoryUpdate, pushInventoryUpdate} from "./inventory.js";
-import {RecipeComponent, pushRecipeComponent} from "./recipe.js";
-import {Tile} from "./tile.js";
-import {WorldTile, ComplexWorldTile, PlayerWorldTile} from "./worldTile.js";
-import {CircuitTile} from "./circuitTile.js";
-import {TileGrid, createWorldTileGrid, createCircuitTileGrid} from "./tileGrid.js";
-import {niceUtils} from "./niceUtils.js";
+import { simpleSpiritSerialIntegerSet, wireArrangementAmount, worldSize, circuitSize, simpleSpiritSet, simpleSpiritTypeSet, complexSpiritTypeSet, simpleWorldTileSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap, simpleCircuitTileMap, circuitTileFactory } from "./globalData.js";
+import { Player, ConfigDbJson, SpiritClientJson, SimpleSpiritClientJson, ComplexSpiritClientJson, PlayerSpiritClientJson, MachineSpiritClientJson, SpiritNestedDbJson, SimpleSpiritNestedDbJson, ComplexSpiritNestedDbJson, ComplexSpiritContainerJson, InventorySpiritContainerJson, TileGridSpiritContainerJson, ComplexSpiritAttributeJson, PlayerSpiritAttributeJson, MachineSpiritAttributeJson, TileClientJson } from "./interfaces.js";
+import { Pos } from "./pos.js";
+import { SpiritType, SimpleSpiritType, ComplexSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, loadComplexSpirit } from "./spiritType.js";
+import { SpiritReference } from "./spiritReference.js";
+import { SimpleSpiritReference, ComplexSpiritReference } from "./spiritReference.js";
+import { Inventory, InventoryItem, InventoryObserver, InventoryUpdate, pushInventoryUpdate } from "./inventory.js";
+import { RecipeComponent, pushRecipeComponent } from "./recipe.js";
+import { Tile } from "./tile.js";
+import { WorldTile, ComplexWorldTile, PlayerWorldTile } from "./worldTile.js";
+import { CircuitTile } from "./circuitTile.js";
+import { TileGrid, createWorldTileGrid, createCircuitTileGrid } from "./tileGrid.js";
+import { niceUtils } from "./niceUtils.js";
 
 let nextComplexSpiritId: number;
 
@@ -131,7 +131,7 @@ export class ComplexSpirit extends Spirit {
     getClientJson(): ComplexSpiritClientJson {
         return {
             classId: this.classId,
-            id: this.id
+            id: this.id,
         };
     }
     
@@ -146,14 +146,14 @@ export class ComplexSpirit extends Spirit {
     getNestedDbJson(): ComplexSpiritNestedDbJson {
         if (this.shouldHaveDbRow()) {
             return {
-                id: this.id
+                id: this.id,
             };
         } else {
             return {
                 id: this.id,
                 classId: this.classId,
                 attributeData: this.getAttributeDbJson(),
-                containerData: this.getContainerDbJson()
+                containerData: this.getContainerDbJson(),
             };
         }
     }
@@ -209,9 +209,9 @@ export class ComplexSpirit extends Spirit {
     }
     
     persist(): Promise<void> {
-        let tempShouldHaveDbRow = this.shouldHaveDbRow();
-        let attributeData = JSON.stringify(this.getAttributeDbJson());
-        let containerData = JSON.stringify(this.getContainerDbJson());
+        const tempShouldHaveDbRow = this.shouldHaveDbRow();
+        const attributeData = JSON.stringify(this.getAttributeDbJson());
+        const containerData = JSON.stringify(this.getContainerDbJson());
         if (this.hasDbRow) {
             if (tempShouldHaveDbRow) {
                 return niceUtils.performDbQuery(
@@ -267,17 +267,17 @@ export class InventorySpirit extends ComplexSpirit implements InventoryObserver 
     }
     
     destroy(): void {
-        for (let item of this.inventory.items) {
+        for (const item of this.inventory.items) {
             item.spirit.destroy();
         }
         super.destroy();
     }
     
     getRecycleProducts(): RecipeComponent[] {
-        let output = super.getRecycleProducts();
-        for (let item of this.inventory.items) {
-            let tempProductList = item.spirit.getRecycleProducts();
-            for (let recipeComponent of tempProductList) {
+        const output = super.getRecycleProducts();
+        for (const item of this.inventory.items) {
+            const tempProductList = item.spirit.getRecycleProducts();
+            for (const recipeComponent of tempProductList) {
                 recipeComponent.scale(item.count);
                 pushRecipeComponent(output, recipeComponent);
             }
@@ -296,7 +296,7 @@ export class PlayerSpirit extends InventorySpirit {
     stopInspectionSpiritIds: number[];
     
     constructor(spiritType: PlayerSpiritType, player: Player, inventory: Inventory = null) {
-        let lastId = player.extraFields.complexSpiritId;
+        const lastId = player.extraFields.complexSpiritId;
         super(spiritType, lastId, inventory);
         if (lastId === null) {
             player.extraFields.complexSpiritId = this.id;
@@ -310,19 +310,19 @@ export class PlayerSpirit extends InventorySpirit {
     
     inventoryChangeEvent(inventory: Inventory, item: InventoryItem): void {
         super.inventoryChangeEvent(inventory, item);
-        let tempUpdate = item.getInventoryUpdate();
+        const tempUpdate = item.getInventoryUpdate();
         pushInventoryUpdate(this.inventoryUpdates, tempUpdate);
     }
     
     getClientJson(): PlayerSpiritClientJson {
-        let output = super.getClientJson() as PlayerSpiritClientJson;
+        const output = super.getClientJson() as PlayerSpiritClientJson;
         output.username = this.player.username;
         return output;
     }
     
     getAttributeDbJson(): PlayerSpiritAttributeJson {
         return {
-            username: this.player.username
+            username: this.player.username,
         };
     }
     
@@ -343,20 +343,20 @@ export class PlayerSpirit extends InventorySpirit {
         if (complexSpirit.hasParentSpirit(this)) {
             return true;
         }
-        let tempPos1 = (this.parentTile as ComplexWorldTile).pos;
-        let tempPos2 = (complexSpirit.parentTile as ComplexWorldTile).pos;
+        const tempPos1 = (this.parentTile as ComplexWorldTile).pos;
+        const tempPos2 = (complexSpirit.parentTile as ComplexWorldTile).pos;
         return tempPos1.isAdjacentTo(tempPos2);
     }
     
     registerStartInspectingSpirit(spirit: ComplexSpirit): void {
-        let index = this.stopInspectionSpiritIds.indexOf(spirit.id);
+        const index = this.stopInspectionSpiritIds.indexOf(spirit.id);
         if (index >= 0) {
             this.stopInspectionSpiritIds.splice(index);
         }
     }
     
     registerStopInspectingSpirit(spirit: ComplexSpirit): void {
-        let index = this.stopInspectionSpiritIds.indexOf(spirit.id);
+        const index = this.stopInspectionSpiritIds.indexOf(spirit.id);
         if (index < 0) {
             this.stopInspectionSpiritIds.push(spirit.id);
         }
@@ -397,7 +397,7 @@ export class PlayerSpirit extends InventorySpirit {
         this.inspectedCircuit = null;
     }
     
-    stopInspecting(spirit: ComplexSpirit) {
+    stopInspecting(spirit: ComplexSpirit): void {
         if (spirit === this.inspectedMachine) {
             this.stopInspectingMachine();
         }
@@ -416,7 +416,7 @@ export class PlayerSpirit extends InventorySpirit {
     }
     
     getInventoryByParentSpiritId(parentSpiritId: number): Inventory {
-        let tempSpirit = complexSpiritMap[parentSpiritId] as InventorySpirit;
+        const tempSpirit = complexSpiritMap[parentSpiritId] as InventorySpirit;
         if (typeof tempSpirit === "undefined") {
             return null;
         }
@@ -432,20 +432,20 @@ export class PlayerSpirit extends InventorySpirit {
         destinationParentSpiritId: number,
         spiritReference: SpiritReference
     ): void {
-        let sourceInventory = this.getInventoryByParentSpiritId(sourceParentSpiritId);
-        let destinationInventory = this.getInventoryByParentSpiritId(destinationParentSpiritId);
+        const sourceInventory = this.getInventoryByParentSpiritId(sourceParentSpiritId);
+        const destinationInventory = this.getInventoryByParentSpiritId(destinationParentSpiritId);
         if (sourceInventory === null || destinationInventory === null) {
             return;
         }
-        let tempItem = sourceInventory.getItemBySpiritReference(spiritReference);
+        const tempItem = sourceInventory.getItemBySpiritReference(spiritReference);
         if (tempItem === null) {
             return;
         }
-        let tempSpirit = tempItem.spirit;
+        const tempSpirit = tempItem.spirit;
         if (destinationInventory.hasParentSpirit(tempSpirit)) {
             return;
         }
-        let tempCount = tempItem.decreaseCount(1);
+        const tempCount = tempItem.decreaseCount(1);
         destinationInventory.increaseItemCountBySpirit(tempSpirit, tempCount);
     }
     
@@ -453,11 +453,11 @@ export class PlayerSpirit extends InventorySpirit {
         parentSpiritId: number,
         spiritReference: SpiritReference
     ): void {
-        let tempInventory = this.getInventoryByParentSpiritId(parentSpiritId);
+        const tempInventory = this.getInventoryByParentSpiritId(parentSpiritId);
         if (tempInventory === null) {
             return;
         }
-        let tempItem = tempInventory.getItemBySpiritReference(spiritReference);
+        const tempItem = tempInventory.getItemBySpiritReference(spiritReference);
         if (tempItem === null || tempItem.count < 1) {
             return;
         }
@@ -465,8 +465,8 @@ export class PlayerSpirit extends InventorySpirit {
         if (tempItem.count <= 0) {
             tempItem.spirit.destroy();
         }
-        let tempProductList = tempItem.spirit.getRecycleProducts();
-        for (let product of tempProductList) {
+        const tempProductList = tempItem.spirit.getRecycleProducts();
+        for (const product of tempProductList) {
             this.inventory.addRecipeComponent(product);
         }
     }
@@ -483,8 +483,8 @@ export class PlayerSpirit extends InventorySpirit {
         if (!spiritType.isFreeToCraft()) {
             return;
         }
-        let tempSpirit = spiritType.craft();
-        let tempCircuitTile = circuitTileFactory.getTileWithSpirit(tempSpirit);
+        const tempSpirit = spiritType.craft();
+        const tempCircuitTile = circuitTileFactory.getTileWithSpirit(tempSpirit);
         this.inspectedCircuit.tileGrid.setTile(pos, tempCircuitTile);
     }
 }
@@ -500,14 +500,14 @@ export class MachineSpirit extends InventorySpirit {
     }
     
     getClientJson(): MachineSpiritClientJson {
-        let output = super.getClientJson() as MachineSpiritClientJson;
+        const output = super.getClientJson() as MachineSpiritClientJson;
         output.colorIndex = this.colorIndex;
         return output;
     }
     
     getAttributeDbJson(): MachineSpiritAttributeJson {
         return {
-            colorIndex: this.colorIndex
+            colorIndex: this.colorIndex,
         };
     }
 }
@@ -536,17 +536,17 @@ export abstract class TileGridSpirit<T extends Tile> extends ComplexSpirit {
     }
     
     destroy(): void {
-        for (let tile of this.tileGrid.tileList) {
+        for (const tile of this.tileGrid.tileList) {
             tile.spirit.destroy();
         }
         super.destroy();
     }
     
     getRecycleProducts(): RecipeComponent[] {
-        let output = super.getRecycleProducts();
-        for (let tile of this.tileGrid.tileList) {
-            let tempProductList = tile.spirit.getRecycleProducts();
-            for (let recipeComponent of tempProductList) {
+        const output = super.getRecycleProducts();
+        for (const tile of this.tileGrid.tileList) {
+            const tempProductList = tile.spirit.getRecycleProducts();
+            for (const recipeComponent of tempProductList) {
                 pushRecipeComponent(output, recipeComponent);
             }
         }
@@ -591,7 +591,7 @@ export class WorldSpirit extends TileGridSpirit<WorldTile> {
             } else {
                 tempTile = simpleWorldTileSet.energite;
             }
-            let tempPos = new Pos(
+            const tempPos = new Pos(
                 Math.floor(Math.random() * this.tileGrid.width),
                 Math.floor(Math.random() * this.tileGrid.height)
             );
@@ -600,7 +600,7 @@ export class WorldSpirit extends TileGridSpirit<WorldTile> {
     }
     
     setTile(pos: Pos, tile: WorldTile): void {
-        let tempOldTile = this.tileGrid.getTile(pos);
+        const tempOldTile = this.tileGrid.getTile(pos);
         super.setTile(pos, tile);
         tempOldTile.removeFromWorldEvent();
         tile.addToWorldEvent(this);
@@ -612,9 +612,9 @@ export class WorldSpirit extends TileGridSpirit<WorldTile> {
     
     findPlayerTile(player: Player): number {
         for (let index = 0; index < this.playerTileList.length; index++) {
-            let tempTile = this.playerTileList[index];
-            let tempPlayer = tempTile.spirit.player;
-            if (tempPlayer.username == player.username) {
+            const tempTile = this.playerTileList[index];
+            const tempPlayer = tempTile.spirit.player;
+            if (tempPlayer.username === player.username) {
                 return index;
             }
         }
@@ -622,7 +622,7 @@ export class WorldSpirit extends TileGridSpirit<WorldTile> {
     }
     
     getPlayerTile(player: Player): PlayerWorldTile {
-        let index = this.findPlayerTile(player);
+        const index = this.findPlayerTile(player);
         if (index < 0) {
             return null;
         }
@@ -630,7 +630,7 @@ export class WorldSpirit extends TileGridSpirit<WorldTile> {
     }
     
     getPlayerSpirit(player: Player): PlayerSpirit {
-        let tempTile = this.getPlayerTile(player);
+        const tempTile = this.getPlayerTile(player);
         if (tempTile === null) {
             return null;
         }
@@ -638,24 +638,24 @@ export class WorldSpirit extends TileGridSpirit<WorldTile> {
     }
     
     addPlayerTile(player: Player): Promise<PlayerSpirit> {
-        let tempTile = this.getPlayerTile(player);
+        const tempTile = this.getPlayerTile(player);
         if (tempTile !== null) {
             return Promise.resolve(tempTile.spirit);
         }
         let tempPromise;
-        let tempId = player.extraFields.complexSpiritId;
+        const tempId = player.extraFields.complexSpiritId;
         if (tempId === null) {
-            let tempSpirit = (complexSpiritTypeSet.player as PlayerSpiritType).createPlayerSpirit(player);
+            const tempSpirit = (complexSpiritTypeSet.player as PlayerSpiritType).createPlayerSpirit(player);
             tempPromise = Promise.resolve(tempSpirit);
         } else {
             tempPromise = loadComplexSpirit(tempId);
         }
-        return tempPromise.then(spirit => {
-            let tempTile = new PlayerWorldTile(spirit);
+        return tempPromise.then((spirit) => {
+            const tempTile = new PlayerWorldTile(spirit);
             // TODO: Make player tile placement more robust.
-            let tempPos = new Pos(3, 3);
+            const tempPos = new Pos(3, 3);
             while (true) {
-                let tempOldTile = this.getTile(tempPos);
+                const tempOldTile = this.getTile(tempPos);
                 if (tempOldTile.spirit.spiritType === simpleSpiritTypeSet.empty) {
                     break;
                 }
@@ -678,10 +678,10 @@ export class CircuitSpirit extends TileGridSpirit<CircuitTile> {
     generateTileGrid(): void {
         this.tileGrid = createCircuitTileGrid(circuitSize, circuitSize);
         // Generate some garbage tiles for testing purposes.
-        let tempPos = new Pos(0, 0);
+        const tempPos = new Pos(0, 0);
         while (tempPos.y < this.tileGrid.height) {
             if (Math.random() < 0.3) {
-                let tempTile = simpleCircuitTileMap[simpleSpiritSerialIntegerSet.wire + Math.floor(Math.random() * wireArrangementAmount)];
+                const tempTile = simpleCircuitTileMap[simpleSpiritSerialIntegerSet.wire + Math.floor(Math.random() * wireArrangementAmount)];
                 this.setTile(tempPos, tempTile);
             }
             this.tileGrid.advancePos(tempPos);
@@ -689,13 +689,13 @@ export class CircuitSpirit extends TileGridSpirit<CircuitTile> {
     }
 }
 
-export function loadNextComplexSpiritId(): Promise<void> {
-    return niceUtils.performDbQuery(
+export const loadNextComplexSpiritId = (): Promise<void> => (
+    niceUtils.performDbQuery(
         "SELECT * FROM Configuration WHERE name = ?",
         ["nextComplexSpiritId"]
     ).then((results: ConfigDbJson[]) => {
         if (results.length > 0) {
-            nextComplexSpiritId = parseInt(results[0].value);
+            nextComplexSpiritId = parseInt(results[0].value, 10);
         } else {
             nextComplexSpiritId = 0;
             return niceUtils.performDbQuery(
@@ -703,29 +703,29 @@ export function loadNextComplexSpiritId(): Promise<void> {
                 ["nextComplexSpiritId", nextComplexSpiritId]
             );
         }
-    });
-}
+    })
+);
 
-export function persistNextComplexSpiritId(): Promise<void> {
-    return niceUtils.performDbQuery(
+export const persistNextComplexSpiritId = (): Promise<void> => (
+    niceUtils.performDbQuery(
         "UPDATE Configuration SET value = ? WHERE name = ?",
         [nextComplexSpiritId, "nextComplexSpiritId"]
-    );
-}
+    )
+);
 
-export function persistAllComplexSpirits(): Promise<void> {
-    let operationList = [];
-    for (let id in dirtyComplexSpiritMap) {
-        let tempSpirit = dirtyComplexSpiritMap[id];
+export const persistAllComplexSpirits = (): Promise<void> => {
+    const operationList = [];
+    for (const id in dirtyComplexSpiritMap) {
+        const tempSpirit = dirtyComplexSpiritMap[id];
         operationList.push(() => tempSpirit.persist());
         delete dirtyComplexSpiritMap[id];
     }
     if (operationList.length <= 0) {
         return Promise.resolve();
     }
-    return operationList.reduce((accumulator, operation) => {
-        return accumulator.then(operation);
-    }, Promise.resolve());
-}
+    return operationList.reduce((accumulator, operation) => (
+        accumulator.then(operation)
+    ), Promise.resolve());
+};
 
 

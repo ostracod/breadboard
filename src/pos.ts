@@ -1,5 +1,5 @@
 
-import {PosJson} from "./interfaces.js";
+import { PosJson } from "./interfaces.js";
 
 export class Pos {
     
@@ -31,7 +31,7 @@ export class Pos {
     }
     
     equals(pos: Pos): boolean {
-        return (this.x == pos.x && this.y == pos.y);
+        return (this.x === pos.x && this.y === pos.y);
     }
     
     isAdjacentTo(pos: Pos): boolean {
@@ -45,13 +45,11 @@ export class Pos {
     toJson(): PosJson {
         return {
             x: this.x,
-            y: this.y
+            y: this.y,
         };
     }
 }
 
-export function createPosFromJson(data: PosJson): Pos {
-    return new Pos(data.x, data.y);
-}
+export const createPosFromJson = (data: PosJson): Pos => new Pos(data.x, data.y);
 
 

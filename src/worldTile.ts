@@ -1,11 +1,11 @@
 
-import {simpleSpiritTypeSet, simpleWorldTileSet, simpleWorldTileMap, worldTileFactory} from "./globalData.js";
-import {WalkControllerJson, PlayerWorldTileClientJson, TileDbJson} from "./interfaces.js";
-import {Pos} from "./pos.js";
-import {Spirit, SimpleSpirit, ComplexSpirit, WorldSpirit, PlayerSpirit, MachineSpirit} from "./spirit.js";
-import {SpiritReference} from "./spiritReference.js";
-import {Tile, simpleTileComplexity, complexTileComplexity} from "./tile.js";
-import {TileGrid} from "./tileGrid.js";
+import { simpleSpiritTypeSet, simpleWorldTileSet, simpleWorldTileMap, worldTileFactory } from "./globalData.js";
+import { WalkControllerJson, PlayerWorldTileClientJson, TileDbJson } from "./interfaces.js";
+import { Pos } from "./pos.js";
+import { Spirit, SimpleSpirit, ComplexSpirit, WorldSpirit, PlayerSpirit, MachineSpirit } from "./spirit.js";
+import { SpiritReference } from "./spiritReference.js";
+import { Tile, simpleTileComplexity, complexTileComplexity } from "./tile.js";
+import { TileGrid } from "./tileGrid.js";
 
 export class WorldTile<T extends Spirit = Spirit> extends Tile<T> {
     
@@ -82,9 +82,9 @@ export class ComplexWorldTile<T extends ComplexSpirit = ComplexSpirit> extends W
     }
     
     move(offset: Pos): boolean {
-        let tempNextPos = this.pos.copy();
+        const tempNextPos = this.pos.copy();
         tempNextPos.add(offset);
-        let tempTile = this.worldSpirit.getTile(tempNextPos);
+        const tempTile = this.worldSpirit.getTile(tempNextPos);
         if (tempTile.spirit.spiritType !== simpleSpiritTypeSet.empty) {
             return false;
         }
@@ -108,7 +108,7 @@ class TimeBudget {
     spendTime(amount: number): boolean {
         
         // Update the amount of time we can spend.
-        let tempTimestamp = Date.now() / 1000;
+        const tempTimestamp = Date.now() / 1000;
         this.time += tempTimestamp - this.lastTimestamp;
         if (this.time > this.maximumTime) {
             this.time = this.maximumTime;
@@ -117,7 +117,7 @@ class TimeBudget {
         
         // Determine if we have enough time to spend.
         if (this.time <= 0) {
-            return false
+            return false;
         }
         
         // Spend the time.
@@ -140,7 +140,7 @@ export class PlayerWorldTile extends ComplexWorldTile<PlayerSpirit> {
     }
     
     getClientJson(): PlayerWorldTileClientJson {
-        let output = super.getClientJson();
+        const output = super.getClientJson();
         output.walkController = this.walkControllerData;
         return output;
     }
@@ -155,13 +155,13 @@ export class PlayerWorldTile extends ComplexWorldTile<PlayerSpirit> {
     }
     
     removeFromWorldEvent(): void {
-        let index = this.worldSpirit.findPlayerTile(this.spirit.player);
+        const index = this.worldSpirit.findPlayerTile(this.spirit.player);
         this.worldSpirit.playerTileList.splice(index, 1);
         super.removeFromWorldEvent();
     }
     
     walk(offset: Pos): void {
-        let tempResult = this.walkTimeBudget.spendTime(0.08);
+        const tempResult = this.walkTimeBudget.spendTime(0.08);
         if (!tempResult) {
             return;
         }
@@ -169,11 +169,11 @@ export class PlayerWorldTile extends ComplexWorldTile<PlayerSpirit> {
     }
     
     mine(pos: Pos): void {
-        let tempResult = this.mineTimeBudget.spendTime(1.44);
+        const tempResult = this.mineTimeBudget.spendTime(1.44);
         if (!tempResult) {
             return;
         }
-        let tempTile = this.worldSpirit.getTile(pos);
+        const tempTile = this.worldSpirit.getTile(pos);
         if (!tempTile.canBeMined()) {
             return;
         }
@@ -186,7 +186,7 @@ export class PlayerWorldTile extends ComplexWorldTile<PlayerSpirit> {
         if (tempTile.spirit.spiritType !== simpleSpiritTypeSet.empty) {
             return;
         }
-        let tempItem = this.spirit.inventory.getItemBySpiritReference(spiritReference);
+        const tempItem = this.spirit.inventory.getItemBySpiritReference(spiritReference);
         if (tempItem === null) {
             return;
         }

@@ -1,11 +1,11 @@
 
-import {complexSpiritMap} from "./globalData.js";
-import {InventoryItemClientJson, InventoryItemDbJson, InventoryUpdateClientJson, InventoryDbJson} from "./interfaces.js";
-import {Spirit, ComplexSpirit, InventorySpirit} from "./spirit.js";
-import {SimpleSpiritType, convertDbJsonToSpirit} from "./spiritType.js";
-import {SpiritReference, convertJsonToSpiritReference} from "./spiritReference.js";
-import {Recipe, RecipeComponent} from "./recipe.js";
-import {niceUtils} from "./niceUtils.js";
+import { complexSpiritMap } from "./globalData.js";
+import { InventoryItemClientJson, InventoryItemDbJson, InventoryUpdateClientJson, InventoryDbJson } from "./interfaces.js";
+import { Spirit, InventorySpirit } from "./spirit.js";
+import { SimpleSpiritType, convertDbJsonToSpirit } from "./spiritType.js";
+import { SpiritReference, convertJsonToSpiritReference } from "./spiritReference.js";
+import { Recipe, RecipeComponent } from "./recipe.js";
+import { niceUtils } from "./niceUtils.js";
 
 export class InventoryItem {
     
@@ -28,14 +28,14 @@ export class InventoryItem {
     getClientJson(): InventoryItemClientJson {
         return {
             spirit: this.spirit.getClientJson(),
-            count: this.count
+            count: this.count,
         };
     }
     
     getDbJson(): InventoryItemDbJson {
         return {
             spirit: this.spirit.getNestedDbJson(),
-            count: this.count
+            count: this.count,
         };
     }
     
@@ -52,7 +52,7 @@ export class InventoryItem {
             this.setCount(this.count - offset);
             return offset;
         } else {
-            let output = this.count;
+            const output = this.count;
             this.setCount(0);
             return output;
         }
@@ -83,12 +83,12 @@ export class Inventory {
         this.parentSpirit = null;
     }
     
-    addObserver(observer: InventoryObserver) {
+    addObserver(observer: InventoryObserver): void {
         this.observers.push(observer);
     }
     
-    removeObserver(observer: InventoryObserver) {
-        let index = this.observers.indexOf(observer);
+    removeObserver(observer: InventoryObserver): void {
+        const index = this.observers.indexOf(observer);
         if (index < 0) {
             return;
         }
@@ -96,25 +96,25 @@ export class Inventory {
     }
     
     notifyObservers(item: InventoryItem): void {
-        for (let observer of this.observers) {
+        for (const observer of this.observers) {
             observer.inventoryChangeEvent(this, item);
         }
     }
     
     populateParentSpirit(spirit: InventorySpirit): void {
         this.parentSpirit = spirit;
-        for (let item of this.items) {
+        for (const item of this.items) {
             item.spirit.populateParentSpirit(this.parentSpirit);
         }
     }
     
     getDbJson(): InventoryDbJson {
-        return this.items.map(item => item.getDbJson());
+        return this.items.map((item) => item.getDbJson());
     }
     
     findItemBySpirit(spirit: Spirit): number {
         for (let index = 0; index < this.items.length; index++) {
-            let tempItem = this.items[index];
+            const tempItem = this.items[index];
             if (tempItem.spirit === spirit) {
                 return index;
             }
@@ -127,7 +127,7 @@ export class Inventory {
     }
     
     getItemBySpirit(spirit: Spirit): InventoryItem {
-        let index = this.findItemBySpirit(spirit);
+        const index = this.findItemBySpirit(spirit);
         if (index >= 0) {
             return this.items[index];
         } else {
@@ -137,8 +137,8 @@ export class Inventory {
     
     findItemBySpiritReference(spiritReference: SpiritReference): number {
         for (let index = 0; index < this.items.length; index++) {
-            let tempItem = this.items[index];
-            let tempReference = tempItem.spirit.getReference();
+            const tempItem = this.items[index];
+            const tempReference = tempItem.spirit.getReference();
             if (tempReference.equals(spiritReference)) {
                 return index;
             }
@@ -147,7 +147,7 @@ export class Inventory {
     }
     
     getItemBySpiritReference(spiritReference: SpiritReference): InventoryItem {
-        let index = this.findItemBySpiritReference(spiritReference);
+        const index = this.findItemBySpiritReference(spiritReference);
         if (index >= 0) {
             return this.items[index];
         } else {
@@ -156,7 +156,7 @@ export class Inventory {
     }
     
     getInventoryUpdate(spirit: Spirit): InventoryUpdate {
-        let tempItem = this.getItemBySpirit(spirit);
+        const tempItem = this.getItemBySpirit(spirit);
         if (tempItem === null) {
             return new InventoryUpdate(this, spirit, 0);
         } else {
@@ -165,7 +165,7 @@ export class Inventory {
     }
     
     getItemCountBySpirit(spirit: Spirit): number {
-        let tempItem = this.getItemBySpirit(spirit);
+        const tempItem = this.getItemBySpirit(spirit);
         if (tempItem === null) {
             return 0;
         } else {
@@ -174,7 +174,7 @@ export class Inventory {
     }
     
     setItemCountBySpirit(spirit: Spirit, count: number): void {
-        let tempItem = this.getItemBySpirit(spirit);
+        const tempItem = this.getItemBySpirit(spirit);
         if (tempItem === null) {
             if (count > 0) {
                 new InventoryItem(this, spirit, count);
@@ -186,7 +186,7 @@ export class Inventory {
     }
     
     getItemCountBySpiritReference(spiritReference: SpiritReference): number {
-        let tempItem = this.getItemBySpiritReference(spiritReference);
+        const tempItem = this.getItemBySpiritReference(spiritReference);
         if (tempItem === null) {
             return 0;
         } else {
@@ -195,7 +195,7 @@ export class Inventory {
     }
     
     increaseItemCountBySpirit(spirit: Spirit, count: number): void {
-        let tempCount = this.getItemCountBySpirit(spirit);
+        const tempCount = this.getItemCountBySpirit(spirit);
         this.setItemCountBySpirit(spirit, tempCount + count);
     }
     
@@ -204,14 +204,14 @@ export class Inventory {
     }
     
     removeItem(item: InventoryItem): void {
-        let index = this.findItem(item);
+        const index = this.findItem(item);
         this.items.splice(index, 1);
         item.spirit.changeParentSpirit(null);
     }
     
     hasRecipeComponent(recipeComponent: RecipeComponent): boolean {
         let tempCount = 0;
-        for (let item of this.items) {
+        for (const item of this.items) {
             if (recipeComponent.spiritType.matchesSpirit(item.spirit)) {
                 tempCount += item.count;
             }
@@ -220,7 +220,7 @@ export class Inventory {
     }
     
     canCraftRecipe(recipe: Recipe): boolean {
-        for (let component of recipe.ingredients) {
+        for (const component of recipe.ingredients) {
             if (!this.hasRecipeComponent(component)) {
                 return false;
             }
@@ -230,9 +230,9 @@ export class Inventory {
     
     removeRecipeComponent(recipeComponent: RecipeComponent): void {
         let tempCount = recipeComponent.count;
-        for (let item of this.items) {
+        for (const item of this.items) {
             if (recipeComponent.spiritType.matchesSpirit(item.spirit)) {
-                let tempResult = item.decreaseCount(tempCount);
+                const tempResult = item.decreaseCount(tempCount);
                 tempCount -= tempResult;
                 if (tempCount <= 0) {
                     break;
@@ -243,11 +243,11 @@ export class Inventory {
     
     addRecipeComponent(recipeComponent: RecipeComponent): void {
         if (recipeComponent.spiritType instanceof SimpleSpiritType) {
-            let tempSpirit = recipeComponent.spiritType.craft();
+            const tempSpirit = recipeComponent.spiritType.craft();
             this.increaseItemCountBySpirit(tempSpirit, recipeComponent.count);
         } else {
             for (let count = 0; count < recipeComponent.count; count++) {
-                let tempSpirit = recipeComponent.spiritType.craft();
+                const tempSpirit = recipeComponent.spiritType.craft();
                 this.incrementItemCountBySpirit(tempSpirit);
             }
         }
@@ -257,7 +257,7 @@ export class Inventory {
         if (!this.canCraftRecipe(recipe)) {
             return;
         }
-        for (let component of recipe.ingredients) {
+        for (const component of recipe.ingredients) {
             this.removeRecipeComponent(component);
         }
         this.addRecipeComponent(recipe.product);
@@ -285,12 +285,12 @@ export class InventoryUpdate {
     }
     
     getClientJson(shouldUseReference = true): InventoryUpdateClientJson {
-        let output = {
+        const output = {
             parentSpiritId: this.inventory.parentSpirit.id,
-            count: this.count
+            count: this.count,
         } as InventoryUpdateClientJson;
         if (shouldUseReference) {
-            let tempReference = this.spirit.getReference();
+            const tempReference = this.spirit.getReference();
             output.spiritReference = tempReference.getJson();
         } else {
             output.spirit = this.spirit.getClientJson();
@@ -303,26 +303,26 @@ export class InventoryUpdate {
     }
 }
 
-export function convertDbJsonToInventory(
+export const convertDbJsonToInventory = (
     data: InventoryDbJson,
     shouldPerformTransaction = true
-): Promise<Inventory> {
-    let output = new Inventory();
-    return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => {
-        return data.reduce((accumulator, itemData) => {
-            return accumulator.then(() => {
-                return convertDbJsonToSpirit(itemData.spirit, false);
-            }).then(spirit => {
+): Promise<Inventory> => {
+    const output = new Inventory();
+    return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => (
+        data.reduce((accumulator, itemData) => (
+            accumulator.then(() => (
+                convertDbJsonToSpirit(itemData.spirit, false)
+            )).then((spirit) => {
                 new InventoryItem(output, spirit, itemData.count);
-            });
-        }, Promise.resolve());
-    }).then(() => output);
-}
+            })
+        ), Promise.resolve())
+    )).then(() => output);
+};
 
-function convertClientJsonToInventoryUpdate(
+export const convertClientJsonToInventoryUpdate = (
     data: InventoryUpdateClientJson
-): InventoryUpdate {
-    let parentSpirit = complexSpiritMap[data.parentSpiritId] as InventorySpirit;
+): InventoryUpdate => {
+    const parentSpirit = complexSpiritMap[data.parentSpiritId] as InventorySpirit;
     if (typeof parentSpirit === "undefined") {
         return null;
     }
@@ -330,36 +330,36 @@ function convertClientJsonToInventoryUpdate(
     if ("spirit" in data) {
         throw new Error("Operation not supported.");
     } else {
-        let tempReference = convertJsonToSpiritReference(data.spiritReference);
+        const tempReference = convertJsonToSpiritReference(data.spiritReference);
         tempSpirit = tempReference.getSpirit();
         if (tempSpirit === null) {
             return null;
         }
     }
     return new InventoryUpdate(parentSpirit.inventory, tempSpirit, data.count);
-}
+};
 
-export function pushInventoryUpdate(
+export const pushInventoryUpdate = (
     destination: InventoryUpdate[],
     update: InventoryUpdate,
-): void {
+): void => {
     for (let index = destination.length - 1; index >= 0; index--) {
-        let tempUpdate = destination[index];
+        const tempUpdate = destination[index];
         if (tempUpdate.inventory === update.inventory
                 && tempUpdate.spirit === update.spirit) {
             destination.splice(index, 1);
         }
     }
     destination.push(update);
-}
+};
 
-export function pushInventoryUpdates(
+export const pushInventoryUpdates = (
     destination: InventoryUpdate[],
     updateList: InventoryUpdate[],
-): void {
-    for (let update of updateList) {
+): void => {
+    for (const update of updateList) {
         pushInventoryUpdate(destination, update);
     }
-}
+};
 
 

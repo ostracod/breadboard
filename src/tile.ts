@@ -1,8 +1,8 @@
 
-import {TileClientJson, SimpleTileClientJson, ComplexTileClientJson, TileDbJson, SimpleTileDbJson, ComplexTileDbJson} from "./interfaces.js";
-import {Pos} from "./pos.js";
-import {Spirit, SimpleSpirit, ComplexSpirit} from "./spirit.js";
-import {TileGrid} from "./tileGrid.js";
+import { TileClientJson, SimpleTileClientJson, ComplexTileClientJson, TileDbJson, SimpleTileDbJson, ComplexTileDbJson } from "./interfaces.js";
+import { Pos } from "./pos.js";
+import { Spirit, SimpleSpirit, ComplexSpirit } from "./spirit.js";
+import { TileGrid } from "./tileGrid.js";
 
 export abstract class Tile<T extends Spirit = Spirit> {
     
@@ -23,7 +23,7 @@ export abstract class Tile<T extends Spirit = Spirit> {
         return this.tileComplexity.convertToDbJson(this);
     }
     
-    addToGridEvent(tileGrid: TileGrid, pos: Pos) {
+    addToGridEvent(tileGrid: TileGrid, pos: Pos): void {
         this.spirit.setParentTile(this);
         this.spirit.changeParentSpirit(tileGrid.parentSpirit);
     }
@@ -56,10 +56,10 @@ abstract class TileComplexity<T extends Spirit = Spirit> {
 class SimpleTileComplexity extends TileComplexity<SimpleSpirit> {
     
     registerTile(tile: Tile<SimpleSpirit>) {
-        let tempTileSet = tile.getSimpleTileSet();
-        let tempTileMap = tile.getSimpleTileMap();
-        let tempSpiritType = tile.spirit.spiritType;
-        let tempSerialInteger = tile.spirit.serialInteger;
+        const tempTileSet = tile.getSimpleTileSet();
+        const tempTileMap = tile.getSimpleTileMap();
+        const tempSpiritType = tile.spirit.spiritType;
+        const tempSerialInteger = tile.spirit.serialInteger;
         tempTileSet[tempSpiritType.baseName] = tile;
         tempTileMap[tempSerialInteger] = tile;
     }
@@ -77,18 +77,18 @@ class ComplexTileComplexity extends TileComplexity<ComplexSpirit> {
     
     convertToClientJson(tile: Tile<ComplexSpirit>): ComplexTileClientJson {
         return {
-            spirit: tile.spirit.getClientJson()
+            spirit: tile.spirit.getClientJson(),
         };
     }
     
     convertToDbJson(tile: Tile<ComplexSpirit>): ComplexTileDbJson {
         return {
-            spirit: tile.spirit.getNestedDbJson()
+            spirit: tile.spirit.getNestedDbJson(),
         };
     }
 }
 
-export let simpleTileComplexity = new SimpleTileComplexity();
-export let complexTileComplexity = new ComplexTileComplexity();
+export const simpleTileComplexity = new SimpleTileComplexity();
+export const complexTileComplexity = new ComplexTileComplexity();
 
 

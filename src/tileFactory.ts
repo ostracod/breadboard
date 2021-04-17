@@ -1,11 +1,11 @@
 
-import {complexSpiritClassIdSet, simpleWorldTileMap, simpleCircuitTileMap, complexWorldTileFactoryMap, complexCircuitTileFactoryMap} from "./globalData.js";
-import {TileDbJson, ComplexTileDbJson} from "./interfaces.js";
-import {convertNestedDbJsonToSpirit} from "./spiritType.js";
-import {Spirit, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit} from "./spirit.js";
-import {Tile} from "./tile.js";
-import {WorldTile, ComplexWorldTile, PlayerWorldTile, MachineWorldTile} from "./worldTile.js";
-import {CircuitTile, ComplexCircuitTile} from "./circuitTile.js";
+import { complexSpiritClassIdSet, simpleWorldTileMap, simpleCircuitTileMap, complexWorldTileFactoryMap, complexCircuitTileFactoryMap } from "./globalData.js";
+import { TileDbJson, ComplexTileDbJson } from "./interfaces.js";
+import { convertNestedDbJsonToSpirit } from "./spiritType.js";
+import { Spirit, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit } from "./spirit.js";
+import { Tile } from "./tile.js";
+import { WorldTile, ComplexWorldTile, PlayerWorldTile, MachineWorldTile } from "./worldTile.js";
+import { CircuitTile, ComplexCircuitTile } from "./circuitTile.js";
 
 abstract class ComplexTileFactory<T extends Tile<ComplexSpirit> = Tile<ComplexSpirit>> {
     
@@ -25,7 +25,7 @@ export abstract class AbstractComplexWorldTileFactory<T extends ComplexWorldTile
     
     constructor(baseName: string) {
         super(baseName);
-        let tempClassId = complexSpiritClassIdSet[this.baseName];
+        const tempClassId = complexSpiritClassIdSet[this.baseName];
         complexWorldTileFactoryMap[tempClassId] = this;
     }
 }
@@ -75,7 +75,7 @@ export class ComplexCircuitTileFactory extends ComplexTileFactory<ComplexCircuit
     
     constructor(baseName: string) {
         super(baseName);
-        let tempClassId = complexSpiritClassIdSet[this.baseName];
+        const tempClassId = complexSpiritClassIdSet[this.baseName];
         complexCircuitTileFactoryMap[tempClassId] = this;
     }
     
@@ -110,7 +110,7 @@ export class TileFactory<T extends Tile> {
                 data.spirit,
                 shouldPerformTransaction
             ).then((spirit: ComplexSpirit) => {
-                let tempFactory = this.complexTileFactoryMap[spirit.classId];
+                const tempFactory = this.complexTileFactoryMap[spirit.classId];
                 return tempFactory.convertDbJsonToTile(data, spirit) as unknown as T;
             });
         }
@@ -122,7 +122,7 @@ export class TileFactory<T extends Tile> {
         }
         if (spirit instanceof ComplexSpirit) {
             const complexSpirit = spirit as ComplexSpirit;
-            let tempFactory = this.complexTileFactoryMap[complexSpirit.classId];
+            const tempFactory = this.complexTileFactoryMap[complexSpirit.classId];
             return tempFactory.createTileWithSpirit(complexSpirit) as unknown as T;
         }
         return null;

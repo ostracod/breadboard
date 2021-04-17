@@ -1,6 +1,6 @@
 
 import ostracodMultiplayer from "ostracod-multiplayer";
-let dbUtils = ostracodMultiplayer.dbUtils;
+const { dbUtils } = ostracodMultiplayer;
 
 class NiceUtils {
     
@@ -9,15 +9,15 @@ class NiceUtils {
     }
     
     extendList(destination: any[], valueList: any[]): void {
-        for (let value of valueList) {
+        for (const value of valueList) {
             destination.push(value);
         }
     }
     
     reverseMap(valueMap: {[key: string]: any}): {[key: string]: any} {
-        let output = {};
-        for (let key in valueMap) {
-            let tempValue = valueMap[key];
+        const output = {};
+        for (const key in valueMap) {
+            const tempValue = valueMap[key];
             output[tempValue] = key;
         }
         return output;
@@ -25,7 +25,7 @@ class NiceUtils {
     
     performDbTransaction(operation: () => Promise<void>): Promise<void> {
         return new Promise((resolve, reject) => {
-            dbUtils.performTransaction(callback => {
+            dbUtils.performTransaction((callback) => {
                 operation().then(callback);
             }, () => {
                 resolve();
@@ -57,6 +57,6 @@ class NiceUtils {
     }
 }
 
-export let niceUtils = new NiceUtils();
+export const niceUtils = new NiceUtils();
 
 

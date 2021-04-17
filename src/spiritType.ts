@@ -1,14 +1,14 @@
 
-import {simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, simpleSpiritTypeSet, complexSpiritTypeSet, dirtyComplexSpiritMap, simpleSpiritTypeMap, complexSpiritTypesMap} from "./globalData.js";
-import {SpiritTypeJson, SimpleSpiritTypeJson, ComplexSpiritTypeJson, MachineSpiritTypeJson, SpiritDbJson, SimpleSpiritDbJson, PlayerSpiritDbJson, MachineSpiritDbJson, WorldSpiritDbJson, CircuitSpiritDbJson, SpiritNestedDbJson, Player} from "./interfaces.js";
-import {Spirit, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit, WorldSpirit, CircuitSpirit} from "./spirit.js";
-import {convertDbJsonToInventory} from "./inventory.js";
-import {RecipeComponent} from "./recipe.js";
-import {convertDbJsonToWorldTileGrid, convertDbJsonToCircuitTileGrid} from "./tileGrid.js";
-import {niceUtils} from "./niceUtils.js";
+import { simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, simpleSpiritTypeSet, complexSpiritTypeSet, dirtyComplexSpiritMap, simpleSpiritTypeMap, complexSpiritTypesMap } from "./globalData.js";
+import { SpiritTypeJson, SimpleSpiritTypeJson, ComplexSpiritTypeJson, MachineSpiritTypeJson, SpiritDbJson, SimpleSpiritDbJson, PlayerSpiritDbJson, MachineSpiritDbJson, WorldSpiritDbJson, CircuitSpiritDbJson, SpiritNestedDbJson, Player } from "./interfaces.js";
+import { Spirit, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit, WorldSpirit, CircuitSpirit } from "./spirit.js";
+import { convertDbJsonToInventory } from "./inventory.js";
+import { RecipeComponent } from "./recipe.js";
+import { convertDbJsonToWorldTileGrid, convertDbJsonToCircuitTileGrid } from "./tileGrid.js";
+import { niceUtils } from "./niceUtils.js";
 
 import ostracodMultiplayer from "ostracod-multiplayer";
-let gameUtils = ostracodMultiplayer.gameUtils;
+const { gameUtils } = ostracodMultiplayer;
 
 // A SpiritType serves the following purposes:
 // > Identify whether a spirit instance matches particular criteria
@@ -69,14 +69,14 @@ export class SimpleSpiritType extends SpiritType<SimpleSpirit> {
         simpleSpiritTypeMap[this.serialInteger] = this;
     }
     
-    matchesSpiritDbJson(data: SpiritDbJson) {
+    matchesSpiritDbJson(data: SpiritDbJson): boolean {
         return (typeof data === "number" && this.serialInteger === data);
     }
     
     getJson(): SimpleSpiritTypeJson {
         return {
             type: "simple",
-            serialInteger: this.serialInteger
+            serialInteger: this.serialInteger,
         };
     }
     
@@ -103,7 +103,7 @@ export class EmptySpiritType extends SimpleSpiritType {
         super("empty");
     }
     
-    isFreeToCraft() {
+    isFreeToCraft(): boolean {
         return true;
     }
 }
@@ -142,15 +142,15 @@ export class EnergiteSpiritType extends ResourceSpiritType {
 
 export class BlockSpiritType extends SimpleSpiritType {
     
-    constructor(colorIndex) {
+    constructor(colorIndex: number) {
         super("block", colorIndex);
     }
     
-    canBeMined() {
+    canBeMined(): boolean {
         return true;
     }
     
-    getBaseRecycleProducts() {
+    getBaseRecycleProducts(): RecipeComponent[] {
         return [new RecipeComponent(simpleSpiritTypeSet.matterite, 1.5)];
     }
 }
@@ -159,12 +159,12 @@ export class WireSpiritType extends SimpleSpiritType {
     
     arrangement: number;
     
-    constructor(arrangement) {
+    constructor(arrangement: number) {
         super("wire", arrangement);
         this.arrangement = arrangement;
     }
     
-    isFreeToCraft() {
+    isFreeToCraft(): boolean {
         return true;
     }
 }
@@ -190,7 +190,7 @@ export abstract class ComplexSpiritType<T extends ComplexSpirit = ComplexSpirit>
     getJson(): ComplexSpiritTypeJson {
         return {
             type: "complex",
-            classId: this.spiritClassId
+            classId: this.spiritClassId,
         };
     }
     
@@ -210,16 +210,16 @@ export class PlayerSpiritType extends ComplexSpiritType<PlayerSpirit> {
         data: PlayerSpiritDbJson,
         shouldPerformTransaction: boolean,
     ): Promise<PlayerSpirit> {
-        let tempPlayer = gameUtils.getPlayerByUsername(data.attributeData.username);
+        const tempPlayer = gameUtils.getPlayerByUsername(data.attributeData.username);
         if (tempPlayer === null) {
             return Promise.resolve(null);
         } else {
             return convertDbJsonToInventory(
                 data.containerData,
                 shouldPerformTransaction
-            ).then(inventory => {
-                return new PlayerSpirit(this, tempPlayer, inventory);
-            });
+            ).then((inventory) => (
+                new PlayerSpirit(this, tempPlayer, inventory)
+            ));
         }
     }
     
@@ -247,7 +247,7 @@ export class MachineSpiritType extends ComplexSpiritType<MachineSpirit> {
     }
     
     getJson(): MachineSpiritTypeJson {
-        let output = super.getJson() as MachineSpiritTypeJson;
+        const output = super.getJson() as MachineSpiritTypeJson;
         output.colorIndex = this.colorIndex;
         return output;
     }
@@ -264,9 +264,9 @@ export class MachineSpiritType extends ComplexSpiritType<MachineSpirit> {
         return convertDbJsonToInventory(
             data.containerData,
             shouldPerformTransaction
-        ).then(inventory => {
-            return new MachineSpirit(this, data.id, inventory);
-        });
+        ).then((inventory) => (
+            new MachineSpirit(this, data.id, inventory)
+        ));
     }
     
     craft(): MachineSpirit {
@@ -299,9 +299,9 @@ export class WorldSpiritType extends ComplexSpiritType<WorldSpirit> {
         return convertDbJsonToWorldTileGrid(
             data.containerData,
             shouldPerformTransaction
-        ).then(tileGrid => {
-            return new WorldSpirit(this, data.id, tileGrid);
-        });
+        ).then((tileGrid) => (
+            new WorldSpirit(this, data.id, tileGrid)
+        ));
     }
     
     craft(): WorldSpirit {
@@ -322,9 +322,9 @@ export class CircuitSpiritType extends ComplexSpiritType<CircuitSpirit> {
         return convertDbJsonToCircuitTileGrid(
             data.containerData,
             shouldPerformTransaction
-        ).then(tileGrid => {
-            return new CircuitSpirit(this, data.id, tileGrid);
-        });
+        ).then((tileGrid) => (
+            new CircuitSpirit(this, data.id, tileGrid)
+        ));
     }
     
     craft(): CircuitSpirit {
@@ -344,16 +344,16 @@ export class CircuitSpiritType extends ComplexSpiritType<CircuitSpirit> {
     }
 }
 
-export function convertDbJsonToSpirit(
+export const convertDbJsonToSpirit = (
     data: SpiritDbJson,
     shouldPerformTransaction = true,
-): Promise<Spirit> {
+): Promise<Spirit> => {
     let tempType;
     if (typeof data === "number") {
         tempType = simpleSpiritTypeMap[data];
     } else {
-        let tempTypeList = complexSpiritTypesMap[data.classId];
-        for (let spiritType of tempTypeList) {
+        const tempTypeList = complexSpiritTypesMap[data.classId];
+        for (const spiritType of tempTypeList) {
             if (spiritType.matchesSpiritDbJson(data)) {
                 tempType = spiritType;
                 break;
@@ -361,58 +361,58 @@ export function convertDbJsonToSpirit(
         }
     }
     return tempType.convertDbJsonToSpirit(data, shouldPerformTransaction);
-}
+};
 
-export function loadComplexSpirit(
+export const loadComplexSpirit = (
     id: number,
     shouldPerformTransaction = true,
-): Promise<ComplexSpirit> {
+): Promise<ComplexSpirit> => {
     if (id in dirtyComplexSpiritMap) {
         return Promise.resolve(dirtyComplexSpiritMap[id]);
     }
     let output;
-    return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => {
-        return niceUtils.performDbQuery(
+    return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => (
+        niceUtils.performDbQuery(
             "SELECT * FROM ComplexSpirits WHERE id = ?",
             [id]
-        ).then(results => {
-            let tempRow = results[0];
+        ).then((results) => {
+            const [tempRow] = results;
             return convertDbJsonToSpirit({
                 id: tempRow.id,
                 classId: tempRow.classId,
                 attributeData: JSON.parse(tempRow.attributeData),
-                containerData: JSON.parse(tempRow.containerData)
+                containerData: JSON.parse(tempRow.containerData),
             }, false);
         }).then((spirit: ComplexSpirit) => {
             spirit.hasDbRow = true;
             output = spirit;
-        });
-    }).then(() => output);
-}
+        })
+    )).then(() => output);
+};
 
-export function convertNestedDbJsonToSpirit(
+export const convertNestedDbJsonToSpirit = (
     data: SpiritNestedDbJson,
     shouldPerformTransaction = true,
-): Promise<Spirit> {
+): Promise<Spirit> => {
     if (typeof data === "number" || "classId" in data) {
         return Promise.resolve(convertDbJsonToSpirit(data, shouldPerformTransaction));
     }
     return loadComplexSpirit(data.id, shouldPerformTransaction);
-}
+};
 
-export function convertJsonToSpiritType(data: SpiritTypeJson): SpiritType {
-    if (data.type == "simple") {
+export const convertJsonToSpiritType = (data: SpiritTypeJson): SpiritType => {
+    if (data.type === "simple") {
         return simpleSpiritTypeMap[(data as SimpleSpiritTypeJson).serialInteger];
     }
-    if (data.type == "complex") {
-        let tempTypeList = complexSpiritTypesMap[(data as ComplexSpiritTypeJson).classId];
-        for (let spiritType of tempTypeList) {
+    if (data.type === "complex") {
+        const tempTypeList = complexSpiritTypesMap[(data as ComplexSpiritTypeJson).classId];
+        for (const spiritType of tempTypeList) {
             if (spiritType.matchesJson(data)) {
                 return spiritType;
             }
         }
     }
     return null;
-}
+};
 
 
