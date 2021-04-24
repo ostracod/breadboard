@@ -205,6 +205,19 @@ export class ComplexSpirit extends Spirit {
         return false;
     }
     
+    // Parent may be any number of steps removed.
+    getParentWorldTile(): ComplexWorldTile {
+        let spirit: ComplexSpirit = this;
+        while (spirit !== null) {
+            const tile = spirit.parentTile;
+            if (tile instanceof ComplexWorldTile) {
+                return tile;
+            }
+            spirit = spirit.parentSpirit;
+        }
+        return null;
+    }
+    
     setParentTile(tile: Tile<ComplexSpirit>): void {
         this.parentTile = tile;
     }
@@ -352,16 +365,17 @@ export class PlayerSpirit extends InventorySpirit {
             return false;
         }
         const complexSpirit = spirit as ComplexSpirit;
-        if (!(complexSpirit.parentTile instanceof ComplexWorldTile
-                && this.parentTile instanceof ComplexWorldTile)) {
-            return false;
-        }
         if (complexSpirit.hasParentSpirit(this)) {
             return true;
         }
-        const tempPos1 = (this.parentTile as ComplexWorldTile).pos;
-        const tempPos2 = (complexSpirit.parentTile as ComplexWorldTile).pos;
-        return tempPos1.isAdjacentTo(tempPos2);
+        const worldTile1 = this.getParentWorldTile();
+        const worldTile2 = complexSpirit.getParentWorldTile();
+        if (worldTile1 === null || worldTile2 === null) {
+            return false;
+        }
+        const pos1 = worldTile1.pos;
+        const pos2 = worldTile2.pos;
+        return pos1.isAdjacentTo(pos2);
     }
     
     registerStartInspectingSpirit(spirit: ComplexSpirit): void {
