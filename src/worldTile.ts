@@ -2,7 +2,9 @@
 import { simpleSpiritTypeSet, simpleWorldTileSet, simpleWorldTileMap, worldTileFactory } from "./globalData.js";
 import { WalkControllerJson, PlayerWorldTileClientJson, TileDbJson } from "./interfaces.js";
 import { Pos } from "./pos.js";
-import { Spirit, SimpleSpirit, ComplexSpirit, WorldSpirit, PlayerSpirit, MachineSpirit } from "./spirit.js";
+import { Spirit, SimpleSpirit, ComplexSpirit, MachineSpirit } from "./spirit.js";
+import { PlayerSpirit } from "./playerSpirit.js";
+import { WorldSpirit } from "./worldSpirit.js";
 import { SpiritReference } from "./spiritReference.js";
 import { Tile, simpleTileComplexity, complexTileComplexity } from "./tile.js";
 import { TileGrid } from "./tileGrid.js";

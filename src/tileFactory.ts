@@ -2,7 +2,8 @@
 import { complexSpiritClassIdSet, simpleWorldTileMap, simpleCircuitTileMap, complexWorldTileFactoryMap, complexCircuitTileFactoryMap } from "./globalData.js";
 import { TileDbJson, SimpleTileDbJson, ComplexTileDbJson } from "./interfaces.js";
 import { convertNestedDbJsonToSpirit } from "./spiritType.js";
-import { Spirit, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit } from "./spirit.js";
+import { Spirit, SimpleSpirit, ComplexSpirit, MachineSpirit } from "./spirit.js";
+import { PlayerSpirit } from "./playerSpirit.js";
 import { Tile } from "./tile.js";
 import { WorldTile, ComplexWorldTile, PlayerWorldTile, MachineWorldTile } from "./worldTile.js";
 import { CircuitTile, ComplexCircuitTile } from "./circuitTile.js";

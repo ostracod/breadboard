@@ -1,7 +1,10 @@
 
 import { simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, simpleSpiritTypeSet, complexSpiritTypeSet, dirtyComplexSpiritMap, simpleSpiritTypeMap, complexSpiritTypesMap } from "./globalData.js";
 import { SpiritTypeJson, SimpleSpiritTypeJson, ComplexSpiritTypeJson, MachineSpiritTypeJson, SpiritDbJson, SimpleSpiritDbJson, ComplexSpiritDbJson, SpiritNestedDbJson, Player } from "./interfaces.js";
-import { Spirit, SimpleSpirit, ComplexSpirit, PlayerSpirit, MachineSpirit, WorldSpirit, CircuitSpirit } from "./spirit.js";
+import { Spirit, SimpleSpirit, ComplexSpirit, MachineSpirit } from "./spirit.js";
+import { PlayerSpirit } from "./playerSpirit.js";
+import { CircuitSpirit, ConstantLogicSpirit } from "./logicSpirit.js";
+import { WorldSpirit } from "./worldSpirit.js";
 import { convertDbJsonToInventory } from "./inventory.js";
 import { RecipeComponent } from "./recipe.js";
 import { convertDbJsonToWorldTileGrid, convertDbJsonToCircuitTileGrid } from "./tileGrid.js";
@@ -341,6 +344,30 @@ export class CircuitSpiritType extends ComplexSpiritType<CircuitSpirit> {
     
     getBaseRecycleProducts(): RecipeComponent[] {
         return [new RecipeComponent(simpleSpiritTypeSet.matterite, 0.75)];
+    }
+}
+
+export class ConstantLogicSpiritType extends ComplexSpiritType<ConstantLogicSpirit> {
+    
+    constructor() {
+        super("constantLogic");
+    }
+    
+    convertDbJsonToSpirit(
+        data: ComplexSpiritDbJson<ConstantLogicSpirit>,
+        shouldPerformTransaction: boolean,
+    ): Promise<ConstantLogicSpirit> {
+        return Promise.resolve(
+            new ConstantLogicSpirit(this, data.id, data.attributeData.constantValue),
+        );
+    }
+    
+    craft(): ConstantLogicSpirit {
+        return new ConstantLogicSpirit(this, null);
+    }
+    
+    isFreeToCraft(): boolean {
+        return true;
     }
 }
 

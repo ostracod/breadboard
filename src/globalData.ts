@@ -1,7 +1,7 @@
 
 import { RecipeJson } from "./interfaces.js";
 import { SimpleSpirit, ComplexSpirit } from "./spirit.js";
-import { SimpleSpiritType, ComplexSpiritType, EmptySpiritType, BarrierSpiritType, MatteriteSpiritType, EnergiteSpiritType, BlockSpiritType, WireSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, CircuitSpiritType } from "./spiritType.js";
+import { SimpleSpiritType, ComplexSpiritType, EmptySpiritType, BarrierSpiritType, MatteriteSpiritType, EnergiteSpiritType, BlockSpiritType, WireSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, CircuitSpiritType, ConstantLogicSpiritType } from "./spiritType.js";
 import { SimpleWorldTile } from "./worldTile.js";
 import { SimpleCircuitTile } from "./circuitTile.js";
 import { ComplexWorldTileFactory, GenericComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory, WorldTileFactory, CircuitTileFactory, ComplexCircuitTileFactory } from "./tileFactory.js";
@@ -67,6 +67,7 @@ for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
 }
 new WorldSpiritType();
 new CircuitSpiritType();
+new ConstantLogicSpiritType();
 
 for (const serialInteger in simpleSpiritMap) {
     const tempSpirit = simpleSpiritMap[serialInteger];

@@ -54,6 +54,10 @@ export interface MachineSpiritClientJson extends ComplexSpiritClientJson {
     colorIndex: number;
 }
 
+export interface ConstantLogicSpiritClientJson extends ComplexSpiritClientJson {
+    constantValue: number;
+}
+
 export type SpiritNestedDbJson = SimpleSpiritNestedDbJson | ComplexSpiritNestedDbJson;
 
 export type SimpleSpiritNestedDbJson = SimpleSpiritDbJson;
@@ -68,29 +72,31 @@ export interface MachineSpiritAttributeJson {
     colorIndex: number;
 }
 
+export interface ConstantLogicSpiritAttributeJson {
+    constantValue: number;
+}
+
 export type ComplexSpiritContainerJson = any;
 
 export type InventorySpiritContainerJson = InventoryDbJson;
 
 export type TileGridSpiritContainerJson = TileGridDbJson;
 
-export interface ComplexSpiritNestedDbJson<T extends ComplexSpirit = ComplexSpirit> {
+export interface ComplexSpiritBaseDbJson<T extends ComplexSpirit = ComplexSpirit> {
     id: number;
-    classId?: number;
-    attributeData?: ReturnType<T["getAttributeDbJson"]>;
+    classId: number;
+    attributeData: ReturnType<T["getAttributeDbJson"]>;
     containerData?: ReturnType<T["getContainerDbJson"]>;
 }
+
+export type ComplexSpiritNestedDbJson<T extends ComplexSpirit = ComplexSpirit> = { id: number } | ComplexSpiritBaseDbJson<T>;
 
 export type SpiritDbJson = SimpleSpiritDbJson | ComplexSpiritDbJson;
 
 export type SimpleSpiritDbJson = number;
 
-export interface ComplexSpiritDbJson<T extends ComplexSpirit = ComplexSpirit> {
-    id: number;
+export interface ComplexSpiritDbJson<T extends ComplexSpirit = ComplexSpirit> extends ComplexSpiritBaseDbJson<T> {
     parentId: number;
-    classId: number;
-    attributeData: ReturnType<T["getAttributeDbJson"]>;
-    containerData: ReturnType<T["getContainerDbJson"]>;
 }
 
 export interface SpiritReferenceJson {
