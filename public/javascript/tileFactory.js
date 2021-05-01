@@ -13,7 +13,7 @@ class ComplexWorldTileFactory extends ComplexTileFactory {
     
     constructor(baseName) {
         super(baseName);
-        let tempClassId = complexSpiritClassIdSet[this.baseName];
+        const tempClassId = complexSpiritClassIdSet[this.baseName];
         complexWorldTileFactoryMap[tempClassId] = this;
     }
     
@@ -33,12 +33,12 @@ class PlayerWorldTileFactory extends ComplexWorldTileFactory {
     }
     
     convertClientJsonToTile(data, spirit) {
-        let tempController = convertJsonToWalkController(data.walkController);
+        const tempController = convertJsonToWalkController(data.walkController);
         return new PlayerWorldTile(spirit, tempController);
     }
     
     createTileWithSpirit(spirit, pos) {
-        let tempController = createDefaultWalkController();
+        const tempController = createDefaultWalkController();
         return new PlayerWorldTile(spirit, tempController);
     }
 }
@@ -69,8 +69,8 @@ class TileFactory {
         if (typeof data === "number") {
             return this.simpleTileMap[data];
         } else {
-            let tempSpirit = convertClientJsonToSpirit(data.spirit);
-            let tempFactory = this.complexTileFactoryMap[tempSpirit.classId];
+            const tempSpirit = convertClientJsonToSpirit(data.spirit);
+            const tempFactory = this.complexTileFactoryMap[tempSpirit.classId];
             return tempFactory.convertClientJsonToTile(data, tempSpirit);
         }
     }
@@ -80,7 +80,7 @@ class TileFactory {
             return this.simpleTileMap[spirit.serialInteger];
         }
         if (spirit instanceof ComplexSpirit) {
-            let tempFactory = this.complexTileFactoryMap[spirit.classId];
+            const tempFactory = this.complexTileFactoryMap[spirit.classId];
             return tempFactory.createTileWithSpirit(spirit);
         }
         return null;

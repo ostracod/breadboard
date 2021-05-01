@@ -46,10 +46,10 @@ class Recipe {
     displayIngredients() {
         document.getElementById("recipeSubtitle").innerHTML = "Ingredients:";
         document.getElementById("craftButtonContainer").style.display = "block";
-        let tempContainer = document.getElementById("recipeIngredients");
+        const tempContainer = document.getElementById("recipeIngredients");
         tempContainer.innerHTML = "";
-        for (let component of this.ingredients) {
-            let tempTag = document.createElement("div");
+        for (const component of this.ingredients) {
+            const tempTag = document.createElement("div");
             tempTag.innerHTML = component.spiritType.getDisplayName() + " (x" + component.count + ")";
             tempContainer.appendChild(tempTag);
             component.tag = tempTag;
@@ -58,7 +58,7 @@ class Recipe {
     }
     
     updateTagColors() {
-        for (let component of this.ingredients) {
+        for (const component of this.ingredients) {
             let tempColor;
             if (localPlayerInventory.hasRecipeComponent(component)) {
                 tempColor = "#000000";
@@ -67,7 +67,7 @@ class Recipe {
             }
             component.tag.style.color = tempColor;
         }
-        let tempTag = document.getElementById("craftButton");
+        const tempTag = document.getElementById("craftButton");
         if (localPlayerInventory.canCraftRecipe(this)) {
             tempTag.className = "";
         } else {
@@ -84,8 +84,8 @@ const convertJsonToRecipeComponent = (data) => (
 );
 
 const convertJsonToRecipe = (data) => {
-    let tempComponentList = [];
-    for (let tempData of data.ingredients) {
+    const tempComponentList = [];
+    for (const tempData of data.ingredients) {
         tempComponentList.push(convertJsonToRecipeComponent(tempData));
     }
     return new Recipe(
@@ -96,7 +96,7 @@ const convertJsonToRecipe = (data) => {
 };
 
 const drawAllRecipes = () => {
-    for (let recipe of recipeList) {
+    for (const recipe of recipeList) {
         recipe.draw();
     }
 };

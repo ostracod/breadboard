@@ -3,32 +3,32 @@ const wireArrangementAmount = 12;
 const circuitSize = 17;
 
 // Map from name to SimpleSpirit.
-let simpleSpiritSet = {};
+const simpleSpiritSet = {};
 // Maps from name to SpiritType.
-let simpleSpiritTypeSet = {};
-let complexSpiritTypeSet = {};
+const simpleSpiritTypeSet = {};
+const complexSpiritTypeSet = {};
 // Maps from name to Tile.
-let simpleWorldTileSet = {};
-let simpleCircuitTileSet = {};
+const simpleWorldTileSet = {};
+const simpleCircuitTileSet = {};
 
 // Map from serial integer to SimpleSpirit.
-let simpleSpiritMap = {};
+const simpleSpiritMap = {};
 // Array of {spirit: ComplexSpirit, updateRequestCount: number}.
-let complexSpiritCache = [];
+const complexSpiritCache = [];
 
 // Map from serial integer to SimpleSpiritType.
-let simpleSpiritTypeMap = {};
+const simpleSpiritTypeMap = {};
 // Map from spirit class ID to list of ComplexSpiritType.
-let complexSpiritTypesMap = {};
+const complexSpiritTypesMap = {};
 
 // Maps from spirit serial integer to Tile.
-let simpleWorldTileMap = {};
-let simpleCircuitTileMap = {};
+const simpleWorldTileMap = {};
+const simpleCircuitTileMap = {};
 // Maps from spirit class ID to ComplexTileFactory.
-let complexWorldTileFactoryMap = {};
-let complexCircuitTileFactoryMap = {};
+const complexWorldTileFactoryMap = {};
+const complexCircuitTileFactoryMap = {};
 
-let recipeList = [];
+const recipeList = [];
 
 new LoadingSpiritType();
 new EmptySpiritType();
@@ -49,8 +49,8 @@ for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
 new CircuitSpiritType();
 new ConstantLogicSpiritType();
 
-for (let serialInteger in simpleSpiritMap) {
-    let tempSpirit = simpleSpiritMap[serialInteger];
+for (const serialInteger in simpleSpiritMap) {
+    const tempSpirit = simpleSpiritMap[serialInteger];
     new SimpleWorldTile(tempSpirit);
     new SimpleCircuitTile(tempSpirit);
 }
@@ -59,11 +59,11 @@ new PlayerWorldTileFactory();
 new MachineWorldTileFactory();
 new ComplexWorldTileFactory("circuit");
 
-let worldTileFactory = new WorldTileFactory();
-let circuitTileFactory = new CircuitTileFactory();
+const worldTileFactory = new WorldTileFactory();
+const circuitTileFactory = new CircuitTileFactory();
 
-for (let data of recipeDataList) {
-    let tempRecipe = convertJsonToRecipe(data);
+for (const data of recipeDataList) {
+    const tempRecipe = convertJsonToRecipe(data);
     recipeList.push(tempRecipe);
 }
 

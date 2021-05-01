@@ -26,7 +26,7 @@ const drawMineCrack = () => {
     if (!isMining) {
         return;
     }
-    let tempPos = mineTargetPos.copy();
+    const tempPos = mineTargetPos.copy();
     tempPos.subtract(cameraPos);
     tempPos.scale(spriteSize);
     let tempIndex = 3 - Math.floor(mineDelay / 9);
@@ -43,8 +43,8 @@ const drawTileBorder = (pos, color) => {
     if (pos === null) {
         return;
     }
-    let tempPosX = pos.x * spritePixelSize;
-    let tempPosY = pos.y * spritePixelSize;
+    const tempPosX = pos.x * spritePixelSize;
+    const tempPosY = pos.y * spritePixelSize;
     context.fillStyle = color;
     context.fillRect(
         tempPosX - pixelSize, tempPosY - pixelSize,
@@ -100,7 +100,7 @@ const startMining = (pos) => {
     if (isMining && mineTargetPos.equals(pos)) {
         return;
     }
-    let tempTile = worldTileGrid.getTile(pos);
+    const tempTile = worldTileGrid.getTile(pos);
     if (!tempTile.canBeMined()) {
         return;
     }
@@ -118,7 +118,7 @@ const processMineTick = () => {
         isMining = false;
         return;
     }
-    let tempTile = worldTileGrid.getTile(mineTargetPos);
+    const tempTile = worldTileGrid.getTile(mineTargetPos);
     if (!tempTile.canBeMined()) {
         return;
     }
@@ -127,7 +127,7 @@ const processMineTick = () => {
         return;
     }
     worldTileGrid.setTile(mineTargetPos, simpleWorldTileSet.empty);
-    let tempSpirit = tempTile.spirit;
+    const tempSpirit = tempTile.spirit;
     localPlayerInventory.incrementItemCountBySpirit(tempSpirit);
     addMineCommand(mineTargetPos, tempSpirit);
     isMining = false;
@@ -138,14 +138,14 @@ const placeWorldTile = (pos) => {
     if (tempTile.spirit.spiritType !== simpleSpiritTypeSet.empty) {
         return;
     }
-    let tempItem = localPlayerInventory.selectedItem;
+    const tempItem = localPlayerInventory.selectedItem;
     if (tempItem === null) {
         return;
     }
     if (tempItem.count < 1) {
         return;
     }
-    let tempSpirit = tempItem.spirit;
+    const tempSpirit = tempItem.spirit;
     if (tempSpirit instanceof ComplexSpirit && tempSpirit.id < 0) {
         return;
     }
@@ -156,8 +156,8 @@ const placeWorldTile = (pos) => {
 };
 
 const inspectWorldTile = (pos) => {
-    let tempTile = worldTileGrid.getTile(pos);
-    let tempSpirit = tempTile.spirit;
+    const tempTile = worldTileGrid.getTile(pos);
+    const tempSpirit = tempTile.spirit;
     inspectSpirit(tempSpirit);
 };
 
@@ -167,8 +167,8 @@ const placeCircuitTile = () => {
 };
 
 const craftCircuitTile = (pos, spiritType, shouldAddCommand = true) => {
-    let tempSpirit = spiritType.craft();
-    let tempTile = circuitTileFactory.getTileWithSpirit(tempSpirit);
+    const tempSpirit = spiritType.craft();
+    const tempTile = circuitTileFactory.getTileWithSpirit(tempSpirit);
     circuitTileGrid.setTile(pos, tempTile);
     if (shouldAddCommand) {
         addCraftCircuitTileCommand(pos, spiritType);
@@ -177,7 +177,7 @@ const craftCircuitTile = (pos, spiritType, shouldAddCommand = true) => {
 
 const craftOrPlaceCircuitTile = () => {
     // TODO: Allow placing circuit in inventory.
-    let tempSpiritType = selectedCircuitTileOptionRow.spiritType;
+    const tempSpiritType = selectedCircuitTileOptionRow.spiritType;
     craftCircuitTile(cursorCircuitTilePos, tempSpiritType, true);
 };
 
@@ -197,13 +197,13 @@ const selectTileAction = (name) => {
     if (selectedTileAction === name || !tileActionIsAvailable(name)) {
         return;
     }
-    let tempTag = document.getElementById(name + "TileAction");
+    const tempTag = document.getElementById(name + "TileAction");
     tempTag.checked = true;
     selectedTileAction = name;
 };
 
 const selectTileActionByIndex = (index) => {
-    let tempName = tileActionNameSet[index];
+    const tempName = tileActionNameSet[index];
     selectTileAction(tempName);
 };
 
@@ -220,8 +220,8 @@ const setUpTileActionTags = (name) => {
 };
 
 const updateTileActionTags = () => {
-    for (let name of tileActionNameSet) {
-        let tempTag = document.getElementById("attackTileActionContainer");
+    for (const name of tileActionNameSet) {
+        const tempTag = document.getElementById("attackTileActionContainer");
         if (tileActionIsAvailable(name)) {
             tempTag.style.display = "block";
         } else {
@@ -310,7 +310,7 @@ const stopInspectingCircuit = () => {
 };
 
 const addInventoryCommand = (command, inventoryUpdateList) => {
-    for (let update of inventoryUpdateList) {
+    for (const update of inventoryUpdateList) {
         update.spirit.addToCache();
     }
     command.inventoryUpdates = inventoryUpdateList.map((update) => update.getClientJson());
@@ -410,7 +410,7 @@ const addTransferCommand = (sourceInventory, destinationInventory, spirit) => {
 };
 
 const addRecycleCommand = (inventoryItem, inventoryUpdateList) => {
-    let tempReference = inventoryItem.spirit.getReference();
+    const tempReference = inventoryItem.spirit.getReference();
     addInventoryCommand({
         commandName: "recycle",
         parentSpiritId: inventoryItem.inventory.parentSpiritId,
@@ -427,8 +427,8 @@ const addStopInspectingCommand = (spiritId) => {
 
 const addInventoryCommandRepeater = (commandName, handler = null) => {
     addCommandRepeater(commandName, (command) => {
-        for (let updateData of command.inventoryUpdates) {
-            let tempUpdate = convertClientJsonToInventoryUpdate(updateData);
+        for (const updateData of command.inventoryUpdates) {
+            const tempUpdate = convertClientJsonToInventoryUpdate(updateData);
             tempUpdate.applyToInventory();
         }
         if (handler !== null) {
@@ -441,21 +441,21 @@ addCommandRepeater("walk", (command) => {
     if (localPlayerWorldTile === null) {
         return;
     }
-    let tempOffset = createPosFromJson(command.offset);
+    const tempOffset = createPosFromJson(command.offset);
     localPlayerWorldTile.move(tempOffset);
 });
 
 addInventoryCommandRepeater("mine", (command) => {
-    let tempPos = createPosFromJson(command.pos);
+    const tempPos = createPosFromJson(command.pos);
     worldTileGrid.setTile(tempPos, simpleWorldTileSet.empty);
 });
 
 const addPlaceTileCommandRepeater = (commandName, tileGrid) => {
     addInventoryCommandRepeater(commandName, (command) => {
-        let tempPos = createPosFromJson(command.pos);
-        let tempSpiritReference = convertJsonToSpiritReference(command.spiritReference);
-        let tempSpirit = tempSpiritReference.getCachedSpirit();
-        let tempTile = tileGrid.tileFactory.getTileWithSpirit(tempSpirit);
+        const tempPos = createPosFromJson(command.pos);
+        const tempSpiritReference = convertJsonToSpiritReference(command.spiritReference);
+        const tempSpirit = tempSpiritReference.getCachedSpirit();
+        const tempTile = tileGrid.tileFactory.getTileWithSpirit(tempSpirit);
         tileGrid.setTile(tempPos, tempTile);
     });
 };
@@ -464,8 +464,8 @@ addPlaceTileCommandRepeater("placeWorldTile", worldTileGrid);
 addPlaceTileCommandRepeater("placeCircuitTile", circuitTileGrid);
 
 addCommandRepeater("craftCircuitTile", (command) => {
-    let tempPos = createPosFromJson(command.pos);
-    let tempSpiritType = convertJsonToSpiritType(command.spiritType);
+    const tempPos = createPosFromJson(command.pos);
+    const tempSpiritType = convertJsonToSpiritType(command.spiritType);
     craftCircuitTile(tempPos, tempSpiritType, false);
 });
 
@@ -474,7 +474,7 @@ addInventoryCommandRepeater("transfer");
 addInventoryCommandRepeater("recycle");
 
 addCommandRepeater("inspect", (command) => {
-    let tempReference = convertJsonToSpiritReference(command.spiritReference);
+    const tempReference = convertJsonToSpiritReference(command.spiritReference);
     tempSpirit = tempReference.getCachedSpirit();
     inspectSpirit(tempSpirit, false);
 });
@@ -500,8 +500,8 @@ addCommandListener("setCircuitTileGrid", (command) => {
 });
 
 addCommandListener("updateInventoryItem", (command) => {
-    let tempUpdateData = command.inventoryUpdate;
-    let tempUpdate = convertClientJsonToInventoryUpdate(tempUpdateData);
+    const tempUpdateData = command.inventoryUpdate;
+    const tempUpdate = convertClientJsonToInventoryUpdate(tempUpdateData);
     if (tempUpdate === null) {
         return;
     }
@@ -528,24 +528,24 @@ class ClientDelegate {
         
         addEnterWorldCommand();
         tileActionNameSet = worldTileActionNameSet.slice();
-        for (let name of circuitTileActionNameSet) {
+        for (const name of circuitTileActionNameSet) {
             if (tileActionNameSet.indexOf(name) < 0) {
                 tileActionNameSet.push(name);
             }
         }
-        for (let name of tileActionNameSet) {
+        for (const name of tileActionNameSet) {
             setUpTileActionTags(name);
         }
         
         canvas.onmousemove = (event) => {
-            let tempPos = convertMouseEventToPos(event);
+            const tempPos = convertMouseEventToPos(event);
             if (tempPos !== null) {
                 mouseMoveEvent(tempPos);
             }
         };
         
         canvas.onmousedown = (event) => {
-            let tempPos = convertMouseEventToPos(event);
+            const tempPos = convertMouseEventToPos(event);
             if (tempPos !== null) {
                 mouseDownEvent(tempPos);
             }
@@ -575,7 +575,7 @@ class ClientDelegate {
     }
     
     timerEvent() {
-        for (let tile of playerWorldTileList) {
+        for (const tile of playerWorldTileList) {
             tile.tick();
         }
         processMineTick();
@@ -650,9 +650,9 @@ const startWorldTileAction = (offsetIndex) => {
     if (localPlayerWorldTile === null) {
         return;
     }
-    let offset = tileActionOffsetSet[offsetIndex];
+    const offset = tileActionOffsetSet[offsetIndex];
     if (shiftKeyIsHeld) {
-        let tempPos = localPlayerWorldTile.pos.copy();
+        const tempPos = localPlayerWorldTile.pos.copy();
         tempPos.add(offset);
         if (selectedTileAction === "remove") {
             startMining(tempPos);
@@ -670,13 +670,13 @@ const stopWorldTileAction = (offsetIndex) => {
     if (localPlayerWorldTile === null) {
         return;
     }
-    let offset = tileActionOffsetSet[offsetIndex];
+    const offset = tileActionOffsetSet[offsetIndex];
     localPlayerWorldTile.walkController.stopWalk(offset);
 };
 
 const convertMouseEventToPos = (event) => {
-    let tempX = Math.floor((event.offsetX - 3) / (spritePixelSize / 2));
-    let tempY = Math.floor((event.offsetY - 3) / (spritePixelSize / 2));
+    const tempX = Math.floor((event.offsetX - 3) / (spritePixelSize / 2));
+    const tempY = Math.floor((event.offsetY - 3) / (spritePixelSize / 2));
     if (tempX < 0 || tempX >= canvasTileWidth || tempY < 0 || tempY >= canvasTileHeight) {
         return null;
     }

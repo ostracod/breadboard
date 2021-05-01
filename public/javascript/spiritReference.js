@@ -60,7 +60,7 @@ class ComplexSpiritReference extends SpiritReference {
     }
     
     getCachedSpirit() {
-        let index = findComplexSpiritInCache(this.id);
+        const index = findComplexSpiritInCache(this.id);
         if (index < 0) {
             return null;
         } else {

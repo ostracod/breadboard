@@ -33,9 +33,9 @@ class ComplexWorldTile extends WorldTile {
     }
     
     move(offset) {
-        let tempNextPos = this.pos.copy();
+        const tempNextPos = this.pos.copy();
         tempNextPos.add(offset);
-        let tempTile = worldTileGrid.getTile(tempNextPos);
+        const tempTile = worldTileGrid.getTile(tempNextPos);
         if (tempTile.spirit.spiritType !== simpleSpiritTypeSet.empty) {
             return false;
         }
@@ -64,7 +64,7 @@ class PlayerWorldTile extends ComplexWorldTile {
     draw(pos, layer) {
         super.draw(pos, layer);
         if (layer === 1) {
-            let tempPos = pos.copy();
+            const tempPos = pos.copy();
             tempPos.scale(pixelSize);
             tempPos.x += spritePixelSize / 2;
             tempPos.y -= spritePixelSize * 1 / 5;

@@ -20,7 +20,7 @@ class WalkController {
         if (this.delay > 0) {
             return;
         }
-        let tempResult = this.playerTile.move(this.offset);
+        const tempResult = this.playerTile.move(this.offset);
         if (this.playerTile === localPlayerWorldTile && tempResult) {
             addWalkCommand(this.offset);
         }

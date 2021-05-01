@@ -12,7 +12,7 @@ class OptionRow {
         };
         
         if (typeof spriteList !== "undefined") {
-            let tempCanvas = createCanvasWithSprites(this.tag, spriteList, 4);
+            const tempCanvas = createCanvasWithSprites(this.tag, spriteList, 4);
             tempCanvas.style.marginRight = "8px";
         }
         
@@ -38,10 +38,10 @@ class OptionRow {
     
     select() {
         this.tag.style.border = "2px #000000 solid";
-        let tempPosY = this.tag.offsetTop - this.parentTag.offsetTop;
-        let tempHeight = this.tag.offsetHeight;
-        let tempScrollY = this.parentTag.scrollTop;
-        let tempParentHeight = this.parentTag.clientHeight;
+        const tempPosY = this.tag.offsetTop - this.parentTag.offsetTop;
+        const tempHeight = this.tag.offsetHeight;
+        const tempScrollY = this.parentTag.scrollTop;
+        const tempParentHeight = this.parentTag.clientHeight;
         let nextScrollY;
         if (tempPosY < tempScrollY) {
             nextScrollY = tempPosY;
@@ -79,7 +79,7 @@ class CountOptionRow extends OptionRow {
 class InventoryOptionRow extends CountOptionRow {
     
     constructor(inventoryItem) {
-        let tempSpirit = inventoryItem.spirit;
+        const tempSpirit = inventoryItem.spirit;
         super(inventoryItem.inventory.tag, "", 0, tempSpirit.getSprites());
         this.inventoryItem = inventoryItem;
         this.spirit = tempSpirit;
@@ -99,7 +99,7 @@ class InventoryOptionRow extends CountOptionRow {
 class RecipeOptionRow extends OptionRow {
     
     constructor(recipe) {
-        let tempSpiritType = recipe.product.spiritType;
+        const tempSpiritType = recipe.product.spiritType;
         super(
             document.getElementById("recipes"),
             tempSpiritType.getDisplayName(),

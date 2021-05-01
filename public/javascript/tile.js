@@ -16,7 +16,7 @@ class Tile {
     
     draw(pos, layer) {
         if (layer === 0) {
-            for (let sprite of this.spirit.getSprites()) {
+            for (const sprite of this.spirit.getSprites()) {
                 sprite.draw(context, pos, pixelSize);
             }
         }
@@ -34,10 +34,10 @@ class TileComplexity {
 class SimpleTileComplexity extends TileComplexity {
     
     registerTile(tile) {
-        let tempTileSet = tile.getSimpleTileSet();
-        let tempTileMap = tile.getSimpleTileMap();
-        let tempSpiritType = tile.spirit.spiritType;
-        let tempSerialInteger = tile.spirit.serialInteger;
+        const tempTileSet = tile.getSimpleTileSet();
+        const tempTileMap = tile.getSimpleTileMap();
+        const tempSpiritType = tile.spirit.spiritType;
+        const tempSerialInteger = tile.spirit.serialInteger;
         tempTileSet[tempSpiritType.baseName] = tile;
         tempTileMap[tempSerialInteger] = tile;
     }
@@ -47,7 +47,7 @@ class ComplexTileComplexity extends TileComplexity {
     
 }
 
-let simpleTileComplexity = new SimpleTileComplexity();
-let complexTileComplexity = new ComplexTileComplexity();
+const simpleTileComplexity = new SimpleTileComplexity();
+const complexTileComplexity = new ComplexTileComplexity();
 
 

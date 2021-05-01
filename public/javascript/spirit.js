@@ -86,7 +86,7 @@ class ComplexSpirit extends Spirit {
     }
     
     addToCache() {
-        let index = findComplexSpiritInCache(this.id);
+        const index = findComplexSpiritInCache(this.id);
         if (index >= 0) {
             complexSpiritCache[index].spirit = this;
             return;
@@ -135,7 +135,7 @@ class ConstantLogicSpirit extends ComplexSpirit {
 
 const findComplexSpiritInCache = (spiritId) => {
     for (let index = 0; index < complexSpiritCache.length; index++) {
-        let tempItem = complexSpiritCache[index];
+        const tempItem = complexSpiritCache[index];
         if (tempItem.spirit.id === spiritId) {
             return index;
         }
@@ -145,7 +145,7 @@ const findComplexSpiritInCache = (spiritId) => {
 
 const removeStaleSpiritsInCache = () => {
     for (let index = complexSpiritCache.length - 1; index >= 0; index--) {
-        let tempItem = complexSpiritCache[index];
+        const tempItem = complexSpiritCache[index];
         if (tempItem.updateRequestCount < updateRequestCount - 10) {
             complexSpiritCache.splice(index, 1);
         }

@@ -340,8 +340,8 @@ const convertClientJsonToSpirit = (data) => {
     if (typeof data === "number") {
         tempType = simpleSpiritTypeMap[data];
     } else {
-        let tempTypeList = complexSpiritTypesMap[data.classId];
-        for (let spiritType of tempTypeList) {
+        const tempTypeList = complexSpiritTypesMap[data.classId];
+        for (const spiritType of tempTypeList) {
             if (spiritType.matchesSpiritClientJson(data)) {
                 tempType = spiritType;
                 break;
