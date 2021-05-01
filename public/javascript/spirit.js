@@ -125,6 +125,14 @@ class CircuitSpirit extends ComplexSpirit {
     
 }
 
+class ConstantLogicSpirit extends ComplexSpirit {
+    
+    constructor(spiritType, id, constantValue) {
+        super(spiritType, id);
+        this.constantValue = constantValue;
+    }
+}
+
 const findComplexSpiritInCache = (spiritId) => {
     for (let index = 0; index < complexSpiritCache.length; index++) {
         let tempItem = complexSpiritCache[index];

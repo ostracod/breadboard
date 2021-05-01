@@ -98,7 +98,7 @@ class BarrierSpiritType extends SimpleSpiritType {
 class ResourceSpiritType extends SimpleSpiritType {
     
     constructor(baseName, paletteIndex) {
-        let tempSprite = new Sprite(resourceSpriteSet, 0, paletteIndex);
+        const tempSprite = new Sprite(resourceSpriteSet, 0, paletteIndex);
         super([tempSprite], baseName);
     }
     
@@ -136,7 +136,7 @@ class EnergiteSpiritType extends ResourceSpiritType {
 class BlockSpiritType extends SimpleSpiritType {
     
     constructor(colorIndex) {
-        let tempSprite = new Sprite(blockSpriteSet, 0, colorIndex);
+        const tempSprite = new Sprite(blockSpriteSet, 0, colorIndex);
         super([tempSprite], "block", colorIndex);
         this.colorIndex = colorIndex;
         this.color = spiritColorSet[this.colorIndex];
@@ -191,6 +191,7 @@ class ComplexSpiritType extends SpiritType {
     constructor(spriteList, baseName) {
         super(spriteList, baseName);
         this.spiritClassId = complexSpiritClassIdSet[this.baseName];
+        complexSpiritTypeSet[this.baseName] = this;
         if (!(this.spiritClassId in complexSpiritTypesMap)) {
             complexSpiritTypesMap[this.spiritClassId] = [];
         }
@@ -235,7 +236,7 @@ class PlayerSpiritType extends ComplexSpiritType {
 class MachineSpiritType extends ComplexSpiritType {
     
     constructor(colorIndex) {
-        let tempSprite = new Sprite(machineSpriteSet, 0, colorIndex);
+        const tempSprite = new Sprite(machineSpriteSet, 0, colorIndex);
         super([tempSprite], "machine");
         this.colorIndex = colorIndex;
         this.color = spiritColorSet[this.colorIndex];
@@ -246,7 +247,7 @@ class MachineSpiritType extends ComplexSpiritType {
     }
     
     getJson() {
-        let output = super.getJson();
+        const output = super.getJson();
         output.colorIndex = this.colorIndex;
         return output;
     }
@@ -283,7 +284,7 @@ class MachineSpiritType extends ComplexSpiritType {
 class CircuitSpiritType extends ComplexSpiritType {
     
     constructor() {
-        let tempSprite = new Sprite(circuitSpriteSet, 0, 0);
+        const tempSprite = new Sprite(circuitSpriteSet, 0, 0);
         super([tempSprite], "circuit");
     }
     
@@ -312,6 +313,28 @@ class CircuitSpiritType extends ComplexSpiritType {
     }
 }
 
+class ConstantLogicSpiritType extends ComplexSpiritType {
+    
+    constructor() {
+        super([
+            new Sprite(chipSpriteSet, 0, 2),
+            new Sprite(characterSpriteSet, 3, 0),
+        ], "constantLogic");
+    }
+    
+    convertClientJsonToSpirit(data) {
+        return new ConstantLogicSpirit(this, data.id, data.constantValue);
+    }
+    
+    craft() {
+        return new ConstantLogicSpirit(this, null);
+    }
+    
+    getDisplayName() {
+        return "Constant Value";
+    }
+}
+
 const convertClientJsonToSpirit = (data) => {
     let tempType;
     if (typeof data === "number") {
@@ -333,8 +356,8 @@ const convertJsonToSpiritType = (data) => {
         return simpleSpiritTypeMap[data.serialInteger];
     }
     if (data.type === "complex") {
-        let tempTypeList = complexSpiritTypesMap[data.classId];
-        for (let spiritType of tempTypeList) {
+        const tempTypeList = complexSpiritTypesMap[data.classId];
+        for (const spiritType of tempTypeList) {
             if (spiritType.matchesJson(data)) {
                 return spiritType;
             }

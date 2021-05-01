@@ -22,6 +22,7 @@ export const complexSpiritClassIdSet = {
     player: 1,
     machine: 2,
     circuit: 3,
+    constantLogic: 4,
 };
 
 export const spiritColorAmount = 16;

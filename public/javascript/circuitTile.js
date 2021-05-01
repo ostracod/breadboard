@@ -30,6 +30,7 @@ const drawAllCircuitTilesToPlace = () => {
         let tempSpiritType = simpleSpiritTypeMap[tempSerialInteger];
         new CircuitTileOptionRow(tempSpiritType);
     }
+    new CircuitTileOptionRow(complexSpiritTypeSet.constantLogic);
 };
 
 

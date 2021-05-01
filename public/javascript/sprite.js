@@ -159,7 +159,7 @@ const portSpriteSet = new SpriteSet(41, 45, [
     colorPaletteList[13],
 ]);
 const characterSpriteSet = new SpriteSet(60, 159, [
-    new ColorPalette([new Color(0, 0, 255), null]),
+    new ColorPalette([new Color(255, 255, 255), null]),
 ]);
 const crackSpriteSet = new SpriteSet(160, 163, [
     new ColorPalette([new Color(0, 0, 0), null]),

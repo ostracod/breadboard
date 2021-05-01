@@ -47,6 +47,7 @@ for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
     new MachineSpiritType(colorIndex);
 }
 new CircuitSpiritType();
+new ConstantLogicSpiritType();
 
 for (let serialInteger in simpleSpiritMap) {
     let tempSpirit = simpleSpiritMap[serialInteger];
