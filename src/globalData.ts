@@ -79,6 +79,7 @@ for (const serialInteger in simpleSpiritMap) {
 new PlayerWorldTileFactory();
 new MachineWorldTileFactory();
 new GenericComplexWorldTileFactory("circuit");
+new ComplexCircuitTileFactory("constantLogic");
 
 export const worldTileFactory = new WorldTileFactory();
 export const circuitTileFactory = new CircuitTileFactory();

@@ -58,6 +58,23 @@ class MachineWorldTileFactory extends ComplexWorldTileFactory {
     }
 }
 
+class ComplexCircuitTileFactory extends ComplexTileFactory {
+    
+    constructor(baseName) {
+        super(baseName);
+        const tempClassId = complexSpiritClassIdSet[this.baseName];
+        complexCircuitTileFactoryMap[tempClassId] = this;
+    }
+    
+    convertClientJsonToTile(data, spirit) {
+        return new ComplexCircuitTile(spirit);
+    }
+    
+    createTileWithSpirit(spirit) {
+        return new ComplexCircuitTile(spirit);
+    }
+}
+
 class TileFactory {
     
     constructor(simpleTileMap, complexTileFactoryMap) {
