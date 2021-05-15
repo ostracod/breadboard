@@ -1,5 +1,7 @@
 
 import { ComplexSpirit } from "./spirit.js";
+import { PlayerSpirit } from "./playerSpirit.js";
+import { LogicSpirit } from "./logicSpirit.js";
 import { PlayerWorldTile } from "./worldTile.js";
 
 // TODO: Export this type from OstracodMultiplayer.
@@ -115,12 +117,16 @@ export type TileClientJson = SimpleTileClientJson | ComplexTileClientJson;
 
 export type SimpleTileClientJson = number;
 
-export interface ComplexTileClientJson {
-    spirit: ComplexSpiritClientJson;
+export interface ComplexTileClientJson<T extends ComplexSpirit = ComplexSpirit> {
+    spirit: ReturnType<T["getClientJson"]>;
 }
 
-export interface PlayerWorldTileClientJson extends ComplexTileClientJson {
+export interface PlayerWorldTileClientJson extends ComplexTileClientJson<PlayerSpirit> {
     walkController: WalkControllerJson;
+}
+
+export interface ChipCircuitTileClientJson extends ComplexTileClientJson<LogicSpirit> {
+    sidePortIndexes: number[];
 }
 
 export type TileDbJson = SimpleTileDbJson | ComplexTileDbJson;
@@ -129,6 +135,10 @@ export type SimpleTileDbJson = number;
 
 export interface ComplexTileDbJson<T extends ComplexSpirit = ComplexSpirit> {
     spirit: ComplexSpiritNestedDbJson<T>
+}
+
+export interface ChipCircuitTileDbJson extends ComplexTileDbJson<LogicSpirit> {
+    sidePortIndexes: number[];
 }
 
 export interface InventoryItemClientJson {

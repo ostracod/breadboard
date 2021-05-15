@@ -1,12 +1,13 @@
 
 import { complexSpiritClassIdSet, simpleWorldTileMap, simpleCircuitTileMap, complexWorldTileFactoryMap, complexCircuitTileFactoryMap } from "./globalData.js";
-import { TileDbJson, SimpleTileDbJson, ComplexTileDbJson } from "./interfaces.js";
+import { TileDbJson, SimpleTileDbJson, ComplexTileDbJson, ChipCircuitTileDbJson } from "./interfaces.js";
 import { convertNestedDbJsonToSpirit } from "./spiritType.js";
 import { Spirit, SimpleSpirit, ComplexSpirit, MachineSpirit } from "./spirit.js";
 import { PlayerSpirit } from "./playerSpirit.js";
+import { LogicSpirit } from "./logicSpirit.js";
 import { Tile } from "./tile.js";
 import { WorldTile, ComplexWorldTile, PlayerWorldTile, MachineWorldTile } from "./worldTile.js";
-import { CircuitTile, ComplexCircuitTile } from "./circuitTile.js";
+import { CircuitTile, ComplexCircuitTile, ChipCircuitTile } from "./circuitTile.js";
 
 abstract class ComplexTileFactory<T extends Tile<ComplexSpirit> = Tile<ComplexSpirit>> {
     
@@ -80,20 +81,23 @@ export class MachineWorldTileFactory extends ComplexWorldTileFactory<MachineWorl
     }
 }
 
-export class ComplexCircuitTileFactory extends ComplexTileFactory<ComplexCircuitTile> {
+export abstract class ComplexCircuitTileFactory<T extends ComplexCircuitTile = ComplexCircuitTile> extends ComplexTileFactory<T> {
     
     constructor(baseName: string) {
         super(baseName);
         const tempClassId = complexSpiritClassIdSet[this.baseName];
         complexCircuitTileFactoryMap[tempClassId] = this;
     }
+}
+
+export class ChipCircuitTileFactory extends ComplexCircuitTileFactory<ChipCircuitTile> {
     
-    convertDbJsonToTile(data: ComplexTileDbJson, spirit: ComplexSpirit): ComplexCircuitTile {
-        return new ComplexCircuitTile(spirit);
+    convertDbJsonToTile(data: ChipCircuitTileDbJson, spirit: LogicSpirit): ChipCircuitTile {
+        return new ChipCircuitTile(spirit, data.sidePortIndexes);
     }
     
-    createTileWithSpirit(spirit: ComplexSpirit): ComplexCircuitTile {
-        return new ComplexCircuitTile(spirit);
+    createTileWithSpirit(spirit: LogicSpirit): ChipCircuitTile {
+        return new ChipCircuitTile(spirit);
     }
 }
 
