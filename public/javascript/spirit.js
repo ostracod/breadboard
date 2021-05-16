@@ -121,8 +121,27 @@ class MachineSpirit extends ComplexSpirit {
     
 }
 
+class LogicPort {
+    
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+class InputLogicPort extends LogicPort {
+    
+}
+
+class OutputLogicPort extends LogicPort {
+    
+}
+
 class CircuitSpirit extends ComplexSpirit {
     
+    getLogicPorts() {
+        // TODO: Implement.
+        return [];
+    }
 }
 
 class ConstantLogicSpirit extends ComplexSpirit {
@@ -130,6 +149,11 @@ class ConstantLogicSpirit extends ComplexSpirit {
     constructor(spiritType, id, constantValue) {
         super(spiritType, id);
         this.constantValue = constantValue;
+        this.logicPorts = [new OutputLogicPort("Output")];
+    }
+    
+    getLogicPorts() {
+        return this.logicPorts;
     }
 }
 

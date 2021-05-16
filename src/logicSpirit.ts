@@ -45,7 +45,7 @@ export class ConstantLogicSpirit extends ComplexSpirit implements LogicSpirit {
     constructor(spiritType: ConstantLogicSpiritType, id: number, constantValue = 0) {
         super(spiritType, id);
         this.constantValue = constantValue;
-        this.outputPort = new OutputLogicPort("Output");
+        this.outputPort = new OutputLogicPort();
     }
     
     getClientJson(): ConstantLogicSpiritClientJson {

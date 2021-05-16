@@ -75,6 +75,17 @@ class ComplexCircuitTileFactory extends ComplexTileFactory {
     }
 }
 
+class ChipCircuitTileFactory extends ComplexCircuitTileFactory {
+    
+    convertClientJsonToTile(data, spirit) {
+        return new ChipCircuitTile(spirit, data.sidePortIndexes);
+    }
+    
+    createTileWithSpirit(spirit) {
+        return new ChipCircuitTile(spirit);
+    }
+}
+
 class TileFactory {
     
     constructor(simpleTileMap, complexTileFactoryMap) {

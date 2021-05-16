@@ -24,6 +24,15 @@ class ComplexCircuitTile extends CircuitTile {
     }
 }
 
+
+class ChipCircuitTile extends ComplexCircuitTile {
+    
+    constructor(logicSpirit, sidePortIndexes = [null, null, null, null]) {
+        super(logicSpirit);
+        this.sidePortIndexes = sidePortIndexes;
+    }
+}
+
 const drawAllCircuitTilesToPlace = () => {
     for (let arrangement = 0; arrangement < wireArrangementAmount; arrangement++) {
         const tempSerialInteger = simpleSpiritSerialIntegerSet.wire + arrangement;
