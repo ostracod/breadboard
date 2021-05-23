@@ -1,7 +1,7 @@
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 import { complexSpiritClassIdSet, complexSpiritTypeSet, complexSpiritMap } from "./globalData.js";
-import { Player, ComplexSpiritDbJson, InventoryUpdateClientJson, CommandHandler, SynchronousCommandHandler, AsynchronousCommandHandler, ClientCommand, SetWorldTileGridClientCommand, SetCircuitTileGridClientCommand, UpdateInventoryItemClientCommand, StopInspectingClientCommand, InventoryUpdatesClientCommand } from "./interfaces.js";
+import { Player, ComplexSpiritDbJson, InventoryUpdateClientJson, SynchronousCommandHandler, ClientCommand, SetWalkControllerClientCommand, WalkClientCommand, MineClientCommand, PlaceTileClientCommand, CraftCircuitTileClientCommand, CraftClientCommand, InspectClientCommand, TransferClientCommand, RecycleClientCommand, SetWorldTileGridClientCommand, SetCircuitTileGridClientCommand, UpdateInventoryItemClientCommand, StopInspectingClientCommand, InventoryUpdatesClientCommand } from "./interfaces.js";
 import { Pos, createPosFromJson } from "./pos.js";
 import { MachineSpirit, persistAllComplexSpirits, persistNextComplexSpiritId } from "./spirit.js";
 import { PlayerSpirit } from "./playerSpirit.js";
@@ -13,7 +13,7 @@ import { Inventory, InventoryUpdate } from "./inventory.js";
 import { getRecipeById } from "./recipe.js";
 import { niceUtils } from "./niceUtils.js";
 
-const { gameUtils } = ostracodMultiplayer;
+const { dbUtils, gameUtils } = ostracodMultiplayer;
 
 let worldSpirit;
 
@@ -122,63 +122,40 @@ const processInventoryUpdates = (
 gameUtils.addCommandListener(
     "enterWorld",
     false,
-    (
+    async (
         command: ClientCommand,
         player: Player,
         commandList: ClientCommand[],
-        done: () => void,
-        errorHandler: (message: string) => void,
-    ): void => {
-        worldSpirit.addPlayerTile(player).then((playerSpirit) => {
-            const tempInventory = playerSpirit.inventory;
-            addUpdateInventoryItemCommands(tempInventory, commandList);
-            done();
-        });
+    ): Promise<void> => {
+        const playerSpirit = await worldSpirit.addPlayerTile(player);
+        const tempInventory = playerSpirit.inventory;
+        addUpdateInventoryItemCommands(tempInventory, commandList);
     }
 );
 
 const addCommandListener = <T extends ClientCommand>(
     commandName: string,
-    handler: CommandHandler<T>,
+    handler: SynchronousCommandHandler<T>,
 ): void => {
-    if (handler.length === 3) {
-        gameUtils.addCommandListener(
-            commandName,
-            true,
-            (command: T, player: Player, commandList: ClientCommand[]): void => {
-                (handler as SynchronousCommandHandler<T>)(
-                    command,
-                    worldSpirit.getPlayerTile(player),
-                    commandList,
-                );
-            }
-        );
-    } else {
-        gameUtils.addCommandListener(
-            commandName,
-            false,
-            (
-                command: T,
-                player: Player,
-                commandList: ClientCommand[],
-                done: () => void,
-                errorHandler: (message: string) => void,
-            ): void => {
-                (handler as AsynchronousCommandHandler<T>)(
-                    command,
-                    worldSpirit.getPlayerTile(player),
-                    commandList,
-                    done,
-                    errorHandler
-                );
-            }
-        );
-    }
+    gameUtils.addCommandListener(
+        commandName,
+        true,
+        (command: T, player: Player, commandList: ClientCommand[]): void => {
+            handler(command, worldSpirit.getPlayerTile(player), commandList);
+        }
+    );
 };
 
-addCommandListener("setWalkController", (command, playerTile, commandList) => {
-    playerTile.walkControllerData = command.walkController;
-});
+addCommandListener(
+    "setWalkController",
+    (
+        command: SetWalkControllerClientCommand,
+        playerTile,
+        commandList
+    ) => {
+        playerTile.walkControllerData = command.walkController;
+    },
+);
 
 addCommandListener("getState", (command, playerTile, commandList) => {
     const playerSpirit = playerTile.spirit;
@@ -198,12 +175,12 @@ addCommandListener("getState", (command, playerTile, commandList) => {
     playerSpirit.stopInspectionSpiritIds = [];
 });
 
-addCommandListener("walk", (command, playerTile, commandList) => {
+addCommandListener("walk", (command: WalkClientCommand, playerTile, commandList) => {
     const tempOffset = createPosFromJson(command.offset);
     playerTile.walk(tempOffset);
 });
 
-addCommandListener("mine", (command, playerTile, commandList) => {
+addCommandListener("mine", (command: MineClientCommand, playerTile, commandList) => {
     const tempPos = createPosFromJson(command.pos);
     playerTile.mine(tempPos);
     processInventoryUpdates(command, playerTile.spirit, commandList);
@@ -217,12 +194,19 @@ const addPlaceTileCommandListener = (
         spiritReference: SpiritReference
     ) => void,
 ): void => {
-    addCommandListener(commandName, (command, playerTile, commandList) => {
-        const tempPos = createPosFromJson(command.pos);
-        const tempReference = convertJsonToSpiritReference(command.spiritReference);
-        placeTile(playerTile, tempPos, tempReference);
-        processInventoryUpdates(command, playerTile.spirit, commandList);
-    });
+    addCommandListener(
+        commandName,
+        (
+            command: PlaceTileClientCommand,
+            playerTile,
+            commandList,
+        ) => {
+            const tempPos = createPosFromJson(command.pos);
+            const tempReference = convertJsonToSpiritReference(command.spiritReference);
+            placeTile(playerTile, tempPos, tempReference);
+            processInventoryUpdates(command, playerTile.spirit, commandList);
+        },
+    );
 };
 
 addPlaceTileCommandListener("placeWorldTile", (playerTile, pos, spiritReference) => {
@@ -233,20 +217,24 @@ addPlaceTileCommandListener("placeCircuitTile", (playerTile, pos, spiritReferenc
     playerTile.spirit.placeCircuitTile(pos, spiritReference);
 });
 
-addCommandListener("craftCircuitTile", (command, playerTile, commandList) => {
+addCommandListener("craftCircuitTile", (
+    command: CraftCircuitTileClientCommand,
+    playerTile,
+    commandList,
+) => {
     const tempPos = createPosFromJson(command.pos);
     const tempSpiritType = convertJsonToSpiritType(command.spiritType);
     playerTile.spirit.craftCircuitTile(tempPos, tempSpiritType);
 });
 
-addCommandListener("craft", (command, playerTile, commandList) => {
+addCommandListener("craft", (command: CraftClientCommand, playerTile, commandList) => {
     const tempInventory = playerTile.spirit.inventory;
     const tempRecipe = getRecipeById(command.recipeId);
     tempInventory.craftRecipe(tempRecipe);
     processInventoryUpdates(command, playerTile.spirit, commandList);
 });
 
-addCommandListener("inspect", (command, playerTile, commandList) => {
+addCommandListener("inspect", (command: InspectClientCommand, playerTile, commandList) => {
     const tempReference = convertJsonToSpiritReference(command.spiritReference);
     const tempSpirit = tempReference.getSpirit();
     const tempResult = playerTile.spirit.inspect(tempSpirit);
@@ -255,13 +243,20 @@ addCommandListener("inspect", (command, playerTile, commandList) => {
     }
 });
 
-addCommandListener("stopInspecting", (command, playerTile, commandList) => {
-    const tempReference = new ComplexSpiritReference(command.spiritId);
-    const tempSpirit = tempReference.getSpirit();
-    playerTile.spirit.stopInspecting(tempSpirit);
-});
+addCommandListener(
+    "stopInspecting",
+    (
+        command: StopInspectingClientCommand,
+        playerTile,
+        commandList,
+    ) => {
+        const tempReference = new ComplexSpiritReference(command.spiritId);
+        const tempSpirit = tempReference.getSpirit();
+        playerTile.spirit.stopInspecting(tempSpirit);
+    },
+);
 
-addCommandListener("transfer", (command, playerTile, commandList) => {
+addCommandListener("transfer", (command: TransferClientCommand, playerTile, commandList) => {
     playerTile.spirit.transferInventoryItem(
         command.sourceParentSpiritId,
         command.destinationParentSpiritId,
@@ -270,7 +265,7 @@ addCommandListener("transfer", (command, playerTile, commandList) => {
     processInventoryUpdates(command, playerTile.spirit, commandList);
 });
 
-addCommandListener("recycle", (command, playerTile, commandList) => {
+addCommandListener("recycle", (command: RecycleClientCommand, playerTile, commandList) => {
     playerTile.spirit.recycleInventoryItem(
         command.parentSpiritId,
         convertJsonToSpiritReference(command.spiritReference)
@@ -296,21 +291,21 @@ class GameDelegate {
         }
     }
     
-    persistEvent(done: () => void): void {
-        niceUtils.performDbTransaction(() => (
-            persistNextComplexSpiritId().then(persistAllComplexSpirits)
-        )).then(done);
+    async persistEvent(): Promise<void> {
+        await dbUtils.performTransaction(async () => {
+            await persistNextComplexSpiritId();
+            await persistAllComplexSpirits();
+        });
     }
 }
 
 export const gameDelegate = new GameDelegate();
 
-const timerEvent = (): void => {
-    gameUtils.performAtomicOperation((callback) => {
-        worldSpirit.tick().then(callback);
-    }, () => {
-        setTimeout(timerEvent, 40);
+const timerEvent = async (): Promise<void> => {
+    await gameUtils.performAtomicOperation(async () => {
+        await worldSpirit.tick();
     });
+    setTimeout(timerEvent, 40);
 };
 
 export const loadOrCreateWorldSpirit = (): Promise<void> => (

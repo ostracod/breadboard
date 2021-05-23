@@ -209,8 +209,49 @@ export interface StopInspectingClientCommand extends ClientCommand {
     spiritId: number;
 }
 
+export interface SetWalkControllerClientCommand extends ClientCommand {
+    walkController: WalkControllerJson;
+}
+
+export interface WalkClientCommand extends ClientCommand {
+    offset: PosJson;
+}
+
+export interface CraftCircuitTileClientCommand extends ClientCommand {
+    pos: PosJson;
+    spiritType: SpiritTypeJson;
+}
+
+export interface InspectClientCommand extends ClientCommand {
+    spiritReference: SpiritReferenceJson;
+}
+
 export interface InventoryUpdatesClientCommand extends ClientCommand {
     inventoryUpdates: InventoryUpdateClientJson[];
+}
+
+export interface MineClientCommand extends InventoryUpdatesClientCommand {
+    pos: PosJson;
+}
+
+export interface PlaceTileClientCommand extends InventoryUpdatesClientCommand {
+    pos: PosJson;
+    spiritReference: SpiritReferenceJson;
+}
+
+export interface CraftClientCommand extends InventoryUpdatesClientCommand {
+    recipeId: number;
+}
+
+export interface TransferClientCommand extends InventoryUpdatesClientCommand {
+    sourceParentSpiritId: number;
+    destinationParentSpiritId: number;
+    spiritReference: SpiritReferenceJson;
+}
+
+export interface RecycleClientCommand extends InventoryUpdatesClientCommand {
+    parentSpiritId: number;
+    spiritReference: SpiritReferenceJson;
 }
 
 export type SynchronousCommandHandler<T extends ClientCommand> = (
@@ -223,9 +264,7 @@ export type AsynchronousCommandHandler<T extends ClientCommand> = (
     command: T,
     playerTile: PlayerWorldTile,
     commandList: ClientCommand[],
-    done: () => void,
-    errorHandler: (message: string) => void,
-) => void;
+) => Promise<void>;
 
 export type CommandHandler<T extends ClientCommand> = SynchronousCommandHandler<T> | AsynchronousCommandHandler<T>;
 

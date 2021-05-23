@@ -1,0 +1,9 @@
+{
+    "gameName": "BreadBoard",
+    "author": "Jack Eisenmann",
+    "port": 2632,
+    "welcomeViewFile": "welcome.html",
+    "stylesheets": []
+}
+
+

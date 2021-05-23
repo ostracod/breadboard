@@ -9,7 +9,7 @@
         },
         {
             "name": "recipes",
-            "buttonLabel": "Crafting",
+            "buttonLabel": "Craft",
             "title": "Crafting Recipes",
             "viewFile": "recipesModule.html",
             "shouldShowOnLoad": false

@@ -23,37 +23,23 @@ class NiceUtils {
         return output;
     }
     
-    performDbTransaction(operation: () => Promise<void>): Promise<void> {
-        return new Promise((resolve, reject) => {
-            dbUtils.performTransaction((callback) => {
-                operation().then(callback);
-            }, () => {
-                resolve();
-            });
-        });
-    }
-    
-    performConditionalDbTransaction(
+    async performConditionalDbTransaction(
         shouldPerformTransaction: boolean,
         operation: () => Promise<void>
     ): Promise<void> {
         if (shouldPerformTransaction) {
-            return niceUtils.performDbTransaction(operation);
+            await dbUtils.performTransaction(operation);
         } else {
-            return operation();
+            await operation();
         }
     }
     
-    performDbQuery(query: string, parameterList: (string | number)[]): Promise<any> {
-        return new Promise((resolve, reject) => {
-            dbUtils.performQuery(query, parameterList, (error, results, fields) => {
-                if (error) {
-                    reject(dbUtils.convertSqlErrorToText(error));
-                    return;
-                }
-                resolve(results);
-            });
-        });
+    async performDbQuery(query: string, parameterList: (string | number)[]): Promise<any> {
+        const [error, results, fields] = await dbUtils.performQuery(query, parameterList);
+        if (error) {
+            throw dbUtils.convertSqlErrorToText(error);
+        }
+        return results;
     }
 }
 

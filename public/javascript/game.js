@@ -13,7 +13,6 @@ const circuitTileActionNameSet = ["remove", "place", "inspect"];
 let canvasTileWidth;
 let canvasTileHeight;
 let cameraPos = new Pos(0, 0);
-let mouseIsHeld = false;
 let isMining = false;
 let minePlayerPos;
 let mineTargetPos;
@@ -512,6 +511,24 @@ addCommandListener("stopInspecting", (command) => {
     stopInspectingSpirit(command.spiritId, false);
 });
 
+const convertMousePosToTilePos = (pos) => new Pos(
+    Math.floor(pos.x / (spritePixelSize / canvasPixelScale)),
+    Math.floor(pos.y / (spritePixelSize / canvasPixelScale)),
+);
+
+const performCircuitTileAction = () => {
+    if (inspectedCircuitSpiritId === null || cursorCircuitTilePos === null) {
+        return;
+    }
+    if (selectedTileAction === "remove") {
+        removeCircuitTile();
+    } else if (selectedTileAction === "place") {
+        craftOrPlaceCircuitTile();
+    } else if (selectedTileAction === "inspect") {
+        inspectedCircuitTilePos = cursorCircuitTilePos;
+    }
+};
+
 class ClientDelegate {
     
     constructor() {
@@ -536,29 +553,6 @@ class ClientDelegate {
         for (const name of tileActionNameSet) {
             setUpTileActionTags(name);
         }
-        
-        canvas.onmousemove = (event) => {
-            const tempPos = convertMouseEventToPos(event);
-            if (tempPos !== null) {
-                mouseMoveEvent(tempPos);
-            }
-        };
-        
-        canvas.onmousedown = (event) => {
-            const tempPos = convertMouseEventToPos(event);
-            if (tempPos !== null) {
-                mouseDownEvent(tempPos);
-            }
-            return false;
-        };
-        
-        canvas.onmouseleave = () => {
-            cursorCircuitTilePos = null;
-        };
-        
-        document.getElementsByTagName("body")[0].onmouseup = (event) => {
-            mouseUpEvent();
-        };
     }
     
     setLocalPlayerInfo(command) {
@@ -642,6 +636,27 @@ class ClientDelegate {
         }
         return true;
     }
+    
+    canvasMouseMoveEvent(pos) {
+        pos = convertMousePosToTilePos(pos);
+        if (cursorCircuitTilePos !== null
+                && pos.equals(cursorCircuitTilePos)) {
+            return;
+        }
+        cursorCircuitTilePos = pos;
+        if (canvasMouseIsHeld) {
+            performCircuitTileAction();
+        }
+    }
+    
+    canvasMouseDownEvent(pos) {
+        cursorCircuitTilePos = convertMousePosToTilePos(pos);
+        performCircuitTileAction();
+    }
+    
+    canvasMouseLeaveEvent() {
+        cursorCircuitTilePos = null;
+    }
 }
 
 clientDelegate = new ClientDelegate();
@@ -672,49 +687,6 @@ const stopWorldTileAction = (offsetIndex) => {
     }
     const offset = tileActionOffsetSet[offsetIndex];
     localPlayerWorldTile.walkController.stopWalk(offset);
-};
-
-const convertMouseEventToPos = (event) => {
-    const tempX = Math.floor((event.offsetX - 3) / (spritePixelSize / 2));
-    const tempY = Math.floor((event.offsetY - 3) / (spritePixelSize / 2));
-    if (tempX < 0 || tempX >= canvasTileWidth || tempY < 0 || tempY >= canvasTileHeight) {
-        return null;
-    }
-    return new Pos(tempX, tempY);
-};
-
-const performCircuitTileAction = () => {
-    if (inspectedCircuitSpiritId === null || cursorCircuitTilePos === null) {
-        return;
-    }
-    if (selectedTileAction === "remove") {
-        removeCircuitTile();
-    } else if (selectedTileAction === "place") {
-        craftOrPlaceCircuitTile();
-    } else if (selectedTileAction === "inspect") {
-        inspectedCircuitTilePos = cursorCircuitTilePos;
-    }
-};
-
-const mouseMoveEvent = (pos) => {
-    if (pos !== null && cursorCircuitTilePos !== null
-            && pos.equals(cursorCircuitTilePos)) {
-        return;
-    }
-    cursorCircuitTilePos = pos;
-    if (mouseIsHeld) {
-        performCircuitTileAction();
-    }
-};
-
-const mouseDownEvent = (pos) => {
-    mouseIsHeld = true;
-    cursorCircuitTilePos = pos;
-    performCircuitTileAction();
-};
-
-const mouseUpEvent = () => {
-    mouseIsHeld = false;
 };
 
 
