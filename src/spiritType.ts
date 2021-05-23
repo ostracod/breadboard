@@ -88,11 +88,11 @@ export class SimpleSpiritType extends SpiritType<SimpleSpirit> {
             && this.spirit.serialInteger === (data as SimpleSpiritTypeJson).serialInteger);
     }
     
-    convertDbJsonToSpirit(
+    async convertDbJsonToSpirit(
         data: SimpleSpiritDbJson,
         shouldPerformTransaction: boolean,
     ): Promise<SimpleSpirit> {
-        return Promise.resolve(this.spirit);
+        return this.spirit;
     }
     
     craft(): SimpleSpirit {
@@ -209,20 +209,19 @@ export class PlayerSpiritType extends ComplexSpiritType<PlayerSpirit> {
         super("player");
     }
     
-    convertDbJsonToSpirit(
+    async convertDbJsonToSpirit(
         data: ComplexSpiritDbJson<PlayerSpirit>,
         shouldPerformTransaction: boolean,
     ): Promise<PlayerSpirit> {
         const tempPlayer = gameUtils.getPlayerByUsername(data.attributeData.username);
         if (tempPlayer === null) {
-            return Promise.resolve(null);
+            return null;
         } else {
-            return convertDbJsonToInventory(
+            const inventory = await convertDbJsonToInventory(
                 data.containerData,
                 shouldPerformTransaction
-            ).then((inventory) => (
-                new PlayerSpirit(this, tempPlayer, inventory)
-            ));
+            );
+            return new PlayerSpirit(this, tempPlayer, inventory);
         }
     }
     
@@ -260,16 +259,15 @@ export class MachineSpiritType extends ComplexSpiritType<MachineSpirit> {
             && this.colorIndex === (data as MachineSpiritTypeJson).colorIndex);
     }
     
-    convertDbJsonToSpirit(
+    async convertDbJsonToSpirit(
         data: ComplexSpiritDbJson<MachineSpirit>,
         shouldPerformTransaction: boolean,
     ): Promise<MachineSpirit> {
-        return convertDbJsonToInventory(
+        const inventory = await convertDbJsonToInventory(
             data.containerData,
             shouldPerformTransaction
-        ).then((inventory) => (
-            new MachineSpirit(this, data.id, inventory)
-        ));
+        );
+        return new MachineSpirit(this, data.id, inventory);
     }
     
     craft(): MachineSpirit {
@@ -295,16 +293,15 @@ export class WorldSpiritType extends ComplexSpiritType<WorldSpirit> {
         super("world");
     }
     
-    convertDbJsonToSpirit(
+    async convertDbJsonToSpirit(
         data: ComplexSpiritDbJson<WorldSpirit>,
         shouldPerformTransaction: boolean,
     ): Promise<WorldSpirit> {
-        return convertDbJsonToWorldTileGrid(
+        const tileGrid = await convertDbJsonToWorldTileGrid(
             data.containerData,
             shouldPerformTransaction
-        ).then((tileGrid) => (
-            new WorldSpirit(this, data.id, tileGrid)
-        ));
+        );
+        return new WorldSpirit(this, data.id, tileGrid);
     }
     
     craft(): WorldSpirit {
@@ -318,16 +315,15 @@ export class CircuitSpiritType extends ComplexSpiritType<CircuitSpirit> {
         super("circuit");
     }
     
-    convertDbJsonToSpirit(
+    async convertDbJsonToSpirit(
         data: ComplexSpiritDbJson<CircuitSpirit>,
         shouldPerformTransaction: boolean,
     ): Promise<CircuitSpirit> {
-        return convertDbJsonToCircuitTileGrid(
+        const tileGrid = await convertDbJsonToCircuitTileGrid(
             data.containerData,
             shouldPerformTransaction
-        ).then((tileGrid) => (
-            new CircuitSpirit(this, data.id, tileGrid)
-        ));
+        );
+        return new CircuitSpirit(this, data.id, tileGrid);
     }
     
     craft(): CircuitSpirit {
@@ -353,13 +349,11 @@ export class ConstantLogicSpiritType extends ComplexSpiritType<ConstantLogicSpir
         super("constantLogic");
     }
     
-    convertDbJsonToSpirit(
+    async convertDbJsonToSpirit(
         data: ComplexSpiritDbJson<ConstantLogicSpirit>,
         shouldPerformTransaction: boolean,
     ): Promise<ConstantLogicSpirit> {
-        return Promise.resolve(
-            new ConstantLogicSpirit(this, data.id, data.attributeData.constantValue),
-        );
+        return new ConstantLogicSpirit(this, data.id, data.attributeData.constantValue);
     }
     
     craft(): ConstantLogicSpirit {
@@ -371,7 +365,7 @@ export class ConstantLogicSpiritType extends ComplexSpiritType<ConstantLogicSpir
     }
 }
 
-export const convertDbJsonToSpirit = (
+export const convertDbJsonToSpirit = async (
     data: SpiritDbJson,
     shouldPerformTransaction = true,
 ): Promise<Spirit> => {
@@ -387,38 +381,36 @@ export const convertDbJsonToSpirit = (
             }
         }
     }
-    return tempType.convertDbJsonToSpirit(data, shouldPerformTransaction);
+    return await tempType.convertDbJsonToSpirit(data, shouldPerformTransaction);
 };
 
-export const loadComplexSpirit = (
+export const loadComplexSpirit = async (
     id: number,
     shouldPerformTransaction = true,
 ): Promise<ComplexSpirit> => {
     if (id in dirtyComplexSpiritMap) {
-        return Promise.resolve(dirtyComplexSpiritMap[id]);
+        return dirtyComplexSpiritMap[id];
     }
     let output;
-    return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => (
-        niceUtils.performDbQuery(
+    await niceUtils.performConditionalDbTransaction(shouldPerformTransaction, async () => {
+        const results = await niceUtils.performDbQuery(
             "SELECT * FROM ComplexSpirits WHERE id = ?",
             [id]
-        ).then((results) => {
-            const [tempRow] = results;
-            return convertDbJsonToSpirit({
-                id: tempRow.id,
-                parentId: tempRow.parentId,
-                classId: tempRow.classId,
-                attributeData: JSON.parse(tempRow.attributeData),
-                containerData: JSON.parse(tempRow.containerData),
-            }, false);
-        }).then((spirit: ComplexSpirit) => {
-            spirit.hasDbRow = true;
-            output = spirit;
-        })
-    )).then(() => output);
+        );
+        const [tempRow] = results;
+        output = await convertDbJsonToSpirit({
+            id: tempRow.id,
+            parentId: tempRow.parentId,
+            classId: tempRow.classId,
+            attributeData: JSON.parse(tempRow.attributeData),
+            containerData: JSON.parse(tempRow.containerData),
+        }, false) as ComplexSpirit;
+        output.hasDbRow = true;
+    });
+    return output;
 };
 
-export const convertNestedDbJsonToSpirit = (
+export const convertNestedDbJsonToSpirit = async (
     nestedData: SpiritNestedDbJson,
     shouldPerformTransaction = true,
 ): Promise<Spirit> => {
@@ -434,9 +426,9 @@ export const convertNestedDbJsonToSpirit = (
             containerData: nestedData.containerData,
         };
     } else {
-        return loadComplexSpirit(nestedData.id, shouldPerformTransaction);
+        return await loadComplexSpirit(nestedData.id, shouldPerformTransaction);
     }
-    return Promise.resolve(convertDbJsonToSpirit(tempData, shouldPerformTransaction));
+    return convertDbJsonToSpirit(tempData, shouldPerformTransaction);
 };
 
 export const convertJsonToSpiritType = (data: SpiritTypeJson): SpiritType => {

@@ -308,20 +308,17 @@ const timerEvent = async (): Promise<void> => {
     setTimeout(timerEvent, 40);
 };
 
-export const loadOrCreateWorldSpirit = (): Promise<void> => (
-    niceUtils.performDbQuery(
+export const loadOrCreateWorldSpirit = async (): Promise<void> => {
+    const results = await niceUtils.performDbQuery(
         "SELECT id FROM ComplexSpirits WHERE classId = ?",
         [complexSpiritClassIdSet.world]
-    ).then((results: ComplexSpiritDbJson[]) => {
-        if (results.length > 0) {
-            return loadComplexSpirit(results[0].id, false);
-        } else {
-            return complexSpiritTypeSet.world.craft();
-        }
-    }).then((spirit) => {
-        worldSpirit = spirit;
-        timerEvent();
-    })
-);
+    ) as ComplexSpiritDbJson[];
+    if (results.length > 0) {
+        worldSpirit = await loadComplexSpirit(results[0].id, false);
+    } else {
+        worldSpirit = complexSpiritTypeSet.world.craft();
+    }
+    timerEvent();
+};
 
 

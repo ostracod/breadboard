@@ -35,7 +35,7 @@ class NiceUtils {
     }
     
     async performDbQuery(query: string, parameterList: (string | number)[]): Promise<any> {
-        const [error, results, fields] = await dbUtils.performQuery(query, parameterList);
+        const [error, results] = await dbUtils.performQuery(query, parameterList);
         if (error) {
             throw dbUtils.convertSqlErrorToText(error);
         }

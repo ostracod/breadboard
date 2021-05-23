@@ -6,7 +6,6 @@ import ostracodMultiplayer from "ostracod-multiplayer";
 import { simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, recipeDataList } from "./globalData.js";
 import { loadNextComplexSpiritId } from "./spirit.js";
 import { gameDelegate, loadOrCreateWorldSpirit } from "./gameDelegate.js";
-import { niceUtils } from "./niceUtils.js";
 
 const { dbUtils } = ostracodMultiplayer;
 const ostracodMultiplayerInstance = ostracodMultiplayer.ostracodMultiplayer;

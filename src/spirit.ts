@@ -246,18 +246,18 @@ export class ComplexSpirit extends Spirit {
             && this.parentSpirit.isDbRoot()));
     }
     
-    persist(): Promise<void> {
+    async persist(): Promise<void> {
         const tempShouldHaveDbRow = this.shouldHaveDbRow();
         const attributeData = JSON.stringify(this.getAttributeDbJson());
         const containerData = JSON.stringify(this.getContainerDbJson());
         if (this.hasDbRow) {
             if (tempShouldHaveDbRow) {
-                return niceUtils.performDbQuery(
+                await niceUtils.performDbQuery(
                     "UPDATE ComplexSpirits SET attributeData = ?, containerData = ? WHERE id = ?",
                     [attributeData, containerData, this.id]
                 );
             } else {
-                return niceUtils.performDbQuery(
+                await niceUtils.performDbQuery(
                     "DELETE FROM ComplexSpirits WHERE id = ?",
                     [this.id]
                 );
@@ -265,12 +265,10 @@ export class ComplexSpirit extends Spirit {
         } else {
             if (tempShouldHaveDbRow) {
                 this.hasDbRow = true;
-                return niceUtils.performDbQuery(
+                await niceUtils.performDbQuery(
                     "INSERT INTO ComplexSpirits (id, parentId, classId, attributeData, containerData) VALUES (?, NULL, ?, ?, ?)",
                     [this.id, this.classId, attributeData, containerData]
                 );
-            } else {
-                return Promise.resolve();
             }
         }
     }
@@ -403,43 +401,35 @@ export abstract class TileGridSpirit<T extends Tile> extends ComplexSpirit {
     abstract generateTileGrid(): void;
 }
 
-export const loadNextComplexSpiritId = (): Promise<void> => (
-    niceUtils.performDbQuery(
+export const loadNextComplexSpiritId = async (): Promise<void> => {
+    const results = await niceUtils.performDbQuery(
         "SELECT * FROM Configuration WHERE name = ?",
         ["nextComplexSpiritId"]
-    ).then((results: ConfigDbJson[]) => {
-        if (results.length > 0) {
-            nextComplexSpiritId = parseInt(results[0].value, 10);
-        } else {
-            nextComplexSpiritId = 0;
-            return niceUtils.performDbQuery(
-                "INSERT INTO Configuration (name, value) VALUES (?, ?)",
-                ["nextComplexSpiritId", nextComplexSpiritId]
-            );
-        }
-    })
-);
+    ) as ConfigDbJson[];
+    if (results.length > 0) {
+        nextComplexSpiritId = parseInt(results[0].value, 10);
+    } else {
+        nextComplexSpiritId = 0;
+        await niceUtils.performDbQuery(
+            "INSERT INTO Configuration (name, value) VALUES (?, ?)",
+            ["nextComplexSpiritId", nextComplexSpiritId]
+        );
+    }
+};
 
-export const persistNextComplexSpiritId = (): Promise<void> => (
-    niceUtils.performDbQuery(
+export const persistNextComplexSpiritId = async (): Promise<void> => {
+    await niceUtils.performDbQuery(
         "UPDATE Configuration SET value = ? WHERE name = ?",
         [nextComplexSpiritId, "nextComplexSpiritId"]
-    )
-);
+    );
+};
 
-export const persistAllComplexSpirits = (): Promise<void> => {
-    const operationList = [];
+export const persistAllComplexSpirits = async (): Promise<void> => {
     for (const id in dirtyComplexSpiritMap) {
         const tempSpirit = dirtyComplexSpiritMap[id];
-        operationList.push(() => tempSpirit.persist());
+        await tempSpirit.persist();
         delete dirtyComplexSpiritMap[id];
     }
-    if (operationList.length <= 0) {
-        return Promise.resolve();
-    }
-    return operationList.reduce((accumulator, operation) => (
-        accumulator.then(operation)
-    ), Promise.resolve());
 };
 
 

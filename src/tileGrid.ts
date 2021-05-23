@@ -149,41 +149,39 @@ export const createCircuitTileGrid = (
     new TileGrid<CircuitTile>(width, height, circuitTileFactory)
 );
 
-const convertDbJsonToTileGrid = <T extends Tile>(
+const convertDbJsonToTileGrid = async <T extends Tile>(
     data: TileGridDbJson,
     tileFactory: TileFactory<T>,
     shouldPerformTransaction: boolean,
 ): Promise<TileGrid<T>> => {
     const output = new TileGrid<T>(data.width, data.height, tileFactory);
-    return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => {
+    await niceUtils.performConditionalDbTransaction(shouldPerformTransaction, async () => {
         const tempPos = new Pos(0, 0);
-        return data.tiles.reduce((accumulator, tileData) => (
-            accumulator.then(() => (
-                tileFactory.convertDbJsonToTile(tileData, false)
-            )).then((tile) => {
-                output.setTile(tempPos, tile);
-                output.advancePos(tempPos);
-            })
-        ), Promise.resolve());
-    }).then(() => output);
+        for (const tileData of data.tiles) {
+            const tile = await tileFactory.convertDbJsonToTile(tileData, false);
+            output.setTile(tempPos, tile);
+            output.advancePos(tempPos);
+        }
+    });
+    return output;
 };
 
-export const convertDbJsonToWorldTileGrid = (
+export const convertDbJsonToWorldTileGrid = async (
     data: TileGridDbJson,
     shouldPerformTransaction = true,
 ): Promise<TileGrid<WorldTile>> => (
-    convertDbJsonToTileGrid<WorldTile>(
+    await convertDbJsonToTileGrid<WorldTile>(
         data,
         worldTileFactory,
         shouldPerformTransaction,
     )
 );
 
-export const convertDbJsonToCircuitTileGrid = (
+export const convertDbJsonToCircuitTileGrid = async (
     data: TileGridDbJson,
     shouldPerformTransaction = true,
 ): Promise<TileGrid<CircuitTile>> => (
-    convertDbJsonToTileGrid<CircuitTile>(
+    await convertDbJsonToTileGrid<CircuitTile>(
         data,
         circuitTileFactory,
         shouldPerformTransaction,

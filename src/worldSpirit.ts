@@ -81,39 +81,35 @@ export class WorldSpirit extends TileGridSpirit<WorldTile> {
         return tempTile.spirit;
     }
     
-    addPlayerTile(player: Player): Promise<PlayerSpirit> {
-        const tempTile = this.getPlayerTile(player);
+    async addPlayerTile(player: Player): Promise<PlayerSpirit> {
+        let tempTile = this.getPlayerTile(player);
         if (tempTile !== null) {
-            return Promise.resolve(tempTile.spirit);
+            return tempTile.spirit;
         }
-        let tempPromise;
+        let spirit;
         const tempId = player.extraFields.complexSpiritId;
         if (tempId === null) {
-            const tempSpirit = (complexSpiritTypeSet.player as PlayerSpiritType).createPlayerSpirit(player);
-            tempPromise = Promise.resolve(tempSpirit);
+            spirit = (complexSpiritTypeSet.player as PlayerSpiritType).createPlayerSpirit(player);
         } else {
-            tempPromise = loadComplexSpirit(tempId);
+            spirit = await loadComplexSpirit(tempId);
         }
-        return tempPromise.then((spirit) => {
-            const tempTile = new PlayerWorldTile(spirit);
-            // TODO: Make player tile placement more robust.
-            const tempPos = new Pos(3, 3);
-            while (true) {
-                const tempOldTile = this.getTile(tempPos);
-                if (tempOldTile.spirit.spiritType === simpleSpiritTypeSet.empty) {
-                    break;
-                }
-                tempPos.x += 1;
+        tempTile = new PlayerWorldTile(spirit);
+        // TODO: Make player tile placement more robust.
+        const tempPos = new Pos(3, 3);
+        while (true) {
+            const tempOldTile = this.getTile(tempPos);
+            if (tempOldTile.spirit.spiritType === simpleSpiritTypeSet.empty) {
+                break;
             }
-            tempTile.addToWorld(this, tempPos);
-            return spirit;
-        });
+            tempPos.x += 1;
+        }
+        tempTile.addToWorld(this, tempPos);
+        return spirit;
     }
     
-    tick(): Promise<void> {
+    async tick(): Promise<void> {
         // TODO: Put something here.
         
-        return Promise.resolve();
     }
 }
 

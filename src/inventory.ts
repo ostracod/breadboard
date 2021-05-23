@@ -303,20 +303,18 @@ export class InventoryUpdate {
     }
 }
 
-export const convertDbJsonToInventory = (
+export const convertDbJsonToInventory = async (
     data: InventoryDbJson,
     shouldPerformTransaction = true
 ): Promise<Inventory> => {
     const output = new Inventory();
-    return niceUtils.performConditionalDbTransaction(shouldPerformTransaction, () => (
-        data.reduce((accumulator, itemData) => (
-            accumulator.then(() => (
-                convertNestedDbJsonToSpirit(itemData.spirit, false)
-            )).then((spirit) => {
-                new InventoryItem(output, spirit, itemData.count);
-            })
-        ), Promise.resolve())
-    )).then(() => output);
+    await niceUtils.performConditionalDbTransaction(shouldPerformTransaction, async () => {
+        for (const itemData of data) {
+            const spirit = await convertNestedDbJsonToSpirit(itemData.spirit, false);
+            new InventoryItem(output, spirit, itemData.count);
+        }
+    });
+    return output;
 };
 
 export const convertClientJsonToInventoryUpdate = (

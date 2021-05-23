@@ -114,18 +114,20 @@ export class TileFactory<T extends Tile> {
         this.complexTileFactoryMap = complexTileFactoryMap;
     }
     
-    convertDbJsonToTile(data: TileDbJson, shouldPerformTransaction: boolean): Promise<T> {
+    async convertDbJsonToTile(
+        data: TileDbJson,
+        shouldPerformTransaction: boolean
+    ): Promise<T> {
         if (typeof data === "number") {
-            return Promise.resolve(this.simpleTileMap[data as SimpleTileDbJson]);
+            return this.simpleTileMap[data as SimpleTileDbJson];
         } else {
             const complexData = (data as ComplexTileDbJson<(T & Tile<ComplexSpirit>)["spirit"]>);
-            return convertNestedDbJsonToSpirit(
+            const spirit = await convertNestedDbJsonToSpirit(
                 complexData.spirit,
                 shouldPerformTransaction
-            ).then((spirit: ComplexSpirit) => {
-                const tempFactory = this.complexTileFactoryMap[spirit.classId] as ComplexTileFactory<T & Tile<ComplexSpirit>>;
-                return tempFactory.convertDbJsonToTile(complexData, spirit);
-            });
+            ) as ComplexSpirit;
+            const tempFactory = this.complexTileFactoryMap[spirit.classId] as ComplexTileFactory<T & Tile<ComplexSpirit>>;
+            return await tempFactory.convertDbJsonToTile(complexData, spirit);
         }
     }
     
