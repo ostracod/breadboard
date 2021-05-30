@@ -1,7 +1,7 @@
 
 import ostracodMultiplayer from "ostracod-multiplayer";
 import { complexSpiritClassIdSet, complexSpiritTypeSet, complexSpiritMap } from "./globalData.js";
-import { Player, ComplexSpiritDbJson, InventoryUpdateClientJson, SynchronousCommandHandler, ClientCommand, SetWalkControllerClientCommand, WalkClientCommand, MineClientCommand, PlaceTileClientCommand, CraftCircuitTileClientCommand, CraftClientCommand, InspectClientCommand, TransferClientCommand, RecycleClientCommand, SetWorldTileGridClientCommand, SetCircuitTileGridClientCommand, UpdateInventoryItemClientCommand, StopInspectingClientCommand, InventoryUpdatesClientCommand } from "./interfaces.js";
+import { Player, ComplexSpiritDbJson, InventoryUpdateClientJson, SynchronousCommandHandler, ClientCommand, SetWalkControllerClientCommand, WalkClientCommand, MineClientCommand, PlaceTileClientCommand, CraftCircuitTileClientCommand, CraftClientCommand, InspectClientCommand, TransferClientCommand, RecycleClientCommand, SetCircuitTilePortsCommand, SetWorldTileGridClientCommand, SetCircuitTileGridClientCommand, UpdateInventoryItemClientCommand, StopInspectingClientCommand, InventoryUpdatesClientCommand } from "./interfaces.js";
 import { Pos, createPosFromJson } from "./pos.js";
 import { MachineSpirit, persistAllComplexSpirits, persistNextComplexSpiritId } from "./spirit.js";
 import { PlayerSpirit } from "./playerSpirit.js";
@@ -271,6 +271,11 @@ addCommandListener("recycle", (command: RecycleClientCommand, playerTile, comman
         convertJsonToSpiritReference(command.spiritReference)
     );
     processInventoryUpdates(command, playerTile.spirit, commandList);
+});
+
+addCommandListener("setChipPortsCommand", (command: SetCircuitTilePortsCommand, playerTile, commandList) => {
+    const pos = createPosFromJson(command.pos);
+    playerTile.spirit.setChipPorts(pos, command.sidePortIndexes);
 });
 
 class GameDelegate {

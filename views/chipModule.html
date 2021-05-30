@@ -2,7 +2,27 @@
     No chip selected.
 </p>
 <div id="chipInfo" style="display: none;">
-    TODO: Put stuff here.
+    <p>
+        Ports:
+    </p>
+    <div>
+        <div style="float: left;">
+            <div style="text-align: center;">
+                <select id="topChipPort" onchange="chipPortChangeEvent();"></select>
+            </div>
+            <div style="float: left;">
+                <select id="leftChipPort" onchange="chipPortChangeEvent();"></select>
+            </div>
+            <div style="float: left; margin-left: 20px;">
+                <select id="rightChipPort" onchange="chipPortChangeEvent();"></select>
+            </div>
+            <br style="clear: both;" />
+            <div style="text-align: center;">
+                <select id="bottomChipPort" onchange="chipPortChangeEvent();"></select>
+            </div>
+        </div>
+        <br style="clear: both;" />
+    </div>
 </div>
 
 

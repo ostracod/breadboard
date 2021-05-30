@@ -226,6 +226,11 @@ export interface InspectClientCommand extends ClientCommand {
     spiritReference: SpiritReferenceJson;
 }
 
+export interface SetCircuitTilePortsCommand extends ClientCommand {
+    pos: PosJson;
+    sidePortIndexes: number[];
+}
+
 export interface InventoryUpdatesClientCommand extends ClientCommand {
     inventoryUpdates: InventoryUpdateClientJson[];
 }

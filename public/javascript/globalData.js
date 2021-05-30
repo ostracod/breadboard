@@ -1,6 +1,7 @@
 
 const wireArrangementAmount = 12;
 const circuitSize = 17;
+const chipSideNames = ["top", "right", "bottom", "left"];
 
 // Map from name to SimpleSpirit.
 const simpleSpiritSet = {};

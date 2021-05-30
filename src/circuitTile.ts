@@ -50,6 +50,12 @@ export class ChipCircuitTile extends ComplexCircuitTile<LogicSpirit> {
         output.sidePortIndexes = this.sidePortIndexes;
         return output;
     }
+    
+    setSidePortIndexes(sidePortIndexes: number[]): void {
+        this.sidePortIndexes = sidePortIndexes;
+        // TODO: Mark something as dirty.
+        
+    }
 }
 
 

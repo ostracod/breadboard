@@ -7,6 +7,7 @@ import { CircuitSpirit } from "./logicSpirit.js";
 import { SpiritType, PlayerSpiritType } from "./spiritType.js";
 import { SpiritReference } from "./spiritReference.js";
 import { Inventory, InventoryItem, InventoryUpdate, pushInventoryUpdate } from "./inventory.js";
+import { ChipCircuitTile } from "./circuitTile.js";
 
 export class PlayerSpirit extends InventorySpirit {
     
@@ -209,6 +210,18 @@ export class PlayerSpirit extends InventorySpirit {
         const tempSpirit = spiritType.craft();
         const tempCircuitTile = circuitTileFactory.getTileWithSpirit(tempSpirit);
         this.inspectedCircuit.tileGrid.setTile(pos, tempCircuitTile);
+    }
+    
+    setChipPorts(pos: Pos, sidePortIndexes: number[]): void {
+        if (this.inspectedCircuit === null) {
+            return;
+        }
+        const circuitTile = this.inspectedCircuit.tileGrid.getTile(pos);
+        if (!(circuitTile instanceof ChipCircuitTile)) {
+            return;
+        }
+        const chip = circuitTile as ChipCircuitTile;
+        chip.setSidePortIndexes(sidePortIndexes);
     }
 }
 

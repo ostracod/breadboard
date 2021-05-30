@@ -38,8 +38,27 @@ class ChipCircuitTile extends ComplexCircuitTile {
     
     inspect() {
         hidePlaceholderTag("chipInfo");
-        // TODO: Display some interesting information.
-        
+        const logicPorts = this.spirit.getLogicPorts();
+        chipSideNames.forEach((name, sideIndex) => {
+            const selectTag = document.getElementById(name + "ChipPort");
+            selectTag.innerHTML = "";
+            const optionTag = document.createElement("option");
+            optionTag.innerHTML = "None";
+            optionTag.value = "";
+            selectTag.appendChild(optionTag);
+            logicPorts.forEach((logicPort, portIndex) => {
+                const optionTag = document.createElement("option");
+                optionTag.innerHTML = logicPort.name;
+                optionTag.value = portIndex;
+                selectTag.appendChild(optionTag);
+            });
+            const portIndex = this.sidePortIndexes[sideIndex];
+            if (portIndex === null) {
+                selectTag.value = "";
+            } else {
+                selectTag.value = portIndex;
+            }
+        });
     }
 }
 

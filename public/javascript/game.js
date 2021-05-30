@@ -208,7 +208,19 @@ const stopInspectingCircuitTile = () => {
     showPlaceholderTag("chipInfo");
     inspectedCircuitTilePos = null;
     hideModuleByName("chip");
-}
+};
+
+const chipPortChangeEvent = () => {
+    const sidePortIndexes = chipSideNames.map((name) => {
+        const { value } = document.getElementById(name + "ChipPort");
+        if (value.length > 0) {
+            return parseInt(value, 10);
+        } else {
+            return null;
+        }
+    });
+    addSetChipPortsCommand(inspectedCircuitTilePos, sidePortIndexes);
+};
 
 const tileActionIsAvailable = (name) => {
     if (inspectedCircuitSpiritId === null) {
@@ -453,6 +465,14 @@ const addStopInspectingCommand = (spiritId) => {
     gameUpdateCommandList.push({
         commandName: "stopInspecting",
         spiritId,
+    });
+};
+
+const addSetChipPortsCommand = (pos, sidePortIndexes) => {
+    gameUpdateCommandList.push({
+        commandName: "setChipPortsCommand",
+        pos: pos.toJson(),
+        sidePortIndexes,
     });
 };
 
