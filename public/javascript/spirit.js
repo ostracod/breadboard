@@ -123,6 +123,9 @@ class MachineSpirit extends ComplexSpirit {
 
 class LogicPort {
     
+    // Concrete subclasses of LogicPort must implement these methods:
+    // getPaletteIndex
+    
     constructor(name) {
         this.name = name;
     }
@@ -130,10 +133,16 @@ class LogicPort {
 
 class InputLogicPort extends LogicPort {
     
+    getPaletteIndex() {
+        return 1;
+    }
 }
 
 class OutputLogicPort extends LogicPort {
     
+    getPaletteIndex() {
+        return 0;
+    }
 }
 
 class CircuitSpirit extends ComplexSpirit {

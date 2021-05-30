@@ -36,6 +36,20 @@ class ChipCircuitTile extends ComplexCircuitTile {
         this.sidePortIndexes = sidePortIndexes;
     }
     
+    draw(pos, layer) {
+        super.draw(pos, layer);
+        if (layer === 0) {
+            const logicPorts = this.spirit.getLogicPorts();
+            this.sidePortIndexes.forEach((portIndex, sideIndex) => {
+                if (portIndex !== null) {
+                    const logicPort = logicPorts[portIndex];
+                    const paletteIndex = logicPort.getPaletteIndex();
+                    portSpriteSet.draw(context, pos, sideIndex, paletteIndex, pixelSize);
+                }
+            });
+        }
+    }
+    
     inspect() {
         hidePlaceholderTag("chipInfo");
         const logicPorts = this.spirit.getLogicPorts();
