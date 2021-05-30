@@ -46,7 +46,7 @@ export class TileGrid<T extends Tile = Tile> {
         }
     }
     
-    markParentSpiritAsDirty(): void {
+    markAsDirty(): void {
         if (this.parentSpirit === null) {
             return;
         }
@@ -88,7 +88,7 @@ export class TileGrid<T extends Tile = Tile> {
         }
         this.tileList[index] = tile;
         tile.addToGridEvent(this, pos);
-        this.markParentSpiritAsDirty();
+        this.markAsDirty();
     }
     
     swapTiles(pos1: Pos, pos2: Pos): void {
@@ -100,7 +100,7 @@ export class TileGrid<T extends Tile = Tile> {
         this.tileList[index2] = tempTile1;
         tempTile1.moveEvent(pos2);
         tempTile2.moveEvent(pos1);
-        this.markParentSpiritAsDirty();
+        this.markAsDirty();
     }
     
     getWindowClientJson(pos: Pos, width: number, height: number): TileClientJson[] {

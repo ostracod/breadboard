@@ -6,7 +6,7 @@ import { Spirit, SimpleSpirit, ComplexSpirit, MachineSpirit } from "./spirit.js"
 import { PlayerSpirit } from "./playerSpirit.js";
 import { WorldSpirit } from "./worldSpirit.js";
 import { SpiritReference } from "./spiritReference.js";
-import { Tile, simpleTileComplexity, complexTileComplexity } from "./tile.js";
+import { Tile, simpleTileComplexity, ComplexTileComplexity } from "./tile.js";
 import { TileGrid } from "./tileGrid.js";
 
 export class WorldTile<T extends Spirit = Spirit> extends Tile<T> {
@@ -45,7 +45,7 @@ export class ComplexWorldTile<T extends ComplexSpirit = ComplexSpirit> extends W
     pos: Pos;
     
     constructor(spirit: T) {
-        super(spirit, complexTileComplexity);
+        super(spirit, new ComplexTileComplexity());
         this.worldSpirit = null;
         this.pos = null;
     }

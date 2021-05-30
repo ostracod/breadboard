@@ -24,17 +24,19 @@ export abstract class Tile<T extends Spirit = Spirit> {
     }
     
     addToGridEvent(tileGrid: TileGrid, pos: Pos): void {
-        this.spirit.setParentTile(this);
-        this.spirit.changeParentSpirit(tileGrid.parentSpirit);
+        this.tileComplexity.addToGridEvent(tileGrid);
     }
     
     removeFromGridEvent(): void {
-        this.spirit.setParentTile(null);
-        this.spirit.changeParentSpirit(null);
+        this.tileComplexity.removeFromGridEvent();
     }
     
     moveEvent(pos: Pos): void {
         // Do nothing.
+    }
+    
+    markAsDirty(): void {
+        this.tileComplexity.markAsDirty();
     }
     
     abstract getSimpleTileSet(): {[name: string]: Tile<SimpleSpirit>};
@@ -44,9 +46,19 @@ export abstract class Tile<T extends Spirit = Spirit> {
 
 abstract class TileComplexity<T extends Spirit = Spirit> {
     
-    registerTile(tile: Tile<T>) {
+    addToGridEvent(tileGrid: TileGrid): void {
         // Do nothing.
     }
+    
+    removeFromGridEvent(): void {
+        // Do nothing.
+    }
+    
+    markAsDirty(): void {
+        // Do nothing.
+    }
+    
+    abstract registerTile(tile: Tile<T>): void;
     
     abstract convertToClientJson(tile: Tile<T>): TileClientJson;
     
@@ -55,7 +67,7 @@ abstract class TileComplexity<T extends Spirit = Spirit> {
 
 class SimpleTileComplexity extends TileComplexity<SimpleSpirit> {
     
-    registerTile(tile: Tile<SimpleSpirit>) {
+    registerTile(tile: Tile<SimpleSpirit>): void {
         const tempTileSet = tile.getSimpleTileSet();
         const tempTileMap = tile.getSimpleTileMap();
         const tempSpiritType = tile.spirit.spiritType;
@@ -73,7 +85,34 @@ class SimpleTileComplexity extends TileComplexity<SimpleSpirit> {
     }
 }
 
-class ComplexTileComplexity extends TileComplexity<ComplexSpirit> {
+export class ComplexTileComplexity extends TileComplexity<ComplexSpirit> {
+    
+    tile: Tile<ComplexSpirit>;
+    tileGrid: TileGrid;
+    
+    registerTile(tile: Tile<ComplexSpirit>): void {
+        this.tile = tile;
+    }
+    
+    addToGridEvent(tileGrid: TileGrid): void {
+        const { spirit } = this.tile;
+        spirit.setParentTile(this.tile);
+        spirit.changeParentSpirit(tileGrid.parentSpirit);
+        this.tileGrid = tileGrid;
+    }
+    
+    removeFromGridEvent(): void {
+        const { spirit } = this.tile;
+        spirit.setParentTile(null);
+        spirit.changeParentSpirit(null);
+        this.tileGrid = null;
+    }
+    
+    markAsDirty(): void {
+        if (this.tileGrid !== null) {
+            this.tileGrid.markAsDirty();
+        }
+    }
     
     convertToClientJson(tile: Tile<ComplexSpirit>): ComplexTileClientJson {
         return {
@@ -89,6 +128,5 @@ class ComplexTileComplexity extends TileComplexity<ComplexSpirit> {
 }
 
 export const simpleTileComplexity = new SimpleTileComplexity();
-export const complexTileComplexity = new ComplexTileComplexity();
 
 
