@@ -21,6 +21,16 @@ let tileActionNameSet;
 let selectedTileAction = "remove";
 let updateRequestCount = 0;
 
+const showPlaceholderTag = (name) => {
+    document.getElementById(name + "Placeholder").style.display = "block";
+    document.getElementById(name).style.display = "none";
+};
+
+const hidePlaceholderTag = (name) => {
+    document.getElementById(name + "Placeholder").style.display = "none";
+    document.getElementById(name).style.display = "block";
+};
+
 const drawMineCrack = () => {
     if (!isMining) {
         return;
@@ -184,6 +194,22 @@ const removeCircuitTile = () => {
     craftCircuitTile(cursorCircuitTilePos, simpleSpiritTypeSet.empty, true);
 };
 
+const inspectCircuitTile = () => {
+    inspectedCircuitTilePos = cursorCircuitTilePos;
+    const circuitTile = circuitTileGrid.getTile(inspectedCircuitTilePos);
+    circuitTile.inspect();
+    showModuleByName("chip");
+};
+
+const stopInspectingCircuitTile = () => {
+    if (inspectedCircuitTilePos === null) {
+        return;
+    }
+    showPlaceholderTag("chipInfo");
+    inspectedCircuitTilePos = null;
+    hideModuleByName("chip");
+}
+
 const tileActionIsAvailable = (name) => {
     if (inspectedCircuitSpiritId === null) {
         return (worldTileActionNameSet.indexOf(name) >= 0);
@@ -256,8 +282,7 @@ const inspectMachine = (spirit) => {
     }
     inspectedMachineInventory = new Inventory("machine", spirit.id);
     localPlayerInventory.updateButtonColors();
-    document.getElementById("machineInfoPlaceholder").style.display = "none";
-    document.getElementById("machineInfo").style.display = "block";
+    hidePlaceholderTag("machineInfo");
     showModuleByName("machine");
 };
 
@@ -266,8 +291,7 @@ const inspectCircuit = (spirit) => {
         return;
     }
     inspectedCircuitSpiritId = spirit.id;
-    document.getElementById("circuitInfoPlaceholder").style.display = "none";
-    document.getElementById("circuitInfo").style.display = "block";
+    hidePlaceholderTag("circuitInfo");
     showModuleByName("circuit");
     circuitTileGrid.clear();
     cursorCircuitTilePos = null;
@@ -281,31 +305,39 @@ const stopInspectingSpirit = (spiritId, shouldAddCommand = true) => {
     }
     if (inspectedMachineInventory !== null
             && inspectedMachineInventory.parentSpiritId === spiritId) {
-        stopInspectingMachine();
+        stopInspectingMachine(shouldAddCommand);
     }
     if (inspectedCircuitSpiritId === spiritId) {
-        stopInspectingCircuit();
-    }
-    if (shouldAddCommand) {
-        addStopInspectingCommand(spiritId);
+        stopInspectingCircuit(shouldAddCommand);
     }
 };
 
-const stopInspectingMachine = () => {
-    document.getElementById("machineInfoPlaceholder").style.display = "block";
-    document.getElementById("machineInfo").style.display = "none";
-    hideModuleByName("machine");
+const stopInspectingMachine = (shouldAddCommand = true) => {
+    if (inspectedMachineInventory === null) {
+        return;
+    }
+    showPlaceholderTag("machineInfo");
+    if (shouldAddCommand) {
+        addStopInspectingCommand(inspectedMachineInventory.parentSpiritId);
+    }
     inspectedMachineInventory.cleanUp();
     inspectedMachineInventory = null;
+    hideModuleByName("machine");
 };
 
-const stopInspectingCircuit = () => {
-    document.getElementById("circuitInfoPlaceholder").style.display = "block";
-    document.getElementById("circuitInfo").style.display = "none";
-    hideModuleByName("circuit");
+const stopInspectingCircuit = (shouldAddCommand = true) => {
+    if (inspectedCircuitSpiritId === null) {
+        return;
+    }
+    showPlaceholderTag("circuitInfo");
+    if (shouldAddCommand) {
+        addStopInspectingCommand(inspectedCircuitSpiritId);
+    }
     inspectedCircuitSpiritId = null;
     worldTileGrid.clear();
     updateTileActionTags();
+    hideModuleByName("circuit");
+    stopInspectingCircuitTile();
 };
 
 const addInventoryCommand = (command, inventoryUpdateList) => {
@@ -525,7 +557,7 @@ const performCircuitTileAction = () => {
     } else if (selectedTileAction === "place") {
         craftOrPlaceCircuitTile();
     } else if (selectedTileAction === "inspect") {
-        inspectedCircuitTilePos = cursorCircuitTilePos;
+        inspectCircuitTile();
     }
 };
 
@@ -615,7 +647,7 @@ class ClientDelegate {
             localPlayerInventory.selectNextItem();
         }
         if (keyCode === 27) {
-            stopInspectingSpirit(inspectedCircuitSpiritId);
+            stopInspectingCircuit();
             return false;
         }
         return true;
@@ -656,6 +688,18 @@ class ClientDelegate {
     
     canvasMouseLeaveEvent() {
         cursorCircuitTilePos = null;
+    }
+    
+    moduleHideEvent(name) {
+        if (name === "machine") {
+            stopInspectingMachine();
+        }
+        if (name === "circuit") {
+            stopInspectingCircuit();
+        }
+        if (name === "chip") {
+            stopInspectingCircuitTile();
+        }
     }
 }
 

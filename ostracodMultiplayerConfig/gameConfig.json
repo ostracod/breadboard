@@ -34,6 +34,13 @@
             "title": "Inspect Circuit",
             "viewFile": "circuitModule.html",
             "shouldShowOnLoad": false
+        },
+        {
+            "name": "chip",
+            "buttonLabel": "Chip",
+            "title": "Inspect Chip",
+            "viewFile": "chipModule.html",
+            "shouldShowOnLoad": false
         }
     ],
     "instructionsViewFile": "instructions.html",

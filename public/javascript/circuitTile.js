@@ -8,6 +8,10 @@ class CircuitTile extends Tile {
     getSimpleTileMap() {
         return simpleCircuitTileMap;
     }
+    
+    inspect() {
+        showPlaceholderTag("chipInfo");
+    }
 }
 
 class SimpleCircuitTile extends CircuitTile {
@@ -30,6 +34,12 @@ class ChipCircuitTile extends ComplexCircuitTile {
     constructor(logicSpirit, sidePortIndexes = [null, null, null, null]) {
         super(logicSpirit);
         this.sidePortIndexes = sidePortIndexes;
+    }
+    
+    inspect() {
+        hidePlaceholderTag("chipInfo");
+        // TODO: Display some interesting information.
+        
     }
 }
 
