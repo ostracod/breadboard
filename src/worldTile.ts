@@ -2,7 +2,7 @@
 import { simpleSpiritTypeSet, simpleWorldTileSet, simpleWorldTileMap } from "./globalData.js";
 import { WalkControllerJson, PlayerWorldTileClientJson, TileDbJson } from "./interfaces.js";
 import { Pos } from "./pos.js";
-import { Spirit, SimpleSpirit, ComplexSpirit, MachineSpirit } from "./spirit.js";
+import { Spirit, SimpleSpirit, MachineSpirit } from "./spirit.js";
 import { PlayerSpirit } from "./playerSpirit.js";
 import { WorldSpirit } from "./worldSpirit.js";
 import { SpiritReference } from "./spiritReference.js";
@@ -39,7 +39,7 @@ export class SimpleWorldTile extends WorldTile<SimpleSpirit> {
     }
 }
 
-export class ComplexWorldTile<T extends ComplexSpirit = ComplexSpirit> extends WorldTile<T> {
+export class ComplexWorldTile<T extends Spirit = Spirit> extends WorldTile<T> {
     
     worldSpirit: WorldSpirit;
     pos: Pos;

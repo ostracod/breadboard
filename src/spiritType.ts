@@ -3,7 +3,7 @@ import { simpleSpiritSerialIntegerSet, complexSpiritClassIdSet, simpleSpiritType
 import { SpiritTypeJson, SimpleSpiritTypeJson, ComplexSpiritTypeJson, MachineSpiritTypeJson, SpiritDbJson, SimpleSpiritDbJson, ComplexSpiritDbJson, SpiritNestedDbJson, Player } from "./interfaces.js";
 import { Spirit, SimpleSpirit, ComplexSpirit, MachineSpirit } from "./spirit.js";
 import { PlayerSpirit } from "./playerSpirit.js";
-import { CircuitSpirit, ConstantLogicSpirit } from "./logicSpirit.js";
+import { LogicSpirit, CircuitSpirit, ConstantLogicSpirit } from "./logicSpirit.js";
 import { WorldSpirit } from "./worldSpirit.js";
 import { convertDbJsonToInventory } from "./inventory.js";
 import { RecipeComponent } from "./recipe.js";
@@ -72,6 +72,10 @@ export abstract class SpiritType<T extends Spirit = Spirit> {
     ): Promise<T>;
     
     abstract craft(): T;
+}
+
+export interface LogicSpiritType extends SpiritType<LogicSpirit> {
+    createCircuitTileType(): ChipCircuitTileType;
 }
 
 export class SimpleSpiritType extends SpiritType<SimpleSpirit> {
@@ -350,7 +354,14 @@ export class WorldSpiritType extends ComplexSpiritType<WorldSpirit> {
     }
 }
 
-export class CircuitSpiritType extends ComplexSpiritType<CircuitSpirit> {
+export abstract class ComplexLogicSpiritType<T extends LogicSpirit & ComplexSpirit> extends ComplexSpiritType<T> implements LogicSpiritType {
+    
+    createCircuitTileType(): ChipCircuitTileType {
+        return new ChipCircuitTileType();
+    }
+}
+
+export class CircuitSpiritType extends ComplexLogicSpiritType<CircuitSpirit> {
     
     constructor() {
         super("circuit");
@@ -384,14 +395,10 @@ export class CircuitSpiritType extends ComplexSpiritType<CircuitSpirit> {
     }
 }
 
-export class ConstantLogicSpiritType extends ComplexSpiritType<ConstantLogicSpirit> {
+export class ConstantLogicSpiritType extends ComplexLogicSpiritType<ConstantLogicSpirit> {
     
     constructor() {
         super("constantLogic");
-    }
-    
-    createCircuitTileType(): ChipCircuitTileType {
-        return new ChipCircuitTileType();
     }
     
     async convertDbJsonToSpirit(

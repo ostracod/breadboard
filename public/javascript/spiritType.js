@@ -313,7 +313,14 @@ class MachineSpiritType extends ComplexSpiritType {
     }
 }
 
-class CircuitSpiritType extends ComplexSpiritType {
+class ComplexLogicSpiritType extends ComplexSpiritType {
+    
+    createCircuitTileType() {
+        return new ChipCircuitTileType();
+    }
+}
+
+class CircuitSpiritType extends ComplexLogicSpiritType {
     
     constructor() {
         const tempSprite = new Sprite(circuitSpriteSet, 0, 0);
@@ -345,17 +352,13 @@ class CircuitSpiritType extends ComplexSpiritType {
     }
 }
 
-class ConstantLogicSpiritType extends ComplexSpiritType {
+class ConstantLogicSpiritType extends ComplexLogicSpiritType {
     
     constructor() {
         super([
             new Sprite(chipSpriteSet, 0, 2),
             new Sprite(characterSpriteSet, 3, 0),
         ], "constantLogic");
-    }
-    
-    createCircuitTileType() {
-        return new ChipCircuitTileType();
     }
     
     convertClientJsonToSpirit(data) {

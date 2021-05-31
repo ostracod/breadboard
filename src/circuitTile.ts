@@ -1,7 +1,7 @@
 
 import { ChipCircuitTileClientJson, ChipCircuitTileDbJson } from "./interfaces.js";
 import { simpleCircuitTileSet, simpleCircuitTileMap } from "./globalData.js";
-import { Spirit, SimpleSpirit, ComplexSpirit } from "./spirit.js";
+import { Spirit, SimpleSpirit } from "./spirit.js";
 import { Tile, simpleTileComplexity, ComplexTileComplexity } from "./tile.js";
 import { LogicSpirit } from "./logicSpirit.js";
 
@@ -23,7 +23,7 @@ export class SimpleCircuitTile extends CircuitTile<SimpleSpirit> {
     }
 }
 
-export class ComplexCircuitTile<T extends ComplexSpirit = ComplexSpirit> extends CircuitTile<T> {
+export class ComplexCircuitTile<T extends Spirit = Spirit> extends CircuitTile<T> {
     
     constructor(spirit: T) {
         super(spirit, new ComplexTileComplexity());
