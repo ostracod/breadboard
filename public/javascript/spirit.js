@@ -40,20 +40,12 @@ class Spirit {
         // Do nothing.
     }
     
-    convertClientJsonToWorldTile(data) {
-        return null;
-    }
-    
-    convertClientJsonToCircuitTile(data) {
-        return null;
-    }
-    
     getWorldTile() {
-        return null;
+        return this.spiritType.worldTileType.getTileWithSpirit(this);
     }
     
     getCircuitTile() {
-        return null;
+        return this.spiritType.circuitTileType.getTileWithSpirit(this);
     }
     
     getRecycleProducts() {
@@ -69,28 +61,10 @@ class SimpleSpirit extends Spirit {
         this.reference = new SimpleSpiritReference(this.serialInteger);
         simpleSpiritSet[this.spiritType.baseName] = this;
         simpleSpiritMap[this.serialInteger] = this;
-        this.worldTile = new SimpleWorldTile(this);
-        this.circuitTile = new SimpleCircuitTile(this);
     }
     
     getReference() {
         return this.reference;
-    }
-    
-    convertClientJsonToWorldTile(data) {
-        return this.worldTile;
-    }
-    
-    convertClientJsonToCircuitTile(data) {
-        return this.circuitTile;
-    }
-    
-    getWorldTile() {
-        return this.worldTile;
-    }
-    
-    getCircuitTile() {
-        return this.circuitTile;
     }
 }
 
@@ -137,22 +111,6 @@ class ComplexSpirit extends Spirit {
         }
         return super.getDisplayName();
     }
-    
-    convertClientJsonToWorldTile(data) {
-        return new ComplexWorldTile(this);
-    }
-    
-    convertClientJsonToCircuitTile(data) {
-        return new ComplexCircuitTile(this);
-    }
-    
-    getWorldTile() {
-        return new ComplexWorldTile(this);
-    }
-    
-    getCircuitTile() {
-        return new ComplexCircuitTile(this);
-    }
 }
 
 class PlayerSpirit extends ComplexSpirit {
@@ -165,27 +123,10 @@ class PlayerSpirit extends ComplexSpirit {
     getDisplayName() {
         return this.username;
     }
-    
-    convertClientJsonToWorldTile(data) {
-        const tempController = convertJsonToWalkController(data.walkController);
-        return new PlayerWorldTile(this, tempController);
-    }
-    
-    getWorldTile() {
-        const tempController = createDefaultWalkController();
-        return new PlayerWorldTile(this, tempController);
-    }
 }
 
 class MachineSpirit extends ComplexSpirit {
     
-    convertClientJsonToWorldTile(data) {
-        return new MachineWorldTile(this);
-    }
-    
-    getWorldTile() {
-        return new MachineWorldTile(this);
-    }
 }
 
 class LogicPort {
@@ -230,14 +171,6 @@ class ConstantLogicSpirit extends ComplexSpirit {
     
     getLogicPorts() {
         return this.logicPorts;
-    }
-    
-    convertClientJsonToCircuitTile(data) {
-        return new ChipCircuitTile(this, data.sidePortIndexes);
-    }
-    
-    getCircuitTile() {
-        return new ChipCircuitTile(this);
     }
 }
 

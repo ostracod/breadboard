@@ -7,6 +7,9 @@ import { CircuitSpirit, ConstantLogicSpirit } from "./logicSpirit.js";
 import { WorldSpirit } from "./worldSpirit.js";
 import { convertDbJsonToInventory } from "./inventory.js";
 import { RecipeComponent } from "./recipe.js";
+import { TileType, SimpleWorldTileType, ComplexWorldTileType, SimpleCircuitTileType, ComplexCircuitTileType, MachineWorldTileType, PlayerWorldTileType, ChipCircuitTileType } from "./tileType.js";
+import { WorldTile, ComplexWorldTile } from "./worldTile.js";
+import { CircuitTile, ComplexCircuitTile } from "./circuitTile.js";
 import { convertDbJsonToWorldTileGrid, convertDbJsonToCircuitTileGrid } from "./tileGrid.js";
 import { niceUtils } from "./niceUtils.js";
 
@@ -20,9 +23,17 @@ const { gameUtils } = ostracodMultiplayer;
 export abstract class SpiritType<T extends Spirit = Spirit> {
     
     baseName: string;
+    worldTileType: TileType<WorldTile>;
+    circuitTileType: TileType<CircuitTile>;
     
+    // initializeTileTypes must be invoked in superclass constructors.
     constructor(baseName: string) {
         this.baseName = baseName;
+    }
+    
+    initializeTileTypes(): void {
+        this.worldTileType = this.createWorldTileType();
+        this.circuitTileType = this.createCircuitTileType();
     }
     
     matchesSpirit(spirit: Spirit): boolean {
@@ -44,6 +55,10 @@ export abstract class SpiritType<T extends Spirit = Spirit> {
     isFreeToCraft(): boolean {
         return false;
     }
+    
+    abstract createWorldTileType(): TileType<WorldTile>;
+    
+    abstract createCircuitTileType(): TileType<CircuitTile>;
     
     abstract matchesSpiritDbJson(data: SpiritDbJson): boolean;
     
@@ -70,6 +85,15 @@ export class SimpleSpiritType extends SpiritType<SimpleSpirit> {
         this.spirit = new SimpleSpirit(this);
         simpleSpiritTypeSet[this.baseName] = this;
         simpleSpiritTypeMap[this.serialInteger] = this;
+        this.initializeTileTypes();
+    }
+    
+    createWorldTileType(): SimpleWorldTileType {
+        return new SimpleWorldTileType(this.spirit);
+    }
+    
+    createCircuitTileType(): SimpleCircuitTileType {
+        return new SimpleCircuitTileType(this.spirit);
     }
     
     matchesSpiritDbJson(data: SpiritDbJson): boolean {
@@ -184,6 +208,15 @@ export abstract class ComplexSpiritType<T extends ComplexSpirit = ComplexSpirit>
             complexSpiritTypesMap[this.spiritClassId] = [];
         }
         complexSpiritTypesMap[this.spiritClassId].push(this);
+        this.initializeTileTypes();
+    }
+    
+    createWorldTileType(): TileType<ComplexWorldTile> {
+        return new ComplexWorldTileType();
+    }
+    
+    createCircuitTileType(): TileType<ComplexCircuitTile> {
+        return new ComplexCircuitTileType();
     }
     
     matchesSpiritDbJson(data: SpiritDbJson): boolean {
@@ -207,6 +240,10 @@ export class PlayerSpiritType extends ComplexSpiritType<PlayerSpirit> {
     
     constructor() {
         super("player");
+    }
+    
+    createWorldTileType(): PlayerWorldTileType {
+        return new PlayerWorldTileType();
     }
     
     async convertDbJsonToSpirit(
@@ -241,6 +278,10 @@ export class MachineSpiritType extends ComplexSpiritType<MachineSpirit> {
     constructor(colorIndex: number) {
         super("machine");
         this.colorIndex = colorIndex;
+    }
+    
+    createWorldTileType(): MachineWorldTileType {
+        return new MachineWorldTileType();
     }
     
     matchesSpiritDbJson(data: SpiritDbJson): boolean {
@@ -347,6 +388,10 @@ export class ConstantLogicSpiritType extends ComplexSpiritType<ConstantLogicSpir
     
     constructor() {
         super("constantLogic");
+    }
+    
+    createCircuitTileType(): ChipCircuitTileType {
+        return new ChipCircuitTileType();
     }
     
     async convertDbJsonToSpirit(

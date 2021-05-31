@@ -2,12 +2,18 @@
 class SpiritType {
     
     // Concrete subclasses of SpiritType must implement these methods:
-    // matchesSpiritClientJson, getJson, matchesJson, convertClientJsonToSpirit
-    // craft, getDisplayName
+    // createWorldTileType, createCircuitTileType, matchesSpiritClientJson, getJson,
+    // matchesJson, convertClientJsonToSpirit, craft, getDisplayName
     
+    // initializeTileTypes must be invoked in superclass constructors.
     constructor(spriteList, baseName) {
         this.spriteList = spriteList;
         this.baseName = baseName;
+    }
+    
+    initializeTileTypes() {
+        this.worldTileType = this.createWorldTileType();
+        this.circuitTileType = this.createCircuitTileType();
     }
     
     matchesSpirit(spirit) {
@@ -36,6 +42,15 @@ class SimpleSpiritType extends SpiritType {
         this.spirit = new SimpleSpirit(this);
         simpleSpiritTypeSet[this.baseName] = this;
         simpleSpiritTypeMap[this.serialInteger] = this;
+        this.initializeTileTypes();
+    }
+    
+    createWorldTileType() {
+        return new SimpleWorldTileType(this.spirit);
+    }
+    
+    createCircuitTileType() {
+        return new SimpleCircuitTileType(this.spirit);
     }
     
     matchesSpiritClientJson(data) {
@@ -196,6 +211,15 @@ class ComplexSpiritType extends SpiritType {
             complexSpiritTypesMap[this.spiritClassId] = [];
         }
         complexSpiritTypesMap[this.spiritClassId].push(this);
+        this.initializeTileTypes();
+    }
+    
+    createWorldTileType() {
+        return new ComplexWorldTileType();
+    }
+    
+    createCircuitTileType() {
+        return new ComplexCircuitTileType();
     }
     
     matchesSpiritClientJson(data) {
@@ -220,6 +244,10 @@ class PlayerSpiritType extends ComplexSpiritType {
         super([playerSprite], "player");
     }
     
+    createWorldTileType() {
+        return new PlayerWorldTileType();
+    }
+    
     convertClientJsonToSpirit(data) {
         return new PlayerSpirit(this, data.id, data.username);
     }
@@ -240,6 +268,10 @@ class MachineSpiritType extends ComplexSpiritType {
         super([tempSprite], "machine");
         this.colorIndex = colorIndex;
         this.color = spiritColorSet[this.colorIndex];
+    }
+    
+    createWorldTileType() {
+        return new MachineWorldTileType();
     }
     
     matchesSpiritClientJson(data) {
@@ -320,6 +352,10 @@ class ConstantLogicSpiritType extends ComplexSpiritType {
             new Sprite(chipSpriteSet, 0, 2),
             new Sprite(characterSpriteSet, 3, 0),
         ], "constantLogic");
+    }
+    
+    createCircuitTileType() {
+        return new ChipCircuitTileType();
     }
     
     convertClientJsonToSpirit(data) {

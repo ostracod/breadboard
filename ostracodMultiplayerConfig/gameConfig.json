@@ -55,6 +55,7 @@
         "javascript/tile.js",
         "javascript/worldTile.js",
         "javascript/circuitTile.js",
+        "javascript/tileType.js",
         "javascript/tileFactory.js",
         "javascript/tileGrid.js",
         "javascript/inventory.js",

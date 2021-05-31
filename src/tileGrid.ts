@@ -158,7 +158,10 @@ const convertDbJsonToTileGrid = async <T extends Tile>(
     await niceUtils.performConditionalDbTransaction(shouldPerformTransaction, async () => {
         const tempPos = new Pos(0, 0);
         for (const tileData of data.tiles) {
-            const tile = await tileFactory.convertDbJsonToTile(tileData, false);
+            const tile = await tileFactory.convertDbJsonToTile(
+                tileData as ReturnType<T["getDbJson"]>,
+                false,
+            );
             output.setTile(tempPos, tile);
             output.advancePos(tempPos);
         }

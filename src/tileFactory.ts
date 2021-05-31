@@ -1,7 +1,8 @@
 
-import { TileDbJson, SimpleTileDbJson, ComplexTileDbJson, SpiritNestedDbJson } from "./interfaces.js";
+import { SimpleTileDbJson, ComplexTileDbJson, SpiritNestedDbJson } from "./interfaces.js";
 import { convertNestedDbJsonToSpirit } from "./spiritType.js";
 import { Spirit } from "./spirit.js";
+import { TileType } from "./tileType.js";
 import { Tile } from "./tile.js";
 import { WorldTile } from "./worldTile.js";
 import { CircuitTile } from "./circuitTile.js";
@@ -12,10 +13,10 @@ export abstract class TileFactory<T extends Tile> {
         // Do nothing.
     }
     
-    abstract convertDbJsonToTileHelper(spirit: Spirit, data: TileDbJson): T;
+    abstract getTileType(spirit: Spirit): TileType<T>;
     
     async convertDbJsonToTile(
-        data: TileDbJson,
+        data: ReturnType<T["getDbJson"]>,
         shouldPerformTransaction: boolean
     ): Promise<T> {
         let spiritData: SpiritNestedDbJson;
@@ -28,31 +29,27 @@ export abstract class TileFactory<T extends Tile> {
             spiritData,
             shouldPerformTransaction
         );
-        return this.convertDbJsonToTileHelper(spirit, data);
+        const tileType = this.getTileType(spirit);
+        return tileType.convertDbJsonToTile(spirit, data);
     }
     
-    abstract getTileWithSpirit(spirit: Spirit): T;
+    getTileWithSpirit(spirit: Spirit): T {
+        const tileType = this.getTileType(spirit);
+        return tileType.getTileWithSpirit(spirit);
+    }
 }
 
 export class WorldTileFactory extends TileFactory<WorldTile> {
     
-    convertDbJsonToTileHelper(spirit: Spirit, data: TileDbJson): WorldTile {
-        return spirit.convertDbJsonToWorldTile(data);
-    }
-    
-    getTileWithSpirit(spirit: Spirit): WorldTile {
-        return spirit.getWorldTile();
+    getTileType(spirit: Spirit): TileType<WorldTile> {
+        return spirit.spiritType.worldTileType;
     }
 }
 
 export class CircuitTileFactory extends TileFactory<CircuitTile> {
     
-    convertDbJsonToTileHelper(spirit: Spirit, data: TileDbJson): CircuitTile {
-        return spirit.convertDbJsonToCircuitTile(data);
-    }
-    
-    getTileWithSpirit(spirit: Spirit): CircuitTile {
-        return spirit.getCircuitTile();
+    getTileType(spirit: Spirit): TileType<CircuitTile> {
+        return spirit.spiritType.circuitTileType;
     }
 }
 
