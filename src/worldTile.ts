@@ -1,5 +1,5 @@
 
-import { simpleSpiritTypeSet, simpleWorldTileSet, simpleWorldTileMap, worldTileFactory } from "./globalData.js";
+import { simpleSpiritTypeSet, simpleWorldTileSet, simpleWorldTileMap } from "./globalData.js";
 import { WalkControllerJson, PlayerWorldTileClientJson, TileDbJson } from "./interfaces.js";
 import { Pos } from "./pos.js";
 import { Spirit, SimpleSpirit, ComplexSpirit, MachineSpirit } from "./spirit.js";
@@ -196,7 +196,7 @@ export class PlayerWorldTile extends ComplexWorldTile<PlayerSpirit> {
             return;
         }
         tempItem.setCount(tempItem.count - 1);
-        tempTile = worldTileFactory.getTileWithSpirit(tempItem.spirit);
+        tempTile = tempItem.spirit.getWorldTile();
         this.worldSpirit.setTile(pos, tempTile);
     }
 }

@@ -1,7 +1,7 @@
 
 import { TileClientJson, SimpleTileClientJson, ComplexTileClientJson, TileDbJson, SimpleTileDbJson, ComplexTileDbJson } from "./interfaces.js";
 import { Pos } from "./pos.js";
-import { Spirit, SimpleSpirit, ComplexSpirit } from "./spirit.js";
+import { Spirit, SimpleSpirit } from "./spirit.js";
 import { TileGrid } from "./tileGrid.js";
 
 export abstract class Tile<T extends Spirit = Spirit> {
@@ -85,12 +85,12 @@ class SimpleTileComplexity extends TileComplexity<SimpleSpirit> {
     }
 }
 
-export class ComplexTileComplexity extends TileComplexity<ComplexSpirit> {
+export class ComplexTileComplexity extends TileComplexity {
     
-    tile: Tile<ComplexSpirit>;
+    tile: Tile;
     tileGrid: TileGrid;
     
-    registerTile(tile: Tile<ComplexSpirit>): void {
+    registerTile(tile: Tile): void {
         this.tile = tile;
     }
     
@@ -114,13 +114,13 @@ export class ComplexTileComplexity extends TileComplexity<ComplexSpirit> {
         }
     }
     
-    convertToClientJson(tile: Tile<ComplexSpirit>): ComplexTileClientJson {
+    convertToClientJson(tile: Tile): ComplexTileClientJson {
         return {
             spirit: tile.spirit.getClientJson(),
         };
     }
     
-    convertToDbJson(tile: Tile<ComplexSpirit>): ComplexTileDbJson {
+    convertToDbJson(tile: Tile): ComplexTileDbJson {
         return {
             spirit: tile.spirit.getNestedDbJson(),
         };

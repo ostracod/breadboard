@@ -1,11 +1,11 @@
 
 import { simpleSpiritSerialIntegerSet, wireArrangementAmount, circuitSize, simpleCircuitTileMap } from "./globalData.js";
-import { ConstantLogicSpiritClientJson, ConstantLogicSpiritAttributeJson } from "./interfaces.js";
+import { ConstantLogicSpiritClientJson, ConstantLogicSpiritAttributeJson, ChipCircuitTileDbJson } from "./interfaces.js";
 import { Pos } from "./pos.js";
 import { TileGridSpirit, ComplexSpirit } from "./spirit.js";
 import { CircuitSpiritType, ConstantLogicSpiritType } from "./spiritType.js";
 import { LogicPort, OutputLogicPort } from "./logicPort.js";
-import { CircuitTile } from "./circuitTile.js";
+import { CircuitTile, ChipCircuitTile } from "./circuitTile.js";
 import { createCircuitTileGrid } from "./tileGrid.js";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -46,6 +46,14 @@ export class ConstantLogicSpirit extends ComplexSpirit implements LogicSpirit {
         super(spiritType, id);
         this.constantValue = constantValue;
         this.outputPort = new OutputLogicPort();
+    }
+    
+    convertDbJsonToCircuitTile(data: ChipCircuitTileDbJson): ChipCircuitTile {
+        return new ChipCircuitTile(this, data.sidePortIndexes);
+    }
+    
+    getCircuitTile(): ChipCircuitTile {
+        return new ChipCircuitTile(this);
     }
     
     getClientJson(): ConstantLogicSpiritClientJson {

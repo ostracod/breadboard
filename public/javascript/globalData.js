@@ -25,9 +25,6 @@ const complexSpiritTypesMap = {};
 // Maps from spirit serial integer to Tile.
 const simpleWorldTileMap = {};
 const simpleCircuitTileMap = {};
-// Maps from spirit class ID to ComplexTileFactory.
-const complexWorldTileFactoryMap = {};
-const complexCircuitTileFactoryMap = {};
 
 const recipeList = [];
 
@@ -49,17 +46,6 @@ for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
 }
 new CircuitSpiritType();
 new ConstantLogicSpiritType();
-
-for (const serialInteger in simpleSpiritMap) {
-    const tempSpirit = simpleSpiritMap[serialInteger];
-    new SimpleWorldTile(tempSpirit);
-    new SimpleCircuitTile(tempSpirit);
-}
-
-new PlayerWorldTileFactory();
-new MachineWorldTileFactory();
-new ComplexWorldTileFactory("circuit");
-new ChipCircuitTileFactory("constantLogic");
 
 const worldTileFactory = new WorldTileFactory();
 const circuitTileFactory = new CircuitTileFactory();

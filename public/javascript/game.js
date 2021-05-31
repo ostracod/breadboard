@@ -159,7 +159,7 @@ const placeWorldTile = (pos) => {
         return;
     }
     tempItem.setCount(tempItem.count - 1);
-    tempTile = worldTileFactory.getTileWithSpirit(tempSpirit);
+    tempTile = tempSpirit.getWorldTile();
     worldTileGrid.setTile(pos, tempTile);
     addPlaceWorldTileCommand(pos, tempSpirit);
 };
@@ -177,7 +177,7 @@ const placeCircuitTile = () => {
 
 const craftCircuitTile = (pos, spiritType, shouldAddCommand = true) => {
     const tempSpirit = spiritType.craft();
-    const tempTile = circuitTileFactory.getTileWithSpirit(tempSpirit);
+    const tempTile = tempSpirit.getCircuitTile();
     circuitTileGrid.setTile(pos, tempTile);
     if (shouldAddCommand) {
         addCraftCircuitTileCommand(pos, spiritType);

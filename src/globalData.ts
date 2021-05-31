@@ -4,7 +4,7 @@ import { SimpleSpirit, ComplexSpirit } from "./spirit.js";
 import { SimpleSpiritType, ComplexSpiritType, EmptySpiritType, BarrierSpiritType, MatteriteSpiritType, EnergiteSpiritType, BlockSpiritType, WireSpiritType, PlayerSpiritType, MachineSpiritType, WorldSpiritType, CircuitSpiritType, ConstantLogicSpiritType } from "./spiritType.js";
 import { SimpleWorldTile } from "./worldTile.js";
 import { SimpleCircuitTile } from "./circuitTile.js";
-import { ComplexWorldTileFactory, GenericComplexWorldTileFactory, PlayerWorldTileFactory, MachineWorldTileFactory, WorldTileFactory, CircuitTileFactory, ComplexCircuitTileFactory, ChipCircuitTileFactory } from "./tileFactory.js";
+import { WorldTileFactory, CircuitTileFactory } from "./tileFactory.js";
 import { Recipe, RecipeComponent } from "./recipe.js";
 
 export const simpleSpiritSerialIntegerSet = {
@@ -45,8 +45,6 @@ export const complexSpiritTypesMap: {[classId: string]: ComplexSpiritType[]} = {
 
 export const simpleWorldTileMap: {[serialInteger: string]: SimpleWorldTile} = {};
 export const simpleCircuitTileMap: {[serialInteger: string]: SimpleCircuitTile} = {};
-export const complexWorldTileFactoryMap: {[classId: string]: ComplexWorldTileFactory} = {};
-export const complexCircuitTileFactoryMap: {[classId: string]: ComplexCircuitTileFactory} = {};
 
 export const recipeList: Recipe[] = [];
 export const recipeDataList: RecipeJson[] = [];
@@ -69,17 +67,6 @@ for (let colorIndex = 0; colorIndex < spiritColorAmount; colorIndex++) {
 new WorldSpiritType();
 new CircuitSpiritType();
 new ConstantLogicSpiritType();
-
-for (const serialInteger in simpleSpiritMap) {
-    const tempSpirit = simpleSpiritMap[serialInteger];
-    new SimpleWorldTile(tempSpirit);
-    new SimpleCircuitTile(tempSpirit);
-}
-
-new PlayerWorldTileFactory();
-new MachineWorldTileFactory();
-new GenericComplexWorldTileFactory("circuit");
-new ChipCircuitTileFactory("constantLogic");
 
 export const worldTileFactory = new WorldTileFactory();
 export const circuitTileFactory = new CircuitTileFactory();

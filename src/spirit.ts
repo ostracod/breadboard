@@ -1,6 +1,6 @@
 
 import { simpleSpiritSet, simpleSpiritMap, complexSpiritMap, dirtyComplexSpiritMap } from "./globalData.js";
-import { ConfigDbJson, SpiritClientJson, SimpleSpiritClientJson, ComplexSpiritClientJson, MachineSpiritClientJson, SpiritNestedDbJson, SimpleSpiritNestedDbJson, ComplexSpiritBaseDbJson, ComplexSpiritNestedDbJson, SpiritDbJson, SimpleSpiritDbJson, ComplexSpiritDbJson, ComplexSpiritContainerJson, InventorySpiritContainerJson, TileGridSpiritContainerJson, ComplexSpiritAttributeJson, MachineSpiritAttributeJson } from "./interfaces.js";
+import { ConfigDbJson, SpiritClientJson, SimpleSpiritClientJson, ComplexSpiritClientJson, MachineSpiritClientJson, SpiritNestedDbJson, SimpleSpiritNestedDbJson, ComplexSpiritBaseDbJson, ComplexSpiritNestedDbJson, SpiritDbJson, SimpleSpiritDbJson, ComplexSpiritDbJson, ComplexSpiritContainerJson, InventorySpiritContainerJson, TileGridSpiritContainerJson, ComplexSpiritAttributeJson, MachineSpiritAttributeJson, TileDbJson } from "./interfaces.js";
 import { Pos } from "./pos.js";
 import { SpiritType, SimpleSpiritType, ComplexSpiritType, MachineSpiritType } from "./spiritType.js";
 import { SpiritReference } from "./spiritReference.js";
@@ -8,7 +8,8 @@ import { SimpleSpiritReference, ComplexSpiritReference } from "./spiritReference
 import { Inventory, InventoryItem, InventoryObserver } from "./inventory.js";
 import { RecipeComponent, pushRecipeComponent } from "./recipe.js";
 import { Tile } from "./tile.js";
-import { ComplexWorldTile } from "./worldTile.js";
+import { WorldTile, SimpleWorldTile, ComplexWorldTile, MachineWorldTile } from "./worldTile.js";
+import { CircuitTile, SimpleCircuitTile, ComplexCircuitTile } from "./circuitTile.js";
 import { TileGrid } from "./tileGrid.js";
 import { niceUtils } from "./niceUtils.js";
 
@@ -53,6 +54,22 @@ export abstract class Spirit {
         // Do nothing.
     }
     
+    convertDbJsonToWorldTile(data: TileDbJson): WorldTile {
+        return null;
+    }
+    
+    convertDbJsonToCircuitTile(data: TileDbJson): CircuitTile {
+        return null;
+    }
+    
+    getWorldTile(): WorldTile {
+        return null;
+    }
+    
+    getCircuitTile(): CircuitTile {
+        return null;
+    }
+    
     destroy(): void {
         // Do nothing.
     }
@@ -75,6 +92,8 @@ export class SimpleSpirit extends Spirit {
     spiritType: SimpleSpiritType;
     serialInteger: number;
     reference: SimpleSpiritReference;
+    worldTile: SimpleWorldTile;
+    circuitTile: SimpleCircuitTile;
     
     constructor(spiritType: SimpleSpiritType) {
         super(spiritType);
@@ -82,6 +101,24 @@ export class SimpleSpirit extends Spirit {
         this.reference = new SimpleSpiritReference(this.serialInteger);
         simpleSpiritSet[this.spiritType.baseName] = this;
         simpleSpiritMap[this.serialInteger] = this;
+        this.worldTile = new SimpleWorldTile(this);
+        this.circuitTile = new SimpleCircuitTile(this);
+    }
+    
+    convertDbJsonToWorldTile(data: TileDbJson): WorldTile {
+        return this.worldTile;
+    }
+    
+    convertDbJsonToCircuitTile(data: TileDbJson): CircuitTile {
+        return this.circuitTile;
+    }
+    
+    getWorldTile(): WorldTile {
+        return this.worldTile;
+    }
+    
+    getCircuitTile(): CircuitTile {
+        return this.circuitTile;
     }
     
     getClientJson(): SimpleSpiritClientJson {
@@ -135,6 +172,22 @@ export class ComplexSpirit extends Spirit {
         if (!this.hasDbRow && this.parentSpirit !== null) {
             this.parentSpirit.markAsDirty();
         }
+    }
+    
+    convertDbJsonToWorldTile(data: TileDbJson): ComplexWorldTile {
+        return new ComplexWorldTile(this);
+    }
+    
+    convertDbJsonToCircuitTile(data: TileDbJson): ComplexCircuitTile {
+        return new ComplexCircuitTile(this);
+    }
+    
+    getWorldTile(): ComplexWorldTile {
+        return new ComplexWorldTile(this);
+    }
+    
+    getCircuitTile(): ComplexCircuitTile {
+        return new ComplexCircuitTile(this);
     }
     
     getClientJson(): ComplexSpiritClientJson {
@@ -330,6 +383,14 @@ export class MachineSpirit extends InventorySpirit {
     constructor(spiritType: MachineSpiritType, id: number, inventory: Inventory = null) {
         super(spiritType, id, inventory);
         this.colorIndex = this.spiritType.colorIndex;
+    }
+    
+    convertDbJsonToWorldTile(data: TileDbJson): MachineWorldTile {
+        return new MachineWorldTile(this);
+    }
+    
+    getWorldTile(): MachineWorldTile {
+        return new MachineWorldTile(this);
     }
     
     getClientJson(): MachineSpiritClientJson {

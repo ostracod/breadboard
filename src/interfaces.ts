@@ -1,5 +1,5 @@
 
-import { ComplexSpirit } from "./spirit.js";
+import { Spirit, ComplexSpirit } from "./spirit.js";
 import { PlayerSpirit } from "./playerSpirit.js";
 import { LogicSpirit } from "./logicSpirit.js";
 import { PlayerWorldTile } from "./worldTile.js";
@@ -115,9 +115,9 @@ export interface ComplexSpiritReferenceJson extends SpiritReferenceJson {
 
 export type TileClientJson = SimpleTileClientJson | ComplexTileClientJson;
 
-export type SimpleTileClientJson = number;
+export type SimpleTileClientJson = SimpleSpiritClientJson;
 
-export interface ComplexTileClientJson<T extends ComplexSpirit = ComplexSpirit> {
+export interface ComplexTileClientJson<T extends Spirit = Spirit> {
     spirit: ReturnType<T["getClientJson"]>;
 }
 
@@ -131,10 +131,10 @@ export interface ChipCircuitTileClientJson extends ComplexTileClientJson<LogicSp
 
 export type TileDbJson = SimpleTileDbJson | ComplexTileDbJson;
 
-export type SimpleTileDbJson = number;
+export type SimpleTileDbJson = SimpleSpiritNestedDbJson;
 
-export interface ComplexTileDbJson<T extends ComplexSpirit = ComplexSpirit> {
-    spirit: ComplexSpiritNestedDbJson<T>
+export interface ComplexTileDbJson<T extends Spirit = Spirit> {
+    spirit: ReturnType<T["getNestedDbJson"]>;
 }
 
 export interface ChipCircuitTileDbJson extends ComplexTileDbJson<LogicSpirit> {

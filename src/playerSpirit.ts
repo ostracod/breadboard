@@ -1,12 +1,13 @@
 
-import { complexSpiritMap, circuitTileFactory } from "./globalData.js";
-import { Player, PlayerSpiritClientJson, ComplexSpiritNestedDbJson, PlayerSpiritAttributeJson } from "./interfaces.js";
+import { complexSpiritMap } from "./globalData.js";
+import { Player, PlayerSpiritClientJson, ComplexSpiritNestedDbJson, PlayerSpiritAttributeJson, TileDbJson } from "./interfaces.js";
 import { Pos } from "./pos.js";
 import { Spirit, ComplexSpirit, InventorySpirit, MachineSpirit } from "./spirit.js";
 import { CircuitSpirit } from "./logicSpirit.js";
 import { SpiritType, PlayerSpiritType } from "./spiritType.js";
 import { SpiritReference } from "./spiritReference.js";
 import { Inventory, InventoryItem, InventoryUpdate, pushInventoryUpdate } from "./inventory.js";
+import { PlayerWorldTile } from "./worldTile.js";
 import { ChipCircuitTile } from "./circuitTile.js";
 
 export class PlayerSpirit extends InventorySpirit {
@@ -35,6 +36,14 @@ export class PlayerSpirit extends InventorySpirit {
         super.inventoryChangeEvent(inventory, item);
         const tempUpdate = item.getInventoryUpdate();
         pushInventoryUpdate(this.inventoryUpdates, tempUpdate);
+    }
+    
+    convertDbJsonToWorldTile(data: TileDbJson): PlayerWorldTile {
+        throw new Error("Player should not be persisted as world tile.");
+    }
+    
+    getWorldTile(): PlayerWorldTile {
+        return new PlayerWorldTile(this);
     }
     
     getClientJson(): PlayerSpiritClientJson {
@@ -208,7 +217,7 @@ export class PlayerSpirit extends InventorySpirit {
             return;
         }
         const tempSpirit = spiritType.craft();
-        const tempCircuitTile = circuitTileFactory.getTileWithSpirit(tempSpirit);
+        const tempCircuitTile = tempSpirit.getCircuitTile();
         this.inspectedCircuit.tileGrid.setTile(pos, tempCircuitTile);
     }
     
